@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"module": "esnext", // Changed from commonjs
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "esnext", // Changed from ES2021
+		"sourceMap": true,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"skipLibCheck": true,
+		"strictNullChecks": false,
+		"noImplicitAny": false,
+		"strictBindCallApply": false,
+		"forceConsistentCasingInFileNames": false,
+		"noFallthroughCasesInSwitch": false,
+		"moduleResolution": "bundler", // Added for Bun
+		"resolveJsonModule": true, // Added for Bun
+		"types": ["bun-types"] // Added for Bun type definitions
+	}
+}
