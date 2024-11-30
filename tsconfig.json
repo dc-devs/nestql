@@ -19,6 +19,16 @@
 		"noFallthroughCasesInSwitch": false,
 		"moduleResolution": "bundler", // Added for Bun
 		"resolveJsonModule": true, // Added for Bun
-		"types": ["bun-types"] // Added for Bun type definitions
+		"types": ["bun-types"], // Added for Bun type definitions
+		"paths": {
+			"@/*": ["./*"],
+			"@src/*": ["./src/*"],
+			"@base/*": ["./src/base/*"],
+			"@seeds/*": ["./prisma/seeds/*"],
+			"@models/*": ["./src/app/models/*"],
+			"@packages/*": ["./src/packages/*"],
+			"@services/*": ["./src/app/services/*"],
+			"@generated/*": ["./src/app/models/common/@generated/*"],
+		}
 	}
 }

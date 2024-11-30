@@ -7,3 +7,6 @@ production = false
 
 [install.scopes]
 nestjs = "https://registry.npmjs.org/"
+
+[resolve]
+useTsconfig = true
