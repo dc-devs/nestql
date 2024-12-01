@@ -67,3 +67,6 @@ tsconfig.*.json
 README.md
 LICENSE
 *.md
+
+# Docker
+**/docker-compose.*
