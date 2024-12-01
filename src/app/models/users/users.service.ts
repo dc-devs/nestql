@@ -12,7 +12,7 @@ import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { CreateManyUserArgs } from '@generated/user/create-many-user.args';
 import { FindUniqueUserArgs } from '@generated/user/find-unique-user.args';
 import { UpdateManyUserArgs } from '@generated/user/update-many-user.args';
-import { encodePassword } from '@models/users/common/utils/encode-password';
+import { hashPassword } from '@root/src/app/models/users/common/utils/hash-password';
 import { UserWhereUniqueInput } from '@generated/user/user-where-unique.input';
 
 @Injectable()
@@ -38,7 +38,7 @@ export class UsersService extends BasePrismaService<
 
 	async create(data: UserCreateInput): Promise<UserSafe> {
 		const { email, password } = data;
-		const encodedPassword = await encodePassword(password);
+		const encodedPassword = await hashPassword(password);
 		const emailLowerCase = email.toLowerCase();
 
 		return await this.prisma.user.create({

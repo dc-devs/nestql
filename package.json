@@ -29,13 +29,13 @@
 		"nql:dev:docker:addCerts": "sudo src/base/sh-scripts/generate-certs.sh && sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:docker:externalServices:up": "docker compose --env-file .env -f src/base/docker/external-services/docker-compose.dev.external-services.yaml up",
 		"nql:dev:docker:externalServices:down": "docker compose --env-file .env -f src/base/docker/external-services/docker-compose.dev.external-services.yaml down --remove-orphans",
-		"nql:dev:prisma:generate": "bun prisma generate",
-		"nql:dev:prisma:generate:watch": "bun prisma generate --watch",
-		"nql:dev:prisma:migrate": "dotenv -e .env -- bun prisma migrate dev",
-		"nql:dev:prisma:migrate:name": "dotenv -e .env -- bun prisma migrate dev --name",
-		"nql:dev:prisma:reset": "dotenv -e .env -- bun prisma migrate reset --force",
-		"nql:dev:prisma:seed": "dotenv -e .env -- bun run prisma/seed.ts",
-		"nql:dev:prisma:reset:full": "rm -rf prisma/migrations && bun prisma:dev:reset && bun prisma:dev:migrate && bun prisma:dev:seed"
+		"nql:dev:prisma:generate": "bunx prisma generate",
+		"nql:dev:prisma:generate:watch": "bunx prisma generate --watch",
+		"nql:dev:prisma:seed": "dotenv -e .env -- bun prisma/seed.ts",
+		"nql:dev:prisma:migrate": "dotenv -e .env -- bunx prisma migrate dev",
+		"nql:dev:prisma:migrate:name": "dotenv -e .env -- bunx prisma migrate dev --name",
+		"nql:dev:prisma:migrate:reset": "dotenv -e .env -- bunx prisma migrate reset --force",
+		"nql:dev:prisma:migrate:reset:full": "rm -rf prisma/migrations && bun run nql:dev:prisma:migrate:reset&& bun run nql:dev:prisma:migrate && bun run nql:dev:prisma:seed"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "^12.2.1",

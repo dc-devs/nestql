@@ -7,4 +7,4 @@ export const apppliccaionPort = isProductionEnv
 	? Port.Production
 	: testOrDevPort;
 
-export const port = process.env.PORT || apppliccaionPort;
+export const port = Bun.env.PORT || apppliccaionPort;

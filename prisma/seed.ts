@@ -15,5 +15,6 @@ main()
 		process.exit(1);
 	})
 	.finally(async () => {
+		console.log('Database has been seeded. 🌱');
 		await prisma.$disconnect();
 	});

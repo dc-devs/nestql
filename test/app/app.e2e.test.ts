@@ -1,7 +1,8 @@
 import { expect, test, describe, beforeEach, afterAll } from 'bun:test';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { AppModule } from '@src/app.module';
+import { AppModule } from '@src/app/app.module';
+import { Port } from '@src/base/server/enums/port.enum';
 
 describe('AppController (e2e)', () => {
 	let app: INestApplication;
@@ -16,9 +17,7 @@ describe('AppController (e2e)', () => {
 	});
 
 	test('/ (GET)', async () => {
-		const response = await fetch(
-			`http://localhost:${process.env.PORT || 3000}/`,
-		);
+		const response = await fetch(`http://localhost:${Port.Development}/`);
 		expect(response.status).toBe(200);
 		expect(await response.text()).toBe('Hello World!');
 	});

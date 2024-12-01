@@ -1,3 +1,1 @@
-import 'dotenv/config';
-
-export const SessionSecret = process.env.SESSION_SECRET;
+export const SessionSecret = Bun.env.SESSION_SECRET;

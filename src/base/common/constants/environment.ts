@@ -1,6 +1,6 @@
 import { Environment } from '@base/common/enums';
 
-export const environment = process.env.NODE_ENV || Environment.DEVELOPMENT;
+export const environment = Bun.env.NODE_ENV || Environment.DEVELOPMENT;
 
 export const isTestEnv = environment === Environment.TEST;
 
