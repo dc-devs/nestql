@@ -20,6 +20,10 @@ fi
 # Continue with cert generation
 echo "Generating local certificates..."
 mkcert -install
-mkcert -days 36500 -key-file ./src/base/docker/certs/key.pem -cert-file ./src/base/docker/certs/cert.pem 'localhost' 'local.nestql.com'
+
+rm -rf ./src/base/docker/certs/*
+echo "Cleaned certs directory"
+
+mkcert -key-file ./src/base/docker/certs/key.pem -cert-file ./src/base/docker/certs/cert.pem 'localhost' 'local.nestql.com'
 
 echo "Certificate setup complete!"
