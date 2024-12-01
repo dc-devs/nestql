@@ -19,8 +19,8 @@
 		"test:debug": "bun --inspect-brk test",
 		"test:e2e": "bun test test/**/*.e2e-spec.ts",
 		"nql:add-certs": "sudo src/base/bun-scripts/generate-certs.sh && sudo src/base/bun-scripts/update-hosts.sh",
-		"docker:dev:externalServices:up": "dotenv -e .env -- docker compose -f src/base/docker/external-services/docker-compose.dev.external-services.yaml up",
-		"docker:dev:externalServices:down": "dotenv -e .env -- docker compose -f src/base/docker/external-services/docker-compose.dev.external-services.yaml down --remove-orphans"
+		"nql:dev:externalServices:up": "dotenv -e .env -- docker compose -f src/base/docker/external-services/docker-compose.dev.external-services.yaml up",
+		"nql:dev:externalServices:down": "dotenv -e .env -- docker compose -f src/base/docker/external-services/docker-compose.dev.external-services.yaml down --remove-orphans"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "^12.2.1",
