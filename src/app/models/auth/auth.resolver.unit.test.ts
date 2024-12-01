@@ -3,6 +3,7 @@ import { AuthService } from '@models/auth/auth.service';
 import { AuthResolver } from '@models/auth/auth.resolver';
 import { UsersModule } from '@models/users/users.module';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '@base/services/prisma/prisma.service';
 
 describe('AuthResolver', () => {
 	let resolver: AuthResolver;
@@ -10,7 +11,7 @@ describe('AuthResolver', () => {
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			imports: [UsersModule],
-			providers: [AuthResolver, AuthService],
+			providers: [AuthResolver, AuthService, PrismaService],
 		}).compile();
 
 		resolver = module.get<AuthResolver>(AuthResolver);

@@ -38,7 +38,7 @@ export class UsersService extends BasePrismaService<
 
 	async create(data: UserCreateInput): Promise<UserSafe> {
 		const { email, password } = data;
-		const encodedPassword = encodePassword(password);
+		const encodedPassword = await encodePassword(password);
 		const emailLowerCase = email.toLowerCase();
 
 		return await this.prisma.user.create({

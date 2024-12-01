@@ -1,13 +1,17 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
+import { AppService } from '@src/app/app.service';
+import { AuthModule } from '@models/auth/auth.module';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from '@src/app.controller';
-import { AppService } from '@src/app.service';
+import { AppController } from '@src/app/app.controller';
+import { UsersModule } from '@models/users/users.module';
+import { GraphQLModule, ConfigModule } from '@base/app/modules';
 
 describe('AppController', () => {
 	let appController: AppController;
 
 	beforeEach(async () => {
 		const app: TestingModule = await Test.createTestingModule({
+			imports: [AuthModule, UsersModule, ConfigModule, GraphQLModule],
 			controllers: [AppController],
 			providers: [AppService],
 		}).compile();

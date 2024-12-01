@@ -1,3 +1,4 @@
+import { describe, expect, beforeEach, test } from 'bun:test';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from '@models/users/users.service';
 import { PrismaService } from '@base/services/prisma/prisma.service';
@@ -13,7 +14,7 @@ describe('UsersService', () => {
 		service = module.get<UsersService>(UsersService);
 	});
 
-	it('should be defined', () => {
+	test('should be defined', () => {
 		expect(service).toBeDefined();
 	});
 });

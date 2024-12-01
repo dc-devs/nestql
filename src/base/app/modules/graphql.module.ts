@@ -9,7 +9,7 @@ export const GraphQLModule = GraphqlModule.forRoot<ApolloDriverConfig>({
 	sortSchema: true,
 	playground: true,
 	driver: ApolloDriver,
-	autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+	autoSchemaFile: join(process.cwd(), 'src/app/schema.gql'),
 	context: ({ req, res }) => ({ req, res }),
 	// plugins: isDevelopmentEnv
 	// 	? [ApolloServerPluginLandingPageLocalDefault()]
