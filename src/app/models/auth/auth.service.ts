@@ -1,4 +1,3 @@
-import { compareSync } from 'bcrypt';
 import { Injectable } from '@nestjs/common';
 import { User } from '@generated/user/user.model';
 import { SessionInput } from '@models/auth/dto/inputs';
@@ -35,7 +34,10 @@ export class AuthService {
 			let validatedUser: UserSafe | null = null;
 
 			if (user) {
-				const hasCorrectPassword = compareSync(password, user.password);
+				const hasCorrectPassword = await Bun.password.verify(
+					password,
+					user.password,
+				);
 
 				if (user && hasCorrectPassword) {
 					const { password, ...restOfUserData } = user;

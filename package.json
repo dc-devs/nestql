@@ -34,7 +34,7 @@
 		"nql:dev:prisma:migrate": "dotenv -e .env -- bun prisma migrate dev",
 		"nql:dev:prisma:migrate:name": "dotenv -e .env -- bun prisma migrate dev --name",
 		"nql:dev:prisma:reset": "dotenv -e .env -- bun prisma migrate reset --force",
-		"nql:dev:prisma:seed": "dotenv -e .env -- ts-node -r tsconfig-paths/register prisma/seed.ts",
+		"nql:dev:prisma:seed": "dotenv -e .env -- bun run prisma/seed.ts",
 		"nql:dev:prisma:reset:full": "rm -rf prisma/migrations && bun prisma:dev:reset && bun prisma:dev:migrate && bun prisma:dev:seed"
 	},
 	"dependencies": {
@@ -45,7 +45,6 @@
 		"@nestjs/graphql": "^12.2.1",
 		"@nestjs/platform-express": "^10.0.0",
 		"@prisma/client": "^6.0.0",
-		"bcrypt": "^5.1.1",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
 		"connect-redis": "^8.0.0",

@@ -1,10 +1,11 @@
-import { genSaltSync, hashSync } from 'bcrypt';
+const encodePassword = async (password: string): Promise<string> => {
+	const argonHash = await Bun.password.hash(password, {
+		algorithm: 'argon2id', // Best choice for general password hashing
+		memoryCost: 65536, // 64MB - good balance of security vs performance
+		timeCost: 4, // Higher iteration count for better security
+	});
 
-const encodePassword = (password: string): string => {
-	const saltRounds = 10;
-	const salt = genSaltSync(saltRounds);
-
-	return hashSync(password, salt);
+	return argonHash;
 };
 
 export { encodePassword };
