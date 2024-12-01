@@ -26,6 +26,12 @@ export async function bootstrap<AppModule>({
 	app.useGlobalPipes(validationPipe);
 	app.set(App.TRUST_PROXY, !isProductionEnv);
 
+	// Graceful shutdown on bun
+	process.on('SIGINT', async () => {
+		await app.close();
+		process.exit(0);
+	});
+
 	await app.listen(port);
 
 	logInitMessage({
