@@ -54,7 +54,7 @@ type Mutation {
   createManyUser(data: [UserCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createUser(data: UserCreateInput!, select: SelectInput): User!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
-  signIn: SessionResponse!
+  signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: Float!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
@@ -119,6 +119,11 @@ enum QueryMode {
 input SelectInput {
   relationships: JSON
   select: JSON
+}
+
+input SessionInput {
+  email: String!
+  password: String!
 }
 
 type SessionResponse {

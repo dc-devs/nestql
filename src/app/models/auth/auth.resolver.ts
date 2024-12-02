@@ -1,5 +1,7 @@
 import { UseGuards } from '@nestjs/common';
+import { SessionInput } from '@models/auth/dto/inputs';
 import { AuthService } from '@models/auth/auth.service';
+import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
 import { PrismaService } from '@base/services/prisma/prisma.service';
 import { SessionResponse, LogOutResponse } from '@models/auth/dto/models';
@@ -12,17 +14,18 @@ export class AuthResolver {
 	constructor(
 		protected readonly prisma: PrismaService,
 		protected readonly authService: AuthService,
+		protected readonly usersService: UsersService,
 	) {}
 
 	@Mutation(() => SessionResponse)
 	async signUp(
 		@Context('req') request,
 		@Args('data')
-		data: UserCreateInput,
+		userCreateInput: UserCreateInput,
 	) {
 		try {
-			const newUser = await this.prisma.user.create({
-				data: { ...data },
+			const newUser = await this.usersService.create({
+				...userCreateInput,
 			});
 
 			const loggedInUser = await this.authService.signIn({
@@ -57,6 +60,7 @@ export class AuthResolver {
 	@UseGuards(IsValidUser, SignInUser)
 	async signIn(
 		@Context('req') request,
+		@Args('sessionInput') _sessionInput: SessionInput,
 	) {
 		const { user } = request;
 
