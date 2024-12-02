@@ -1,43 +1,22 @@
+import { Request } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { SessionInput } from '@models/auth/dto/inputs';
 import { AuthService } from '@models/auth/auth.service';
-import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
-import { PrismaService } from '@base/services/prisma/prisma.service';
 import { SessionResponse, LogOutResponse } from '@models/auth/dto/models';
 import { Resolver, Mutation, Query, Args, Context } from '@nestjs/graphql';
-import { SignInUser, IsValidUser, IsAuthenticated } from '@models/auth/guards';
-// import generateGraphQLError from '@base/services/graphql/errors/generate-graphql-error';
+import { IsValidUser, IsAuthenticated } from '@models/auth/guards';
 
 @Resolver()
 export class AuthResolver {
-	constructor(
-		protected readonly prisma: PrismaService,
-		protected readonly authService: AuthService,
-		protected readonly usersService: UsersService,
-	) {}
+	constructor(protected readonly authService: AuthService) {}
 
 	@Mutation(() => SessionResponse)
 	async signUp(
-		@Context('req') request,
-		@Args('data')
-		userCreateInput: UserCreateInput,
+		@Context('req') request: Request,
+		@Args('data') userCreateInput: UserCreateInput,
 	) {
-		try {
-			const newUser = await this.usersService.create({
-				...userCreateInput,
-			});
-
-			const loggedInUser = await this.authService.signIn({
-				...request,
-				user: { ...newUser },
-			});
-
-			return { isAuthenticated: true, user: loggedInUser };
-		} catch (error) {
-			console.error(error);
-			// generateGraphQLError(error);
-		}
+		return await this.authService.signUp({ request, userCreateInput });
 	}
 
 	@Mutation(() => LogOutResponse)
@@ -46,32 +25,21 @@ export class AuthResolver {
 		@Context('req') request,
 		@Args('userId') userId: number,
 	) {
-		try {
-			this.authService.signOut({ request, response, userId });
-
-			return { isAuthenticated: false, userId };
-		} catch (error) {
-			console.error(error);
-			// generateGraphQLError(error);
-		}
+		return this.authService.signOut({ request, response, userId });
 	}
 
 	@Mutation(() => SessionResponse)
-	@UseGuards(IsValidUser, SignInUser)
+	@UseGuards(IsValidUser)
 	async signIn(
-		@Context('req') request,
+		@Context('req') request: Request,
 		@Args('sessionInput') _sessionInput: SessionInput,
 	) {
-		const { user } = request;
-
-		return { isAuthenticated: true, user };
+		return this.authService.signIn({ request });
 	}
 
 	@Query(() => SessionResponse)
 	@UseGuards(IsAuthenticated)
-	async currentUser(@Context('req') request) {
-		const { user } = request;
-
-		return { isAuthenticated: true, user };
+	async currentUser(@Context('req') request: Request) {
+		return this.authService.getCurrentUserResponse({ request });
 	}
 }

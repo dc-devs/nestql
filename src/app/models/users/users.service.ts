@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { User as UserUnsafe } from '@generated/user/user.model';
 import { UserSafe } from '@models/users/common/entities/user-safe';
 import { modelName, select } from '@models/users/common/constants';
 import { UserUpdateInput } from '@generated/user/user-update.input';
@@ -36,8 +35,8 @@ export class UsersService extends BasePrismaService<
 		});
 	}
 
-	async create(data: UserCreateInput): Promise<UserSafe> {
-		const { email, password } = data;
+	async create(userCreateInput: UserCreateInput): Promise<UserSafe> {
+		const { email, password } = userCreateInput;
 		const encodedPassword = await hashPassword(password);
 		const emailLowerCase = email.toLowerCase();
 

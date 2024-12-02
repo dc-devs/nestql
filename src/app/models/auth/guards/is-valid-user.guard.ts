@@ -1,4 +1,3 @@
-import { AuthService } from '@models/auth/auth.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
 import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
@@ -12,7 +11,7 @@ interface IValidateUser extends SessionInput {
 
 const validateUser = async ({ email, password, prisma }: IValidateUser) => {
 	try {
-		const user = await prisma.user.findFirst({
+		const user = await prisma.user.findUnique({
 			where: { email },
 		});
 		let validatedUser: UserSafe | null = null;
@@ -27,6 +26,8 @@ const validateUser = async ({ email, password, prisma }: IValidateUser) => {
 				const { password, ...restOfUserData } = user;
 				validatedUser = restOfUserData;
 			}
+		} else {
+			throw new UnauthorizedException();
 		}
 
 		return validatedUser;
@@ -50,10 +51,6 @@ export class IsValidUser implements CanActivate {
 				...sessionInput,
 				prisma: this.prisma,
 			});
-
-			if (!user) {
-				throw new UnauthorizedException();
-			}
 
 			request.user = user;
 

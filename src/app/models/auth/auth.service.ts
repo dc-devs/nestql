@@ -1,30 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@generated/user/user.model';
 import { UnauthorizedException } from '@nestjs/common';
 import { Cookie } from '@base/session-store/common/enums';
+import { UsersService } from '@models/users/users.service';
+import { UserCreateInput } from '@generated/user/user-create.input';
 import { PrismaService } from '@base/services/prisma/prisma.service';
-
-interface ISignInRequest {
-	user?: User;
-	session?: any;
-	sessionStore?: any;
-}
-
-interface ILoginResponse {
-	cookie?: any;
-}
-
-interface ILogOutProps {
-	userId: number;
-	request: ISignInRequest;
-	response: ILoginResponse;
-}
+import {
+	ILogOutProps,
+	IAuthenticatedRequest,
+} from '@models/auth/common/interfaces';
 
 @Injectable()
 export class AuthService {
-	constructor(protected readonly prisma: PrismaService) {}
+	constructor(
+		protected readonly prisma: PrismaService,
+		protected readonly usersService: UsersService,
+	) {}
 
-	async signIn(request: ISignInRequest) {
+	async signUp({
+		request,
+		userCreateInput,
+	}: {
+		request: IAuthenticatedRequest;
+		userCreateInput: UserCreateInput;
+	}) {
+		const user = await this.usersService.create(userCreateInput);
+
+		request.user = user;
+
+		return await this.signIn({ request });
+	}
+
+	async signIn({ request }: { request: IAuthenticatedRequest }) {
 		const { user } = request;
 
 		if (user && request.session) {
@@ -33,7 +39,7 @@ export class AuthService {
 			throw new UnauthorizedException();
 		}
 
-		return user;
+		return { isAuthenticated: true, user };
 	}
 
 	signOut({ request, response, userId }: ILogOutProps) {
@@ -50,6 +56,12 @@ export class AuthService {
 		request.session.destroy();
 		request.sessionStore.destroy(userId);
 
-		return true;
+		return { isAuthenticated: false, userId };
+	}
+
+	getCurrentUserResponse({ request }: { request: IAuthenticatedRequest }) {
+		const { user } = request;
+
+		return { isAuthenticated: true, user };
 	}
 }

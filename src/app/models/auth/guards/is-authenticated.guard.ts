@@ -1,5 +1,6 @@
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
+import { select } from '@models/users/common/constants';
 import { PrismaService } from '@base/services/prisma/prisma.service';
 import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
 
@@ -12,7 +13,11 @@ export class IsAuthenticated implements CanActivate {
 			const ctx = GqlExecutionContext.create(context);
 			const request = ctx.getContext().req;
 			const id = request.session.userId;
-			const user = await this.prisma.user.findFirst({ where: { id } });
+
+			const user = await this.prisma.user.findUnique({
+				where: { id },
+				select,
+			});
 
 			if (!user) {
 				throw new UnauthorizedException();
