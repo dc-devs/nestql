@@ -1,8 +1,9 @@
 services:
   database-development:
     container_name: 'database-development'
-    image: postgres:16.2
+    image: postgres:${POSTGRES_VERSION}
     restart: always
+    stop_grace_period: 30s
     healthcheck:
       test: nc -z -w 1 localhost 5432
       interval: 5s
@@ -18,8 +19,9 @@ services:
       - database-development:/var/lib/postgresql/data
   redis-development:
     container_name: redis-development
-    image: redis:7.2.4
+    image: redis:${REDIS_VERSION}
     restart: always
+    stop_grace_period: 30s
     healthcheck:
       test: nc -z -w 1 localhost 6379
       interval: 5s
@@ -31,11 +33,15 @@ services:
     volumes: 
       - redis-development:/data
   nginx-development:
-    image: nginx-development
+    image: nginx-development:${NGINX_VERSION}
     container_name: nginx-development
+    restart: always
+    stop_grace_period: 30s
     build:
       context: .
       dockerfile: ./nginx/Dockerfile
+      args:
+        - NGINX_VERSION=${NGINX_VERSION}
     ports: 
       - 80:80
       - 443:443
