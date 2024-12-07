@@ -5,10 +5,10 @@ services:
     restart: always
     stop_grace_period: 30s
     healthcheck:
-      test: nc -z -w 1 localhost 5432
-      interval: 5s
-      timeout: 300s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]  # Better PostgreSQL-specific health check
+      interval: 10s
+      timeout: 30s
+      retries: 5
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,10 +23,10 @@ services:
     restart: always
     stop_grace_period: 30s
     healthcheck:
-      test: nc -z -w 1 localhost 6379
-      interval: 5s
-      timeout: 300s
-      retries: 10
+      test: ["CMD", "redis-cli", "ping"]  # Better Redis-specific health check
+      interval: 10s
+      timeout: 30s
+      retries: 5
     ports:
       - '6379:6379'
     command: redis-server --save 20 1

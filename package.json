@@ -18,6 +18,7 @@
 		"test:cov": "bun test --coverage",
 		"test:debug": "bun --inspect-brk test",
 		"test:e2e": "bun test test/**/*.e2e-spec.ts",
+		"nql:dev:graphql:url": "echo 'https://local.nestql.com/graphql'",
 		"nql:docker:show:diskSpace": "docker system df",
 		"nql:docker:pruneContainers": "docker rm $(docker ps -a -q) || true",
 		"nql:docker:pruneImages": "docker image prune -a -f",
@@ -37,7 +38,7 @@
 		"nql:dev:prisma:migrate": "dotenv -e .env -- bunx prisma migrate dev",
 		"nql:dev:prisma:migrate:name": "dotenv -e .env -- bunx prisma migrate dev --name",
 		"nql:dev:prisma:migrate:reset": "dotenv -e .env -- bunx prisma migrate reset --force",
-		"nql:dev:prisma:migrate:reset:full": "rm -rf prisma/migrations && bun run nql:dev:prisma:migrate:reset&& bun run nql:dev:prisma:migrate && bun run nql:dev:prisma:seed"
+		"nql:dev:prisma:migrate:reset:full": "rm -rf prisma/migrations && bun run nql:dev:prisma:migrate:reset && bun run nql:dev:prisma:migrate:name init && bun run nql:dev:prisma:seed"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "^12.2.1",
