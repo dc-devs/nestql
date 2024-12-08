@@ -35,7 +35,7 @@ USER bun
 RUN bunx prisma generate
 
 EXPOSE ${PORT}
-CMD ["bun", "run", "start:dev"]
+CMD ["bun", "run", "start:dev:docker"]
 
 ###############################
 # BUILD
