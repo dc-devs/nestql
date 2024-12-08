@@ -1,0 +1,46 @@
+services:
+  nql-nginx-development:
+    image: nginx-development:${NGINX_VERSION}
+    container_name: nginx-development
+    restart: always
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    build:
+      context: ${PWD}
+      dockerfile: ${PWD}/src/base/docker/nql-app/nginx/Dockerfile
+      args:
+        - NGINX_VERSION=${NGINX_VERSION}
+    ports: 
+      - 80:80
+      - 443:443
+    volumes:
+      - ${PWD}/src/base/docker/nql-app/certs:/etc/nginx/certs
+      - ${PWD}/src/base/docker/nql-app/nginx/default.conf:/etc/nginx/conf.d/default.conf
+  nql-app-development:
+    image: nql-app-development
+    container_name: nql-app-development
+    stop_grace_period: 30s
+    build:
+      context: ${PWD}
+      target: ${NODE_ENV}
+      dockerfile: ${PWD}/src/base/docker/nql-app/Dockerfile
+    healthcheck:
+      test: nc -z -w 1 localhost ${PORT}
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    environment:
+      - DATABASE_URI=${DATABASE_URI}
+      - REDIS_URI=${REDIS_URI}
+      - SESSION_SECRET=${SESSION_SECRET}
+    ports:
+      - '${PORT}:${PORT}'
+    volumes:
+      - ${PWD}:/usr/src/app
+    depends_on:
+      nql-nginx-development:
+        condition: service_healthy
