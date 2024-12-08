@@ -1,68 +1,74 @@
-###############################
-# BUILD FOR LOCAL DEVELOPMENT
-###############################
-
-FROM node:20-bullseye-slim as development
-
-# Create app directory
+# Base image for all stages
+FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
-# Copy application dependency manifests to the container image.
-# Copying this first prevents re-running npm install on every code change.
-COPY --chown=node:node yarn.lock ./
-COPY --chown=node:node package.json ./
-COPY --chown=node:node prisma ./prisma/
-
-# Install app dependencies
-RUN yarn install --frozen-lockfile
-
-# Bundle app source
-COPY --chown=node:node . .
-
-# Use the node user from the image (instead of the root user)
-USER node
+# Default port for the app
+ARG PORT=3001 
 
 ###############################
-# BUILD FOR PRODUCTION
+# DEPENDENCIES INSTALLATION
 ###############################
+FROM base AS install
 
-FROM node:20-bullseye-slim as build
+# Install dependencies into temp directories
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-WORKDIR /usr/src/app
+# Install production dependencies separately
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
 
-COPY --chown=node:node yarn.lock ./
-COPY --chown=node:node package.json ./
-COPY --chown=node:node prisma ./prisma/
+###############################
+# DEVELOPMENT
+###############################
+FROM base AS development
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
 
-# In order to run `yarn build` we need access to the Nest CLI which is a dev dependency. 
-# In the previous development stage we ran `yarn install --frozen-lockfile` which installed all dependencies, so we can copy over the node_modules directory from the development image
-COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
+# Set correct permissions before switching user
+RUN chown -R bun:bun /usr/src/app
+USER bun
 
-COPY --chown=node:node . .
+# Generate Prisma client before starting the app
+RUN bunx prisma generate
 
-# Run the build command which creates the production bundle
-RUN yarn build
+EXPOSE ${PORT}
+CMD ["bun", "run", "start:dev"]
 
-# Set NODE_ENV environment variable
+###############################
+# BUILD
+###############################
+FROM base AS build
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
+
+# Set correct permissions before switching user
+RUN chown -R bun:bun /usr/src/app
+USER bun
+
+# Generate Prisma client before building
+RUN bunx prisma generate
+
 ENV NODE_ENV=production
-
-# Running `yarn install --frozen-lockfile` removes the existing node_modules directory 
-# Passing in --prod ensures that only the production dependencies are installed. 
-# This ensures that the node_modules directory is as optimized as possible
-RUN yarn install --frozen-lockfile --prod && yarn cache clean --force
-
-USER node
+RUN bun run build
 
 ###############################
 # PRODUCTION
 ###############################
-FROM node:20-bullseye-slim as production
+FROM base AS production
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=build /usr/src/app/dist dist
+COPY package.json .
+COPY prisma prisma
 
-# Copy the bundled code from the build stage to the production image
-COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+# Set correct permissions before switching user
+RUN chown -R bun:bun /usr/src/app
+USER bun
 
-RUN rm -rf ./dist/packages
+# Generate Prisma client in production
+RUN bunx prisma generate
 
-# Start the server using the production build
-CMD ["node", "dist/src/main"]
+EXPOSE ${PORT}
+CMD ["bun", "run", "start:prod"]

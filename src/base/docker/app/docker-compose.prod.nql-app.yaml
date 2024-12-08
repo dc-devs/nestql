@@ -1,0 +1,26 @@
+services:
+  nql-app-production:
+    image: nql-app-production
+    container_name: nql-app-production
+    stop_grace_period: 30s
+    build:
+      context: ${PWD}
+      target: production
+      dockerfile: ${PWD}/src/base/docker/app/Dockerfile
+    healthcheck:
+      test: nc -z -w 1 localhost ${PORT}
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    environment:
+      - DATABASE_URI=${DATABASE_URI}
+      - REDIS_URI=${REDIS_URI}
+      - SESSION_SECRET=${SESSION_SECRET}
+    ports:
+      - '${PORT}:${PORT}'
+    volumes:
+      - ${PWD}:/usr/src/app
+
+volumes:
+  nql-app-production:
+    driver: local

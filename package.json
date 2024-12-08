@@ -32,13 +32,17 @@
 		"nql:dev:docker:externalServices:down": "docker compose --env-file .env -f src/base/docker/nql-external-services/docker-compose.dev.nql-external-services.yaml down --remove-orphans",
 		"nql:dev:docker:externalServices:rm:volumes": "docker volume rm nql-external-services_database-development && docker volume rm nql-external-services_redis-development",
 		"nql:dev:docker:externalServices:clean": "bun run nql:dev:docker:externalServices:down && bun run nql:dev:docker:externalServices:rm:volumes",
+		"nql:dev:docker:app:up": "docker compose --env-file .env -f src/base/docker/app/docker-compose.dev.nql-app.yaml up",
+		"nql:dev:docker:app:down": "docker compose --env-file .env -f src/base/docker/app/docker-compose.dev.nql-app.yaml down --remove-orphans",
 		"nql:dev:prisma:generate": "bunx prisma generate",
 		"nql:dev:prisma:generate:watch": "bunx prisma generate --watch",
 		"nql:dev:prisma:seed": "dotenv -e .env -- bun prisma/seed.ts",
 		"nql:dev:prisma:migrate": "dotenv -e .env -- bunx prisma migrate dev",
 		"nql:dev:prisma:migrate:name": "dotenv -e .env -- bunx prisma migrate dev --name",
 		"nql:dev:prisma:migrate:reset": "dotenv -e .env -- bunx prisma migrate reset --force",
-		"nql:dev:prisma:migrate:reset:full": "rm -rf prisma/migrations && bun run nql:dev:prisma:migrate:reset && bun run nql:dev:prisma:migrate:name init && bun run nql:dev:prisma:seed"
+		"nql:dev:prisma:migrate:reset:full": "rm -rf prisma/migrations && bun run nql:dev:prisma:migrate:reset && bun run nql:dev:prisma:migrate:name init && bun run nql:dev:prisma:seed",
+		"nql:prod:docker:app:up": "docker compose --env-file .env -f src/base/docker/app/docker-compose.prod.nql-app.yaml up",
+		"nql:prod:docker:app:down": "docker compose --env-file .env -f src/base/docker/app/docker-compose.prod.nql-app.yaml down --remove-orphans"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "^12.2.1",
