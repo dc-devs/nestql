@@ -42,13 +42,3 @@ model User {
 
 	@@index([id, email])
 }
-
-model Test {
-	id						Int				@default(autoincrement()) @id
-	update					String
-	
-	createdAt				DateTime		@default(now())
-	updatedAt				DateTime		@updatedAt
-
-	@@index([id])
-}
