@@ -1,5 +1,6 @@
 # Base image for all stages
-FROM oven/bun:1 AS base
+# Hardocding to 1.1.29 to resolve Prisma generation issues with 1.1.30
+FROM oven/bun:1.1.29 AS base
 WORKDIR /usr/src/app
 
 # Default port for the app

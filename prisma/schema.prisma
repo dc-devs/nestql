@@ -19,7 +19,7 @@ generator nestgraphql {
 
 datasource db {
 	provider = "postgresql"
-	url = env("DATABASE_URI")
+	url = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -41,4 +41,14 @@ model User {
 	updatedAt				DateTime		@updatedAt
 
 	@@index([id, email])
+}
+
+model Test {
+	id						Int				@default(autoincrement()) @id
+	update					String
+	
+	createdAt				DateTime		@default(now())
+	updatedAt				DateTime		@updatedAt
+
+	@@index([id])
 }

@@ -4,7 +4,7 @@ import { Logger } from '@nestjs/common';
 let connectedRedisClient;
 
 const redisClient = createClient({
-	url: Bun.env.REDIS_URI,
+	url: Bun.env.REDIS_URL,
 });
 
 const initializeRedis = async () => {

@@ -34,8 +34,8 @@ services:
       timeout: 30s
       retries: 5
     environment:
-      - DATABASE_URI=${DATABASE_URI}
-      - REDIS_URI=${REDIS_URI}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
     ports:
       - '${PORT}:${PORT}'

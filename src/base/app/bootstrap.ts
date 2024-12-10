@@ -37,7 +37,7 @@ export async function bootstrap<AppModule>({
 	logInitMessage({
 		port,
 		environment,
-		redisUri: Bun.env.REDIS_URI,
-		databaseUri: Bun.env.DATABASE_URI,
+		redisUrl: Bun.env.REDIS_URL,
+		databaseUrl: Bun.env.DATABASE_URL,
 	});
 }
