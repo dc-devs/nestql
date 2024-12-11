@@ -5,7 +5,7 @@ server {
 	server_name				local.nestql.com;
 
 	location / {
-		proxy_pass				http://host.docker.internal:3001;
+		proxy_pass				http://host.docker.internal:${PORT};
 		proxy_read_timeout		90;
 
 		# Forward headers to indicate HTTPS

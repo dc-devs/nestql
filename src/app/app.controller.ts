@@ -7,6 +7,11 @@ export class AppController {
 
 	@Get()
 	getHello(): string {
-		return this.appService.getHello() + ' test';
+		return this.appService.getHello();
+	}
+
+	@Get('ping')
+	ping(): string {
+		return this.appService.getPong();
 	}
 }

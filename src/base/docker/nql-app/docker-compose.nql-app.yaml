@@ -9,6 +9,8 @@ services:
       interval: 10s
       timeout: 30s
       retries: 5
+    environment:
+      - PORT=${PORT}
     build:
       context: ${PWD}
       dockerfile: ${PWD}/src/base/docker/nql-app/nginx/Dockerfile
@@ -19,7 +21,7 @@ services:
       - 443:443
     volumes:
       - ${PWD}/src/base/docker/nql-app/certs:/etc/nginx/certs
-      - ${PWD}/src/base/docker/nql-app/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ${PWD}/src/base/docker/nql-app/nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template
   nql-app-development:
     image: nql-app-development
     container_name: nql-app-development
@@ -34,6 +36,7 @@ services:
       timeout: 30s
       retries: 5
     environment:
+      - PORT=${PORT}
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
