@@ -3,6 +3,9 @@
 FROM oven/bun:1.1.29 AS base
 WORKDIR /usr/src/app
 
+# Install necessary tools for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Default port for the app
 ARG PORT=3001 
 
