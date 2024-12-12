@@ -22,14 +22,14 @@ echo "Generating local certificates..."
 mkcert -install
 
 # Clean certs directory
-rm -rf ./src/base/docker/nql-app/certs/*
+rm -rf ./src/base/docker/nql-nginx/certs/*
 echo "Cleaned certs directory"
 
 # Generate certificates
-mkcert -key-file ./src/base/docker/nql-app/certs/key.pem -cert-file ./src/base/docker/nql-app/certs/cert.pem 'localhost' 'local.nestql.com'
+mkcert -key-file ./src/base/docker/nql-nginx/certs/key.pem -cert-file ./src/base/docker/nql-nginx/certs/cert.pem 'localhost' 'local.nestql.com'
 
 # Set permissions on certificate files
 echo "Setting certificate permissions..."
-chmod 644 ./src/base/docker/nql-app/certs/*.pem
+chmod 644 ./src/base/docker/nql-nginx/certs/*.pem
 
 echo "Certificate setup complete!"

@@ -1,7 +1,5 @@
 services:
   nql-app-development:
-    image: nql-app-development
-    container_name: nql-app-development
     stop_grace_period: 30s
     build:
       context: ${PWD}
@@ -19,5 +17,3 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
     ports:
       - '${PORT}:${PORT}'
-    volumes:
-      - ${PWD}:/usr/src/app

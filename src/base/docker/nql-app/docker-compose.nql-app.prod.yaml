@@ -1,0 +1,6 @@
+services:
+  nql-app:
+    container_name: nql-app-production
+    image: nql-app-production
+    build:
+      target: production

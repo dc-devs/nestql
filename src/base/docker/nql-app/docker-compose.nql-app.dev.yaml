@@ -1,0 +1,13 @@
+services:
+  nql-app:
+    container_name: nql-app-development
+    image: nql-app-development
+    build:
+      target: development
+    volumes:
+      - ${PWD}:/usr/src/app
+    depends_on:
+      database-development:
+        condition: service_healthy
+      redis-development:
+        condition: service_healthy
