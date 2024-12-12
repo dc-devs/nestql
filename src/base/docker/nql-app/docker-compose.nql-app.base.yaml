@@ -1,5 +1,5 @@
 services:
-  nql-app-development:
+  nql-app:
     stop_grace_period: 30s
     build:
       context: ${PWD}

@@ -6,8 +6,8 @@ services:
       target: development
     volumes:
       - ${PWD}:/usr/src/app
-    depends_on:
-      database-development:
-        condition: service_healthy
-      redis-development:
-        condition: service_healthy
+    # depends_on:
+    #   database-development:
+    #     condition: service_healthy
+    #   redis-development:
+    #     condition: service_healthy
