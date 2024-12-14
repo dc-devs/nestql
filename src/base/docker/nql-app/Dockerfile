@@ -39,6 +39,7 @@ USER bun
 RUN bunx prisma generate
 
 EXPOSE ${PORT}
+
 CMD ["bun", "run", "start:dev:docker"]
 
 ###############################
@@ -66,6 +67,8 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=build /usr/src/app/dist dist
 COPY package.json .
 COPY prisma prisma
+COPY bunfig.toml .
+COPY tsconfig.json . 
 
 # Set correct permissions before switching user
 RUN chown -R bun:bun /usr/src/app
@@ -75,4 +78,5 @@ USER bun
 RUN bunx prisma generate
 
 EXPOSE ${PORT}
+
 CMD ["bun", "run", "start:prod"]
