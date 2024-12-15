@@ -1,14 +1,16 @@
-import * as pluralize from 'pluralize';
-import * as changeCase from 'change-case';
 import {
 	getCommandLineArgs,
 	getParsedPrismaSchema,
 } from '@base/generators/common/utils';
+import {
+	generateModelFolder,
+	generateModelModuleFile,
+	generateModelServiceFile,
+} from '@base/generators/model-generator/common/utils';
 
 export const modelGenerator = async () => {
 	const commandLineArgs = getCommandLineArgs();
 	const modelName = commandLineArgs.model;
-
 	const parsedPrismaSchema = await getParsedPrismaSchema({ modelName });
 
 	if (!parsedPrismaSchema) {
@@ -24,11 +26,10 @@ export const modelGenerator = async () => {
 		return;
 	}
 
-	console.log('modelName', modelName);
-	console.log('parsedPrismaSchema', parsedPrismaSchema);
-	// const modelNamePluralized = pluralize.plural(commandLineArgs.model);
-	// console.log('modelNamePluralized', modelNamePluralized);
+	const modelFolderPath = await generateModelFolder({ modelName });
 
-	// const modelNamekebabCase = changeCase.kebabCase(modelName);
-	// console.log('modelNamekebabCase', modelNamekebabCase);
+	await generateModelModuleFile({ basePath: modelFolderPath, modelName });
+	await generateModelServiceFile({ basePath: modelFolderPath, modelName });
+
+	console.log('Model generated successfully 🎉');
 };
