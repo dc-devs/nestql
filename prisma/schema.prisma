@@ -43,14 +43,12 @@ model User {
 	@@index([id, email])
 }
 
-model Post {
-	id				Int				@default(autoincrement()) @id
-	title			String
-	content			String?
-	published		Boolean			@default(false)
+model TweetFetchHistory {
+	id							Int				@default(autoincrement()) @id
+	name						String
 
-	createdAt 		DateTime		@default(now())
-	updatedAt 		DateTime		@updatedAt
+	createdAt					DateTime		@default(now())
+	updatedAt					DateTime		@updatedAt
 
 	@@index([id])
 }

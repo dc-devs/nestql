@@ -21,7 +21,8 @@
 		"resolveJsonModule": true, // Added for Bun
 		"types": ["bun-types"], // Added for Bun type definitions
 		"allowJs": true,  // Add this line
-    "moduleDetection": "force", // Add this line
+		"moduleDetection": "force", // Add this line
+		"typeRoots": ["./node_modules/@types"],
 		"paths": {
 			"@root/*": ["./*"],
 			"@src/*": ["./src/*"],
