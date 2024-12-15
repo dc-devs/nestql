@@ -4,6 +4,7 @@ import {
 } from '@base/generators/common/utils';
 import {
 	generateModelFolder,
+	generateModelConstants,
 	generateModelModuleFile,
 	generateModelServiceFile,
 } from '@base/generators/model-generator/common/utils';
@@ -30,6 +31,7 @@ export const modelGenerator = async () => {
 
 	await generateModelModuleFile({ basePath: modelFolderPath, modelName });
 	await generateModelServiceFile({ basePath: modelFolderPath, modelName });
+	await generateModelConstants({ basePath: modelFolderPath, modelName });
 
 	console.log('Model generated successfully 🎉');
 };
