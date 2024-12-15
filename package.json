@@ -57,7 +57,8 @@
 		"nql:dev:app:generate-certs": "sudo src/base/sh-scripts/generate-certs.sh && sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:update-hosts": "sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:setup": "bun nql:dev:app:generate-certs && bun nql:dev:app:update-hosts",
-		"nql:dev:app:docker:shell": "docker exec -it nql-app-development bash"
+		"nql:dev:app:docker:shell": "docker exec -it nql-app-development bash",
+		"nql:generate:model": "bun src/base/generators/model-generator/start.ts"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "12.2.1",
