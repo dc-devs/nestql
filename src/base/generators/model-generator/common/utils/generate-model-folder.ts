@@ -8,15 +8,17 @@ interface IOptions {
 }
 
 export const generateModelFolder = async ({ modelName }: IOptions) => {
-	const modelNamePluralized = plural(modelName);
-	const modelNamePluralizedKebabCase = kebabCase(modelNamePluralized);
+	const modelNamePascalPluralized = plural(modelName);
+	const modelNameLowerKebabCasePluralized = kebabCase(
+		modelNamePascalPluralized,
+	);
 
 	const modelFolderPath = path.join(
 		process.cwd(),
 		'src',
 		'app',
 		'models',
-		modelNamePluralizedKebabCase,
+		modelNameLowerKebabCasePluralized,
 	);
 
 	await mkdir(modelFolderPath, { recursive: true });

@@ -3,10 +3,12 @@ import {
 	getParsedPrismaSchema,
 } from '@base/generators/common/utils';
 import {
+	generateModelEnums,
 	generateModelFolder,
 	generateModelConstants,
 	generateModelModuleFile,
 	generateModelServiceFile,
+	generateModelResolverFile,
 } from '@base/generators/model-generator/common/utils';
 
 export const modelGenerator = async () => {
@@ -27,11 +29,17 @@ export const modelGenerator = async () => {
 		return;
 	}
 
+	// add base model folder
 	const modelFolderPath = await generateModelFolder({ modelName });
 
+	// add supporting folders/files
+	await generateModelEnums({ basePath: modelFolderPath, modelName });
+	await generateModelConstants({ basePath: modelFolderPath, modelName });
+
+	// model files
 	await generateModelModuleFile({ basePath: modelFolderPath, modelName });
 	await generateModelServiceFile({ basePath: modelFolderPath, modelName });
-	await generateModelConstants({ basePath: modelFolderPath, modelName });
+	await generateModelResolverFile({ basePath: modelFolderPath, modelName });
 
 	console.log('Model generated successfully 🎉');
 };

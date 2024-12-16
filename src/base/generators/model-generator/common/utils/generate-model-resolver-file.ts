@@ -8,7 +8,7 @@ interface IOptions {
 	modelName: string;
 }
 
-export const generateModelServiceFile = async ({
+export const generateModelResolverFile = async ({
 	basePath,
 	modelName,
 }: IOptions) => {
@@ -19,25 +19,24 @@ export const generateModelServiceFile = async ({
 	);
 	const filePath = path.join(
 		basePath,
-		`${modelNameLowerKebabCasePluralized}.service.ts`,
+		`${modelNameLowerKebabCasePluralized}.resolver.ts`,
 	);
-	const fileContent = `import { Injectable } from '@nestjs/common';
-import { modelName} from '@models/${modelNameLowerKebabCasePluralized}/common/constants';
-import { PrismaService } from '@base/services/prisma/prisma.service';
-import { BasePrismaService } from '@base/app/service/base-prisma-service';
+	const fileContent = `import { Resolver } from '@nestjs/graphql';
+import { BasePrismaResolver } from '@base/app/resolver/base-prisma-resolver';
+import { ${modelNamePascalPluralized}Service } from '@models/${modelNameLowerKebabCasePluralized}/${modelNameLowerKebabCasePluralized}.service';
 import { ${modelName} } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}.model';
 import { ${modelName}UpdateInput } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}-update.input';
 import { ${modelName}CreateInput } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}-create.input';
 import { FindMany${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/find-many-${modelNameLowerKebabCaseSingular}.args';
-import { DeleteOne${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/delete-one-${modelNameLowerKebabCaseSingular}.args';
 import { FindFirst${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/find-first-${modelNameLowerKebabCaseSingular}.args';
-import { CreateMany${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/create-many-${modelNameLowerKebabCaseSingular}.args';
+import { DeleteOne${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/delete-one-${modelNameLowerKebabCaseSingular}.args';
 import { FindUnique${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/find-unique-${modelNameLowerKebabCaseSingular}.args';
+import { CreateMany${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/create-many-${modelNameLowerKebabCaseSingular}.args';
 import { UpdateMany${modelName}Args } from '@generated/${modelNameLowerKebabCaseSingular}/update-many-${modelNameLowerKebabCaseSingular}.args';
 import { ${modelName}WhereUniqueInput } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}-where-unique.input';
 
-@Injectable()
-export class ${modelNamePascalPluralized}Service extends BasePrismaService<
+@Resolver(() => ${modelName})
+export class ${modelNamePascalPluralized}Resolver extends BasePrismaResolver<
 	${modelName},
 	${modelName}WhereUniqueInput,
 	FindUnique${modelName}Args,
@@ -48,12 +47,20 @@ export class ${modelNamePascalPluralized}Service extends BasePrismaService<
 	${modelName}UpdateInput,
 	UpdateMany${modelName}Args,
 	DeleteOne${modelName}Args
-> {
-	constructor(protected prisma: PrismaService) {
-		super({
-			prisma,
-			modelName,
-		});
+>({
+	entity: ${modelName},
+	whereUniqueInput: ${modelName}WhereUniqueInput,
+	findUniqueArgs: FindUnique${modelName}Args,
+	findFirstArgs: FindFirst${modelName}Args,
+	findManyArgs: FindMany${modelName}Args,
+	createOneInput: ${modelName}CreateInput,
+	createManyArgs: CreateMany${modelName}Args,
+	updateOneInput: ${modelName}UpdateInput,
+	updateManyArgs: UpdateMany${modelName}Args,
+	deleteOneArgs: DeleteOne${modelName}Args,
+}) {
+	constructor(protected readonly service: ${modelNamePascalPluralized}Service) {
+		super({ baseService: service });
 	}
 }
 `;

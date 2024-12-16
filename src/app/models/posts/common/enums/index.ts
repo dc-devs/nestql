@@ -1,0 +1,1 @@
+export { Model } from '@models/posts/common/enums/model.enum';

@@ -2,6 +2,12 @@ import { SelectInput, Count } from '@base/app/dto';
 import { PrismaService } from '@base/services/prisma/prisma.service';
 import { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
 
+interface IConstructorOptions {
+	modelName: string;
+	select?: SelectInput;
+	prisma: PrismaService;
+}
+
 export class BasePrismaService<
 	Entity,
 	WhereUniqueInput,
@@ -28,10 +34,10 @@ export class BasePrismaService<
 		>
 {
 	protected modelName: string;
-	protected prisma: PrismaService;
+	protected prisma?: PrismaService;
 	protected select: SelectInput;
 
-	constructor({ prisma, select, modelName }) {
+	constructor({ prisma, select, modelName }: IConstructorOptions) {
 		this.prisma = prisma;
 		this.select = select;
 		this.modelName = modelName;
