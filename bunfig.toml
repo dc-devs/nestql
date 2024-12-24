@@ -1,5 +1,4 @@
 [test]
-coverage = true
 preload = "./test/config/setup.ts"
 
 [install]

@@ -1,3 +1,9 @@
+import { resolve } from 'path';
+import { executeTransform } from '@base/generators/model-generator/jscodeshift/execute-transform';
+import {
+	handleNoModelNameError,
+	handleNoPrismaSchemaError,
+} from '@base/generators/model-generator/common/log-errors';
 import {
 	getCommandLineArgs,
 	getParsedPrismaSchema,
@@ -9,25 +15,24 @@ import {
 	generateModelModuleFile,
 	generateModelServiceFile,
 	generateModelResolverFile,
-} from '@base/generators/model-generator/common/utils';
+} from '@base/generators/model-generator/file-gen';
 
 export const modelGenerator = async () => {
 	const commandLineArgs = getCommandLineArgs();
 	const modelName = commandLineArgs.model;
+
+	if (!modelName) {
+		handleNoModelNameError();
+	}
+
 	const parsedPrismaSchema = await getParsedPrismaSchema({ modelName });
 
 	if (!parsedPrismaSchema) {
-		console.error(
-			'\n' +
-				`Error: Model '${modelName}' not found in prisma schema.` +
-				'\n' +
-				'\n' +
-				'The NestQl model generator uses the prisma schema as the source of truth when generating model files, ' +
-				`please ensure the '${modelName}' model exists in the prisma schema before running the generator.` +
-				'\n',
-		);
-		return;
+		handleNoPrismaSchemaError({ modelName });
 	}
+
+	// model files
+	// -----------------------------------------------------------------
 
 	// add base model folder
 	const modelFolderPath = await generateModelFolder({ modelName });
@@ -41,5 +46,35 @@ export const modelGenerator = async () => {
 	await generateModelServiceFile({ basePath: modelFolderPath, modelName });
 	await generateModelResolverFile({ basePath: modelFolderPath, modelName });
 
+	// -----------------------------------------------------------------
+
+	// app files
+	// -----------------------------------------------------------------
+
+	enum TransformPath {
+		AddNewModuleToAppModule = 'AddNewModuleToAppModule',
+	}
+
+	const addNewModuleToAppModule = resolve(
+		process.cwd(),
+		'src/base/generators/model-generator/jscodeshift/transformers/add-new-module-to-app-module.ts',
+	);
+
+	const transformPaths = {
+		[TransformPath.AddNewModuleToAppModule]: addNewModuleToAppModule,
+	};
+
+	const appModule = resolve(process.cwd(), 'src/app/app.module.ts');
+
+	// add import to app module
+
+	await executeTransform({
+		filePath: appModule,
+		transformPath: transformPaths[TransformPath.AddNewModuleToAppModule],
+	});
+	// -----------------------------------------------------------------
+
 	console.log('Model generated successfully 🎉');
+
+	process.exit(0);
 };
