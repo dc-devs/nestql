@@ -1,7 +1,7 @@
 import {
 	moduleImportsPush,
 	addNewImportBeforeLast,
-} from '@base/generators/model-generator/jscodeshift/common/utils';
+} from '@base/generators/common/jscodeshift/transformers';
 
 export const parser = 'ts';
 export const parserConfig = {
