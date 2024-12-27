@@ -24,7 +24,7 @@ export const modelGenerator = async () => {
 	}
 
 	await generateModelFiles({ modelName });
-	await updateAppFiles();
+	await updateAppFiles({ modelName });
 
 	console.log('Model generated successfully 🎉');
 

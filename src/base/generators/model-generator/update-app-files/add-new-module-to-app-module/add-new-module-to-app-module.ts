@@ -1,14 +1,11 @@
 import { File, Transform } from '@base/generators/common/enums';
 import { executeTransform } from '@base/generators/common/jscodeshift/execute-transform';
-import { getCommandLineArgs } from '@base/generators/common/utils';
 
-export const addNewModuleToAppModule = async () => {
-	const commandLineArgs = getCommandLineArgs();
-	console.log('commandLineArgs', commandLineArgs);
-	const modelName = commandLineArgs.model;
+interface IOptions {
+	modelName: string;
+}
 
-	console.log('modelName', modelName);
-
+export const addNewModuleToAppModule = async ({ modelName }: IOptions) => {
 	await executeTransform({
 		file: File.AppModule,
 		transform: Transform.AddNewModuleToAppModule,
