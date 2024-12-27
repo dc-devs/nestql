@@ -1,6 +1,6 @@
+import path from 'path';
 import { plural } from 'pluralize';
 import { kebabCase } from 'change-case';
-import path from 'path';
 import { writeFile } from 'fs/promises';
 
 interface IOptions {

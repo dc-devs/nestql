@@ -1,4 +1,17 @@
-export const addNewImportBeforeLast = ({ root, jscodeshift }) => {
+import { plural } from 'pluralize';
+import { kebabCase } from 'change-case';
+
+interface IOptions {
+	root: any;
+	jscodeshift: any;
+	modelName: string;
+}
+
+export const addNewImportBeforeLast = ({
+	root,
+	jscodeshift,
+	modelName,
+}: IOptions) => {
 	const {
 		literal,
 		identifier,
@@ -6,6 +19,12 @@ export const addNewImportBeforeLast = ({ root, jscodeshift }) => {
 		importDeclaration,
 		ImportDeclaration,
 	} = jscodeshift;
+	const modelNamePascalPluralized = plural(modelName);
+	const modelNameLowerKebabCasePluralized = kebabCase(
+		modelNamePascalPluralized,
+	);
+	const modulePath = `@models/${modelNameLowerKebabCasePluralized}/${modelNameLowerKebabCasePluralized}.module`;
+	const moduleName = `${modelNamePascalPluralized}Module`;
 
 	// Find all import declarations
 	const imports = root.find(ImportDeclaration);
@@ -19,14 +38,14 @@ export const addNewImportBeforeLast = ({ root, jscodeshift }) => {
 
 	// Create the new import declaration
 	const newImport = importDeclaration(
-		[importSpecifier(identifier('PostsModule'))],
-		literal('@models/posts/posts.module'),
+		[importSpecifier(identifier(moduleName))],
+		literal(modulePath),
 	);
 
 	// Check if PostsModule import already exists
 	const existingPostsImport = imports.filter((path) => {
 		const source = path.value.source.value;
-		const importPathExists = source === '@models/posts/posts.module';
+		const importPathExists = source === modulePath;
 
 		return importPathExists;
 	});

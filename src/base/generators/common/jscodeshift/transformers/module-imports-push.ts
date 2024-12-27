@@ -1,6 +1,19 @@
-export const moduleImportsPush = ({ root, jscodeshift }) => {
-	const { identifier } = jscodeshift;
+import { plural } from 'pluralize';
 
+interface IOptions {
+	root: any;
+	jscodeshift: any;
+	modelName: string;
+}
+
+export const moduleImportsPush = ({
+	root,
+	jscodeshift,
+	modelName,
+}: IOptions) => {
+	const { identifier } = jscodeshift;
+	const modelNamePascalPluralized = plural(modelName);
+	const moduleName = `${modelNamePascalPluralized}Module`;
 	// Find the class declaration with the Module decorator
 	// Find the class with Module decorator
 	const classWithDecorator = root
@@ -30,12 +43,12 @@ export const moduleImportsPush = ({ root, jscodeshift }) => {
 				) {
 					// Check if PostsModule is already in the imports array
 					const hasPostsModule = importsProperty.value.elements.some(
-						(element) => element.name === 'PostsModule',
+						(element) => element.name === moduleName,
 					);
 
 					if (!hasPostsModule) {
 						importsProperty.value.elements.push(
-							identifier('PostsModule'),
+							identifier(moduleName),
 						);
 					}
 				}

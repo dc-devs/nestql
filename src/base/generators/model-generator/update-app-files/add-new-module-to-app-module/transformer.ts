@@ -8,11 +8,11 @@ export const parserConfig = {
 	decoratorsBeforeExport: true,
 };
 
-const transformer = (file, { jscodeshift }) => {
+const transformer = (file, { jscodeshift }, { modelName }) => {
 	const root = jscodeshift(file.source);
 
-	addNewImportBeforeLast({ root, jscodeshift });
-	moduleImportsPush({ root, jscodeshift });
+	addNewImportBeforeLast({ root, jscodeshift, modelName });
+	moduleImportsPush({ root, jscodeshift, modelName });
 
 	return root.toSource();
 };

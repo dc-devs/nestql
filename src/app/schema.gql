@@ -51,13 +51,18 @@ type LogOutResponse {
 }
 
 type Mutation {
+  createManyPost(data: [PostCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createManyUser(data: [UserCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createPost(data: PostCreateInput!, select: SelectInput): Post!
   createUser(data: UserCreateInput!, select: SelectInput): User!
+  deletePost(select: SelectInput, where: PostWhereUniqueInput!): Post!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: Float!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
+  updateManyPost(data: PostUpdateManyMutationInput!, where: PostWhereInput): Count!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
+  updatePost(data: PostUpdateInput!, select: SelectInput, where: PostWhereUniqueInput!): Post!
   updateUser(data: UserUpdateInput!, select: SelectInput, where: UserWhereUniqueInput!): User!
 }
 
@@ -104,10 +109,88 @@ input NestedStringFilter {
   startsWith: String
 }
 
+type Post {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input PostCreateInput {
+  content: String!
+  createdAt: DateTime
+  name: String!
+  updatedAt: DateTime
+}
+
+input PostCreateManyInput {
+  content: String!
+  createdAt: DateTime
+  id: Int
+  name: String!
+  updatedAt: DateTime
+}
+
+input PostOrderByWithRelationInput {
+  content: SortOrder
+  createdAt: SortOrder
+  id: SortOrder
+  name: SortOrder
+  updatedAt: SortOrder
+}
+
+enum PostScalarFieldEnum {
+  content
+  createdAt
+  id
+  name
+  updatedAt
+}
+
+input PostUpdateInput {
+  content: String
+  createdAt: DateTime
+  name: String
+  updatedAt: DateTime
+}
+
+input PostUpdateManyMutationInput {
+  content: String
+  createdAt: DateTime
+  name: String
+  updatedAt: DateTime
+}
+
+input PostWhereInput {
+  AND: [PostWhereInput!]
+  NOT: [PostWhereInput!]
+  OR: [PostWhereInput!]
+  content: StringFilter
+  createdAt: DateTimeFilter
+  id: IntFilter
+  name: StringFilter
+  updatedAt: DateTimeFilter
+}
+
+input PostWhereUniqueInput {
+  AND: [PostWhereInput!]
+  NOT: [PostWhereInput!]
+  OR: [PostWhereInput!]
+  content: StringFilter
+  createdAt: DateTimeFilter
+  id: Int
+  name: StringFilter
+  updatedAt: DateTimeFilter
+}
+
 type Query {
   currentUser: SessionResponse!
+  findAllPosts(cursor: PostWhereUniqueInput, distinct: [PostScalarFieldEnum!], orderBy: [PostOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
+  findFirstPost(cursor: PostWhereUniqueInput, distinct: [PostScalarFieldEnum!], orderBy: [PostOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: PostWhereInput): Post
   findFirstUser(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): User
+  findOnePost(select: SelectInput, where: PostWhereUniqueInput!): Post
   findOneUser(select: SelectInput, where: UserWhereUniqueInput!): User
 }
 

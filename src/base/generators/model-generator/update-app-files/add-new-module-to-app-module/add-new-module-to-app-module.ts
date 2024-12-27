@@ -1,32 +1,17 @@
 import { File, Transform } from '@base/generators/common/enums';
-import { filePaths, transformPaths } from '@base/generators/common/constants';
 import { executeTransform } from '@base/generators/common/jscodeshift/execute-transform';
+import { getCommandLineArgs } from '@base/generators/common/utils';
 
-interface IWrapperOptions {
-	file: File;
-	transform: Transform;
-}
+export const addNewModuleToAppModule = async () => {
+	const commandLineArgs = getCommandLineArgs();
+	console.log('commandLineArgs', commandLineArgs);
+	const modelName = commandLineArgs.model;
 
-const executeTransformWrapper = async ({
-	file,
-	transform,
-}: IWrapperOptions) => {
-	const filePath = filePaths[file];
-	const transformPath = transformPaths[transform];
+	console.log('modelName', modelName);
 
 	await executeTransform({
-		filePath,
-		transformPath,
-	});
-};
-
-interface IOptions {
-	modelName: string;
-}
-
-export const addNewModuleToAppModule = async ({ modelName }: IOptions) => {
-	await executeTransformWrapper({
 		file: File.AppModule,
 		transform: Transform.AddNewModuleToAppModule,
+		options: { modelName },
 	});
 };
