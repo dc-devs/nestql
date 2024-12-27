@@ -9,7 +9,7 @@ export class PostUncheckedUpdateInput {
     id?: number;
 
     @Field(() => String, {nullable:true})
-    name?: string;
+    title?: string;
 
     @Field(() => String, {nullable:true})
     content?: string;

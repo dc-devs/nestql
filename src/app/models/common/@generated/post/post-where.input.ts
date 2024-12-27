@@ -20,7 +20,7 @@ export class PostWhereInput {
     id?: IntFilter;
 
     @Field(() => StringFilter, {nullable:true})
-    name?: StringFilter;
+    title?: StringFilter;
 
     @Field(() => StringFilter, {nullable:true})
     content?: StringFilter;

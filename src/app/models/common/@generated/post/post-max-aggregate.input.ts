@@ -8,7 +8,7 @@ export class PostMaxAggregateInput {
     id?: true;
 
     @Field(() => Boolean, {nullable:true})
-    name?: true;
+    title?: true;
 
     @Field(() => Boolean, {nullable:true})
     content?: true;

@@ -9,7 +9,7 @@ export class PostCountAggregate {
     id!: number;
 
     @Field(() => Int, {nullable:false})
-    name!: number;
+    title!: number;
 
     @Field(() => Int, {nullable:false})
     content!: number;

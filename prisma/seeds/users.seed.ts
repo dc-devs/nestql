@@ -2,51 +2,58 @@ import { faker } from '@faker-js/faker';
 import { UserRole } from '@prisma/client';
 import { hashPassword } from '@models/users/common/utils';
 
-const users = [];
+const models = [];
 
 export const password = '12345678';
 
-const firstUser = {
+const firstModel = {
 	email: 'david@nestql.com',
 	password: await hashPassword(password),
 	role: UserRole.SUPER_ADMIN,
 };
-users.push(firstUser);
+models.push(firstModel);
 
-const secondUser = {
+const secondModel = {
 	email: 'admin@nestql.com',
 	password: await hashPassword(password),
 	role: UserRole.ADMIN,
 };
-users.push(secondUser);
+models.push(secondModel);
 
-const thirdUser = {
+const thirdModel = {
 	email: 'demo@nestql.com',
 	password: await hashPassword(password),
 	role: UserRole.ADMIN,
 };
-users.push(thirdUser);
+models.push(thirdModel);
 
-const fourthUser = {
+const fourthModel = {
 	email: 'test@nestql.com',
 	password: await hashPassword(password),
 	role: UserRole.USER,
 };
-users.push(fourthUser);
+models.push(fourthModel);
 
 let count = 1;
-const userCount = 53;
+const modelCount = 53;
 
-while (count <= userCount) {
+while (count <= modelCount) {
 	const user = {
 		email: faker.internet.email(),
 		password: faker.internet.password(),
 	};
 
-	users.push(user);
+	models.push(user);
 	count += 1;
 }
 
-const allUsersCount = users.length;
+const allModelsCount = models.length;
 
-export { users, firstUser, secondUser, thirdUser, fourthUser, allUsersCount };
+export {
+	models,
+	firstModel,
+	secondModel,
+	thirdModel,
+	fourthModel,
+	allModelsCount,
+};

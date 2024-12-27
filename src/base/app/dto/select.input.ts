@@ -4,8 +4,8 @@ import GraphQLJSON from 'graphql-type-json';
 @InputType()
 export class SelectInput {
 	@Field(() => GraphQLJSON, { nullable: true })
-	select?: any;
+	include?: any;
 
-	@Field(() => GraphQLJSON, { nullable: true })
-	relationships?: any;
+	// @Field(() => GraphQLJSON, { nullable: true })
+	// relationships?: any;
 }

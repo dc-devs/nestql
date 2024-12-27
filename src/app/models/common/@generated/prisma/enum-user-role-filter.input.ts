@@ -1,7 +1,6 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import { UserRole } from './user-role.enum';
-import { NestedEnumUserRoleFilter } from './nested-enum-user-role-filter.input';
 
 @InputType()
 export class EnumUserRoleFilter {
@@ -15,6 +14,6 @@ export class EnumUserRoleFilter {
     @Field(() => [UserRole], {nullable:true})
     notIn?: Array<keyof typeof UserRole>;
 
-    @Field(() => NestedEnumUserRoleFilter, {nullable:true})
-    not?: NestedEnumUserRoleFilter;
+    @Field(() => EnumUserRoleFilter, {nullable:true})
+    not?: EnumUserRoleFilter;
 }

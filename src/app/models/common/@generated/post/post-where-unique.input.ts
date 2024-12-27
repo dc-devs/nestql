@@ -21,7 +21,7 @@ export class PostWhereUniqueInput {
     NOT?: Array<PostWhereInput>;
 
     @Field(() => StringFilter, {nullable:true})
-    name?: StringFilter;
+    title?: StringFilter;
 
     @Field(() => StringFilter, {nullable:true})
     content?: StringFilter;

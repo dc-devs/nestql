@@ -1,9 +1,8 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import { UserRole } from './user-role.enum';
-import { NestedEnumUserRoleWithAggregatesFilter } from './nested-enum-user-role-with-aggregates-filter.input';
-import { NestedIntFilter } from './nested-int-filter.input';
-import { NestedEnumUserRoleFilter } from './nested-enum-user-role-filter.input';
+import { IntFilter } from './int-filter.input';
+import { EnumUserRoleFilter } from './enum-user-role-filter.input';
 
 @InputType()
 export class EnumUserRoleWithAggregatesFilter {
@@ -17,15 +16,15 @@ export class EnumUserRoleWithAggregatesFilter {
     @Field(() => [UserRole], {nullable:true})
     notIn?: Array<keyof typeof UserRole>;
 
-    @Field(() => NestedEnumUserRoleWithAggregatesFilter, {nullable:true})
-    not?: NestedEnumUserRoleWithAggregatesFilter;
+    @Field(() => EnumUserRoleWithAggregatesFilter, {nullable:true})
+    not?: EnumUserRoleWithAggregatesFilter;
 
-    @Field(() => NestedIntFilter, {nullable:true})
-    _count?: NestedIntFilter;
+    @Field(() => IntFilter, {nullable:true})
+    _count?: IntFilter;
 
-    @Field(() => NestedEnumUserRoleFilter, {nullable:true})
-    _min?: NestedEnumUserRoleFilter;
+    @Field(() => EnumUserRoleFilter, {nullable:true})
+    _min?: EnumUserRoleFilter;
 
-    @Field(() => NestedEnumUserRoleFilter, {nullable:true})
-    _max?: NestedEnumUserRoleFilter;
+    @Field(() => EnumUserRoleFilter, {nullable:true})
+    _max?: EnumUserRoleFilter;
 }

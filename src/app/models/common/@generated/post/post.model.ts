@@ -9,7 +9,7 @@ export class Post {
     id!: number;
 
     @Field(() => String, {nullable:false})
-    name!: string;
+    title!: string;
 
     @Field(() => String, {nullable:false})
     content!: string;

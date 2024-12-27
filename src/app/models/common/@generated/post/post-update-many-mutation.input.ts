@@ -5,7 +5,7 @@ import { InputType } from '@nestjs/graphql';
 export class PostUpdateManyMutationInput {
 
     @Field(() => String, {nullable:true})
-    name?: string;
+    title?: string;
 
     @Field(() => String, {nullable:true})
     content?: string;

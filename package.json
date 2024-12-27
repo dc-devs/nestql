@@ -58,8 +58,7 @@
 		"nql:dev:app:update-hosts": "sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:setup": "bun nql:dev:app:generate-certs && bun nql:dev:app:update-hosts",
 		"nql:dev:app:docker:shell": "docker exec -it nql-app-development bash",
-		"nql:generate:model": "bunx prisma generate && bun src/base/generators/model-generator/start.ts",
-		"nql:generate:model:test": "rm -rf src/app/models/posts && bun src/base/generators/model-generator/start.ts"
+		"nql:generate:model": "bunx prisma generate && bun src/base/generators/model-generator/start.ts"
 	},
 	"dependencies": {
 		"@nestjs/apollo": "12.2.1",

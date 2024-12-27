@@ -9,7 +9,7 @@ export class PostOrderByWithRelationInput {
     id?: keyof typeof SortOrder;
 
     @Field(() => SortOrder, {nullable:true})
-    name?: keyof typeof SortOrder;
+    title?: keyof typeof SortOrder;
 
     @Field(() => SortOrder, {nullable:true})
     content?: keyof typeof SortOrder;

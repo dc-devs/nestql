@@ -1,8 +1,7 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
-import { NestedDateTimeWithAggregatesFilter } from './nested-date-time-with-aggregates-filter.input';
-import { NestedIntFilter } from './nested-int-filter.input';
-import { NestedDateTimeFilter } from './nested-date-time-filter.input';
+import { IntFilter } from './int-filter.input';
+import { DateTimeFilter } from './date-time-filter.input';
 
 @InputType()
 export class DateTimeWithAggregatesFilter {
@@ -28,15 +27,15 @@ export class DateTimeWithAggregatesFilter {
     @Field(() => Date, {nullable:true})
     gte?: Date | string;
 
-    @Field(() => NestedDateTimeWithAggregatesFilter, {nullable:true})
-    not?: NestedDateTimeWithAggregatesFilter;
+    @Field(() => DateTimeWithAggregatesFilter, {nullable:true})
+    not?: DateTimeWithAggregatesFilter;
 
-    @Field(() => NestedIntFilter, {nullable:true})
-    _count?: NestedIntFilter;
+    @Field(() => IntFilter, {nullable:true})
+    _count?: IntFilter;
 
-    @Field(() => NestedDateTimeFilter, {nullable:true})
-    _min?: NestedDateTimeFilter;
+    @Field(() => DateTimeFilter, {nullable:true})
+    _min?: DateTimeFilter;
 
-    @Field(() => NestedDateTimeFilter, {nullable:true})
-    _max?: NestedDateTimeFilter;
+    @Field(() => DateTimeFilter, {nullable:true})
+    _max?: DateTimeFilter;
 }

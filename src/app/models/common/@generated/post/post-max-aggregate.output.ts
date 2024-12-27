@@ -9,7 +9,7 @@ export class PostMaxAggregate {
     id?: number;
 
     @Field(() => String, {nullable:true})
-    name?: string;
+    title?: string;
 
     @Field(() => String, {nullable:true})
     content?: string;

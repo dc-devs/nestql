@@ -18,14 +18,14 @@ input DateTimeFilter {
   in: [DateTime!]
   lt: DateTime
   lte: DateTime
-  not: NestedDateTimeFilter
+  not: DateTimeFilter
   notIn: [DateTime!]
 }
 
 input EnumUserRoleFilter {
   equals: UserRole
   in: [UserRole!]
-  not: NestedEnumUserRoleFilter
+  not: EnumUserRoleFilter
   notIn: [UserRole!]
 }
 
@@ -36,7 +36,7 @@ input IntFilter {
   in: [Int!]
   lt: Int
   lte: Int
-  not: NestedIntFilter
+  not: IntFilter
   notIn: [Int!]
 }
 
@@ -51,63 +51,103 @@ type LogOutResponse {
 }
 
 type Mutation {
+  createManyPost(data: [PostCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createManyUser(data: [UserCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createPost(data: PostCreateInput!, select: SelectInput): Post!
   createUser(data: UserCreateInput!, select: SelectInput): User!
+  deletePost(select: SelectInput, where: PostWhereUniqueInput!): Post!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: Float!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
+  updateManyPost(data: PostUpdateManyMutationInput!, where: PostWhereInput): Count!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
+  updatePost(data: PostUpdateInput!, select: SelectInput, where: PostWhereUniqueInput!): Post!
   updateUser(data: UserUpdateInput!, select: SelectInput, where: UserWhereUniqueInput!): User!
 }
 
-input NestedDateTimeFilter {
-  equals: DateTime
-  gt: DateTime
-  gte: DateTime
-  in: [DateTime!]
-  lt: DateTime
-  lte: DateTime
-  not: NestedDateTimeFilter
-  notIn: [DateTime!]
+type Post {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  title: String!
+  updatedAt: DateTime!
 }
 
-input NestedEnumUserRoleFilter {
-  equals: UserRole
-  in: [UserRole!]
-  not: NestedEnumUserRoleFilter
-  notIn: [UserRole!]
+input PostCreateInput {
+  content: String!
+  createdAt: DateTime
+  title: String!
+  updatedAt: DateTime
 }
 
-input NestedIntFilter {
-  equals: Int
-  gt: Int
-  gte: Int
-  in: [Int!]
-  lt: Int
-  lte: Int
-  not: NestedIntFilter
-  notIn: [Int!]
+input PostCreateManyInput {
+  content: String!
+  createdAt: DateTime
+  id: Int
+  title: String!
+  updatedAt: DateTime
 }
 
-input NestedStringFilter {
-  contains: String
-  endsWith: String
-  equals: String
-  gt: String
-  gte: String
-  in: [String!]
-  lt: String
-  lte: String
-  not: NestedStringFilter
-  notIn: [String!]
-  startsWith: String
+input PostOrderByWithRelationInput {
+  content: SortOrder
+  createdAt: SortOrder
+  id: SortOrder
+  title: SortOrder
+  updatedAt: SortOrder
+}
+
+enum PostScalarFieldEnum {
+  content
+  createdAt
+  id
+  title
+  updatedAt
+}
+
+input PostUpdateInput {
+  content: String
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input PostUpdateManyMutationInput {
+  content: String
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input PostWhereInput {
+  AND: [PostWhereInput!]
+  NOT: [PostWhereInput!]
+  OR: [PostWhereInput!]
+  content: StringFilter
+  createdAt: DateTimeFilter
+  id: IntFilter
+  title: StringFilter
+  updatedAt: DateTimeFilter
+}
+
+input PostWhereUniqueInput {
+  AND: [PostWhereInput!]
+  NOT: [PostWhereInput!]
+  OR: [PostWhereInput!]
+  content: StringFilter
+  createdAt: DateTimeFilter
+  id: Int
+  title: StringFilter
+  updatedAt: DateTimeFilter
 }
 
 type Query {
   currentUser: SessionResponse!
+  findAllPosts(cursor: PostWhereUniqueInput, distinct: [PostScalarFieldEnum!], orderBy: [PostOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: PostWhereInput): [Post!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
+  findFirstPost(cursor: PostWhereUniqueInput, distinct: [PostScalarFieldEnum!], orderBy: [PostOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: PostWhereInput): Post
   findFirstUser(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): User
+  findOnePost(select: SelectInput, where: PostWhereUniqueInput!): Post
   findOneUser(select: SelectInput, where: UserWhereUniqueInput!): User
 }
 
@@ -117,8 +157,7 @@ enum QueryMode {
 }
 
 input SelectInput {
-  relationships: JSON
-  select: JSON
+  include: JSON
 }
 
 input SessionInput {
@@ -146,7 +185,7 @@ input StringFilter {
   lt: String
   lte: String
   mode: QueryMode
-  not: NestedStringFilter
+  not: StringFilter
   notIn: [String!]
   startsWith: String
 }
