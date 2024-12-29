@@ -19,7 +19,7 @@ generator nestgraphql {
 }
 
 generator nestgraphql_bun_support {
-	provider = "node src/base/services/prisma/generators/nestgraphql-bun-support.js"
+	provider = "node src/base/services/prisma/generators/nestgraphql-add-bun-support"
 }
 
 datasource db {
