@@ -1,11 +1,11 @@
 import { SelectInput, Count } from '@base/app/dto';
 import { PrismaService } from '@base/services/prisma/prisma.service';
 import { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
-import { ConsoleLogger } from '@nestjs/common';
 
 interface IConstructorOptions {
 	modelName: string;
-	select?: SelectInput;
+	// TODO: Update to be more specific
+	select?: Record<string, any> | SelectInput;
 	prisma: PrismaService;
 }
 

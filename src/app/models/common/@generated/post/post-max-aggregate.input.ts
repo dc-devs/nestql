@@ -18,4 +18,7 @@ export class PostMaxAggregateInput {
 
     @Field(() => Boolean, {nullable:true})
     updatedAt?: true;
+
+    @Field(() => Boolean, {nullable:true})
+    userId?: true;
 }

@@ -20,6 +20,7 @@ CREATE TABLE "Post" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
@@ -32,3 +33,6 @@ CREATE INDEX "User_id_email_idx" ON "User"("id", "email");
 
 -- CreateIndex
 CREATE INDEX "Post_id_idx" ON "Post"("id");
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -25,6 +25,9 @@ export class PostGroupBy {
     @Field(() => Date, {nullable:false})
     updatedAt!: Date | string;
 
+    @Field(() => Int, {nullable:false})
+    userId!: number;
+
     @Field(() => PostCountAggregate, {nullable:true})
     _count?: PostCountAggregate;
 

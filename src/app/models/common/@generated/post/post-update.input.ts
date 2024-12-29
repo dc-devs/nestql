@@ -1,5 +1,6 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
+import { UserUpdateOneRequiredWithoutPostsNestedInput } from '../user/user-update-one-required-without-posts-nested.input';
 
 @InputType()
 export class PostUpdateInput {
@@ -15,4 +16,7 @@ export class PostUpdateInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => UserUpdateOneRequiredWithoutPostsNestedInput, {nullable:true})
+    user?: UserUpdateOneRequiredWithoutPostsNestedInput;
 }

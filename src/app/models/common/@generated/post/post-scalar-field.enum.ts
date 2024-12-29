@@ -5,7 +5,8 @@ export enum PostScalarFieldEnum {
     title = "title",
     content = "content",
     createdAt = "createdAt",
-    updatedAt = "updatedAt"
+    updatedAt = "updatedAt",
+    userId = "userId"
 }
 
 

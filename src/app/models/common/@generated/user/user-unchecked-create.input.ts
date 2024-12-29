@@ -3,6 +3,7 @@ import { InputType } from '@nestjs/graphql';
 import { Int } from '@nestjs/graphql';
 import * as Validator from 'class-validator';
 import { UserRole } from '../prisma/user-role.enum';
+import { PostUncheckedCreateNestedManyWithoutUserInput } from '../post/post-unchecked-create-nested-many-without-user.input';
 
 @InputType()
 export class UserUncheckedCreateInput {
@@ -27,4 +28,7 @@ export class UserUncheckedCreateInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => PostUncheckedCreateNestedManyWithoutUserInput, {nullable:true})
+    posts?: PostUncheckedCreateNestedManyWithoutUserInput;
 }

@@ -19,4 +19,7 @@ export class PostUncheckedUpdateInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => Int, {nullable:true})
+    userId?: number;
 }

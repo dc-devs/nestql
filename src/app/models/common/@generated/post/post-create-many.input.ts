@@ -19,4 +19,7 @@ export class PostCreateManyInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => Int, {nullable:false})
+    userId!: number;
 }

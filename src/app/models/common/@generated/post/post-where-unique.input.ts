@@ -4,6 +4,8 @@ import { Int } from '@nestjs/graphql';
 import { PostWhereInput } from './post-where.input';
 import { StringFilter } from '../prisma/string-filter.input';
 import { DateTimeFilter } from '../prisma/date-time-filter.input';
+import { IntFilter } from '../prisma/int-filter.input';
+import { UserScalarRelationFilter } from '../prisma/user-scalar-relation-filter.input';
 
 @InputType()
 export class PostWhereUniqueInput {
@@ -31,4 +33,10 @@ export class PostWhereUniqueInput {
 
     @Field(() => DateTimeFilter, {nullable:true})
     updatedAt?: DateTimeFilter;
+
+    @Field(() => IntFilter, {nullable:true})
+    userId?: IntFilter;
+
+    @Field(() => UserScalarRelationFilter, {nullable:true})
+    user?: UserScalarRelationFilter;
 }

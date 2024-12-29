@@ -2,6 +2,7 @@ import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import * as Validator from 'class-validator';
 import { UserRole } from '../prisma/user-role.enum';
+import { PostUpdateManyWithoutUserNestedInput } from '../post/post-update-many-without-user-nested.input';
 
 @InputType()
 export class UserUpdateInput {
@@ -23,4 +24,7 @@ export class UserUpdateInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => PostUpdateManyWithoutUserNestedInput, {nullable:true})
+    posts?: PostUpdateManyWithoutUserNestedInput;
 }

@@ -7,4 +7,7 @@ export class PostSumAggregate {
 
     @Field(() => Int, {nullable:true})
     id?: number;
+
+    @Field(() => Int, {nullable:true})
+    userId?: number;
 }

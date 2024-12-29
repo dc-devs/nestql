@@ -15,12 +15,11 @@ generator nestgraphql {
 	fields_Validator_from = "class-validator"
 	fields_Validator_input = true
 	noAtomicOperations = true
-	// This tells the generator to clean up the output directory before generating new files
 	purgeOutput = true
-	// Combines scalar filter inputs into a single type
-	combineScalarFilters = true
-	// Consolidates all re-exports into a single barrel file
-	reExport = Single
+}
+
+generator nestgraphql_bun_support {
+	provider = "node src/base/services/prisma/generators/nestgraphql-bun-support.js"
 }
 
 datasource db {
@@ -46,7 +45,7 @@ model User {
 	createdAt				DateTime		@default(now())
 	updatedAt				DateTime		@updatedAt
 
-	// posts						Post[]
+	posts						Post[]
 
 	@@index([id, email])
 }
@@ -60,8 +59,8 @@ model Post {
 	createdAt					DateTime		@default(now())
 	updatedAt					DateTime		@updatedAt
 
-	// userId						Int
-	// user						User 			@relation(fields: [userId], references: [id])
+	userId						Int
+	user						User 			@relation(fields: [userId], references: [id])
 
 	@@index([id])
 }
