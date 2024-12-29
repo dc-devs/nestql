@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserSafe } from '@models/users/common/entities/user-safe';
-import { modelName, select } from '@models/users/common/constants';
+import { modelName } from '@models/users/common/constants';
 import { UserUpdateInput } from '@generated/user/user-update.input';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
@@ -30,7 +30,6 @@ export class UsersService extends BasePrismaService<
 	constructor(protected prisma: PrismaService) {
 		super({
 			prisma,
-			select,
 			modelName,
 		});
 	}
@@ -45,7 +44,6 @@ export class UsersService extends BasePrismaService<
 				email: emailLowerCase,
 				password: encodedPassword,
 			},
-			select,
 		});
 	}
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { modelName } from '@models/posts/common/constants';
-import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
+import { modelName} from '@models/posts/common/constants';
+import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { Post } from '@generated/post/post.model';
 import { PostUpdateInput } from '@generated/post/post-update.input';

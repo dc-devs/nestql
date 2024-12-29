@@ -1,1 +1,1 @@
-export const generatorName = 'Prisma NestJS/GraphQL - Add Bun Support';
+export const generatorName = 'Prisma NestJS/GraphQL (Add Bun Support)';

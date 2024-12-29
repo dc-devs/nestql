@@ -22,10 +22,16 @@ export const generateModelConstantsSelectFile = async ({
 
 /* 
  By default, the database will return all available fields for this model.
- If, by default, you want to select only certain fields, you can activate this default select object.
+ If, by default, you want to select only certain fields, you can activate 
+ this default select object.
 
- This is useful for scenarios where you might want sensitive fields to be hidden from the response.
- You can see an example of this in the User model where we omit the password field from the response.
+ This is useful for scenarios where you might want sensitive fields to be 
+ hidden from the response.
+ 
+ NOTE: The user 'password' field is hidden by default
+ (see prisma.service.ts) so you don't need to update the 
+ user select object to hide this field.
+
 
  To activate the select object, you'll need to:
 */
@@ -61,12 +67,12 @@ export const generateModelConstantsSelectFile = async ({
 
 1. Update the select object to include the fields you want to select.
 ----------------------------------------------
-select = {
+export const select = {
 	id: true,
-	title: true,
-	content: true,
-	updatedAt: true,
+	email: true,
+	role: true,
 	createdAt: true,
+	updatedAt: true,
 };
 ----------------------------------------------
  

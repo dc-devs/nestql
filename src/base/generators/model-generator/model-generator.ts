@@ -1,4 +1,5 @@
 import { updateAppFiles } from '@base/generators/model-generator/update-app-files';
+import { generateSeedFiles } from '@base/generators/model-generator/generate-seed-files';
 import { generateModelFiles } from '@base/generators/model-generator/generate-model-files';
 import {
 	handleNoModelNameError,
@@ -24,8 +25,8 @@ export const modelGenerator = async () => {
 	}
 
 	await generateModelFiles({ modelName });
+	await generateSeedFiles({ modelName });
 	await updateAppFiles({ modelName });
-
 	console.log('Model generated successfully 🎉');
 
 	process.exit(0);

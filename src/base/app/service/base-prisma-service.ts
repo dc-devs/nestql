@@ -50,18 +50,15 @@ export class BasePrismaService<
 	): Promise<Entity | null> {
 		let options = { ...findUniqueArgs };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].findUnique(options);
@@ -73,18 +70,15 @@ export class BasePrismaService<
 	): Promise<Entity | null> {
 		let options = { ...findFirstArgs };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].findFirst(options);
@@ -96,18 +90,15 @@ export class BasePrismaService<
 	): Promise<Entity[]> {
 		let options = { ...findManyArgs };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].findMany(options);
@@ -116,18 +107,15 @@ export class BasePrismaService<
 	create(data: CreateOneInput, select?: SelectInput): Promise<Entity> {
 		let options = { data };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].create(options);
@@ -150,18 +138,15 @@ export class BasePrismaService<
 	}): Promise<Entity> {
 		let options = { where, data };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].update(options);
@@ -187,18 +172,15 @@ export class BasePrismaService<
 	}): Promise<Entity> {
 		let options = { where, update, create };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].upsert(options);
@@ -210,18 +192,15 @@ export class BasePrismaService<
 	): Promise<Entity> {
 		let options = { ...deleteOneArgs };
 
-		// when default select is provided via the service constructor
-		if (this.select) {
-			options['select'] = {
-				...this.select,
-			};
-		}
+		// Combine both select sources
+		const combinedSelect = {
+			...(this.select || {}),
+			...(select?.include || {}),
+		};
 
-		// when custom select is provided via the query
-		if (select) {
-			options['select'] = {
-				...select.include,
-			};
+		// Only add select if we have actual fields to select
+		if (Object.keys(combinedSelect).length > 0) {
+			options['select'] = combinedSelect;
 		}
 
 		return this.prisma?.[this.modelName].delete(options);
