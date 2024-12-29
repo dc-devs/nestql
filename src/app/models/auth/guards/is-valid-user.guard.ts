@@ -3,7 +3,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
 import { SessionInput } from '@models/auth/dto/inputs';
 import { UserSafe } from '@models/users/common/entities/user-safe';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
 interface IValidateUser extends SessionInput {
 	prisma: PrismaService;

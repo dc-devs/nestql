@@ -26,5 +26,5 @@ export class Post {
     userId!: number;
 
     @Field(() => User, {nullable:false})
-    user?: User;
+    user?: User & {};
 }

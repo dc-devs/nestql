@@ -23,7 +23,7 @@ export const generateModelServiceFile = async ({
 	);
 	const fileContent = `import { Injectable } from '@nestjs/common';
 import { modelName} from '@models/${modelNameLowerKebabCasePluralized}/common/constants';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { ${modelName} } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}.model';
 import { ${modelName}UpdateInput } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}-update.input';

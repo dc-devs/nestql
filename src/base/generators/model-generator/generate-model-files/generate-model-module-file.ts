@@ -23,7 +23,7 @@ export const generateModelModuleFile = async ({
 	const fileContent = `import { Module } from '@nestjs/common';
 import { ${modelNamePascalPluralized}Service } from '@models/${modelNameLowerKebabCasePluralized}/${modelNameLowerKebabCasePluralized}.service';
 import { ${modelNamePascalPluralized}Resolver } from '@models/${modelNameLowerKebabCasePluralized}/${modelNameLowerKebabCasePluralized}.resolver';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@base/services/prisma/service/prisma.service';
 
 @Module({
 	providers: [${modelNamePascalPluralized}Resolver, ${modelNamePascalPluralized}Service, PrismaService],

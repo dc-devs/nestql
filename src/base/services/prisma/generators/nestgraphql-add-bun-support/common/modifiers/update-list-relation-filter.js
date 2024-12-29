@@ -3,10 +3,11 @@ import { promises as fs } from 'fs';
 import { checkIfFileExists } from '../utils/check-if-file-exists.js';
 
 export const updateListRelationFilterFile = async ({
-	modelName,
+	model,
 	baseDirectory,
 }) => {
 	// Setup variables
+	const modelName = model.name;
 	const modelNameLower = modelName.toLowerCase();
 	const filePath = join(
 		baseDirectory,
@@ -24,7 +25,7 @@ export const updateListRelationFilterFile = async ({
 	const content = await fs.readFile(filePath, 'utf8');
 
 	// Update the file content
-	const regex = new RegExp(`: ${modelName}WhereInput;`, 'g');
+	const regex = new RegExp(`: ${modelName}WhereInput;`, 'gm');
 	const replacement = `: ${modelName}WhereInput & {};`;
 	const updatedContent = content.replace(regex, replacement);
 

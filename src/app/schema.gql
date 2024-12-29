@@ -115,6 +115,8 @@ type Post {
   id: ID!
   title: String!
   updatedAt: DateTime!
+  user: User!
+  userId: Int!
 }
 
 input PostCreateInput {
@@ -122,6 +124,7 @@ input PostCreateInput {
   createdAt: DateTime
   title: String!
   updatedAt: DateTime
+  user: UserCreateNestedOneWithoutPostsInput!
 }
 
 input PostCreateManyInput {
@@ -130,6 +133,49 @@ input PostCreateManyInput {
   id: Int
   title: String!
   updatedAt: DateTime
+  userId: Int!
+}
+
+input PostCreateManyUserInput {
+  content: String!
+  createdAt: DateTime
+  id: Int
+  title: String!
+  updatedAt: DateTime
+}
+
+input PostCreateManyUserInputEnvelope {
+  data: [PostCreateManyUserInput!]!
+  skipDuplicates: Boolean
+}
+
+input PostCreateNestedManyWithoutUserInput {
+  connect: [PostWhereUniqueInput!]
+  connectOrCreate: [PostCreateOrConnectWithoutUserInput!]
+  create: [PostCreateWithoutUserInput!]
+  createMany: PostCreateManyUserInputEnvelope
+}
+
+input PostCreateOrConnectWithoutUserInput {
+  create: PostCreateWithoutUserInput!
+  where: PostWhereUniqueInput!
+}
+
+input PostCreateWithoutUserInput {
+  content: String!
+  createdAt: DateTime
+  title: String!
+  updatedAt: DateTime
+}
+
+input PostListRelationFilter {
+  every: PostWhereInput
+  none: PostWhereInput
+  some: PostWhereInput
+}
+
+input PostOrderByRelationAggregateInput {
+  _count: SortOrder
 }
 
 input PostOrderByWithRelationInput {
@@ -138,6 +184,8 @@ input PostOrderByWithRelationInput {
   id: SortOrder
   title: SortOrder
   updatedAt: SortOrder
+  user: UserOrderByWithRelationInput
+  userId: SortOrder
 }
 
 enum PostScalarFieldEnum {
@@ -146,6 +194,19 @@ enum PostScalarFieldEnum {
   id
   title
   updatedAt
+  userId
+}
+
+input PostScalarWhereInput {
+  AND: [PostScalarWhereInput!]
+  NOT: [PostScalarWhereInput!]
+  OR: [PostScalarWhereInput!]
+  content: StringFilter
+  createdAt: DateTimeFilter
+  id: IntFilter
+  title: StringFilter
+  updatedAt: DateTimeFilter
+  userId: IntFilter
 }
 
 input PostUpdateInput {
@@ -153,6 +214,7 @@ input PostUpdateInput {
   createdAt: DateTime
   title: String
   updatedAt: DateTime
+  user: UserUpdateOneRequiredWithoutPostsNestedInput
 }
 
 input PostUpdateManyMutationInput {
@@ -160,6 +222,43 @@ input PostUpdateManyMutationInput {
   createdAt: DateTime
   title: String
   updatedAt: DateTime
+}
+
+input PostUpdateManyWithWhereWithoutUserInput {
+  data: PostUpdateManyMutationInput!
+  where: PostScalarWhereInput!
+}
+
+input PostUpdateManyWithoutUserNestedInput {
+  connect: [PostWhereUniqueInput!]
+  connectOrCreate: [PostCreateOrConnectWithoutUserInput!]
+  create: [PostCreateWithoutUserInput!]
+  createMany: PostCreateManyUserInputEnvelope
+  delete: [PostWhereUniqueInput!]
+  deleteMany: [PostScalarWhereInput!]
+  disconnect: [PostWhereUniqueInput!]
+  set: [PostWhereUniqueInput!]
+  update: [PostUpdateWithWhereUniqueWithoutUserInput!]
+  updateMany: [PostUpdateManyWithWhereWithoutUserInput!]
+  upsert: [PostUpsertWithWhereUniqueWithoutUserInput!]
+}
+
+input PostUpdateWithWhereUniqueWithoutUserInput {
+  data: PostUpdateWithoutUserInput!
+  where: PostWhereUniqueInput!
+}
+
+input PostUpdateWithoutUserInput {
+  content: String
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input PostUpsertWithWhereUniqueWithoutUserInput {
+  create: PostCreateWithoutUserInput!
+  update: PostUpdateWithoutUserInput!
+  where: PostWhereUniqueInput!
 }
 
 input PostWhereInput {
@@ -171,6 +270,8 @@ input PostWhereInput {
   id: IntFilter
   title: StringFilter
   updatedAt: DateTimeFilter
+  user: UserScalarRelationFilter
+  userId: IntFilter
 }
 
 input PostWhereUniqueInput {
@@ -182,6 +283,8 @@ input PostWhereUniqueInput {
   id: Int
   title: StringFilter
   updatedAt: DateTimeFilter
+  user: UserScalarRelationFilter
+  userId: IntFilter
 }
 
 type Query {
@@ -234,18 +337,25 @@ input StringFilter {
 }
 
 type User {
+  _count: UserCount!
   createdAt: DateTime!
   email: String!
   id: ID!
   password: String!
+  posts: [Post!]
   role: UserRole!
   updatedAt: DateTime!
+}
+
+type UserCount {
+  posts: Int!
 }
 
 input UserCreateInput {
   createdAt: DateTime
   email: String!
   password: String!
+  posts: PostCreateNestedManyWithoutUserInput
   role: UserRole
   updatedAt: DateTime
 }
@@ -259,11 +369,31 @@ input UserCreateManyInput {
   updatedAt: DateTime
 }
 
+input UserCreateNestedOneWithoutPostsInput {
+  connect: UserWhereUniqueInput
+  connectOrCreate: UserCreateOrConnectWithoutPostsInput
+  create: UserCreateWithoutPostsInput
+}
+
+input UserCreateOrConnectWithoutPostsInput {
+  create: UserCreateWithoutPostsInput!
+  where: UserWhereUniqueInput!
+}
+
+input UserCreateWithoutPostsInput {
+  createdAt: DateTime
+  email: String!
+  password: String!
+  role: UserRole
+  updatedAt: DateTime
+}
+
 input UserOrderByWithRelationInput {
   createdAt: SortOrder
   email: SortOrder
   id: SortOrder
   password: SortOrder
+  posts: PostOrderByRelationAggregateInput
   role: SortOrder
   updatedAt: SortOrder
 }
@@ -283,10 +413,16 @@ enum UserScalarFieldEnum {
   updatedAt
 }
 
+input UserScalarRelationFilter {
+  is: UserWhereInput
+  isNot: UserWhereInput
+}
+
 input UserUpdateInput {
   createdAt: DateTime
   email: String
   password: String
+  posts: PostUpdateManyWithoutUserNestedInput
   role: UserRole
   updatedAt: DateTime
 }
@@ -299,6 +435,33 @@ input UserUpdateManyMutationInput {
   updatedAt: DateTime
 }
 
+input UserUpdateOneRequiredWithoutPostsNestedInput {
+  connect: UserWhereUniqueInput
+  connectOrCreate: UserCreateOrConnectWithoutPostsInput
+  create: UserCreateWithoutPostsInput
+  update: UserUpdateToOneWithWhereWithoutPostsInput
+  upsert: UserUpsertWithoutPostsInput
+}
+
+input UserUpdateToOneWithWhereWithoutPostsInput {
+  data: UserUpdateWithoutPostsInput!
+  where: UserWhereInput
+}
+
+input UserUpdateWithoutPostsInput {
+  createdAt: DateTime
+  email: String
+  password: String
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserUpsertWithoutPostsInput {
+  create: UserCreateWithoutPostsInput!
+  update: UserUpdateWithoutPostsInput!
+  where: UserWhereInput
+}
+
 input UserWhereInput {
   AND: [UserWhereInput!]
   NOT: [UserWhereInput!]
@@ -307,6 +470,7 @@ input UserWhereInput {
   email: StringFilter
   id: IntFilter
   password: StringFilter
+  posts: PostListRelationFilter
   role: EnumUserRoleFilter
   updatedAt: DateTimeFilter
 }
@@ -319,6 +483,7 @@ input UserWhereUniqueInput {
   email: String
   id: Int
   password: StringFilter
+  posts: PostListRelationFilter
   role: EnumUserRoleFilter
   updatedAt: DateTimeFilter
 }

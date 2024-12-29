@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '@models/auth/auth.service';
 import { AuthResolver } from '@models/auth/auth.resolver';
 import { UsersModule } from '@models/users/users.module';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
 describe('AuthService', () => {
 	let service: AuthService;

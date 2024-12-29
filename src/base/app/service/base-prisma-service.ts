@@ -1,5 +1,5 @@
 import { SelectInput, Count } from '@base/app/dto';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 import { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
 
 interface IConstructorOptions {

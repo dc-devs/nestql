@@ -1,15 +1,10 @@
-import { resolve } from 'path';
 import prismaGeneratorHelper from '@prisma/generator-helper';
+import { generatorName } from './common/constants/generator-name.js';
+import { baseDirectory } from './common/constants/base-directory.js';
+import { updateModelFile } from './common/modifiers/update-model-file.js';
 import { updateListRelationFilterFile } from './common/modifiers/update-list-relation-filter.js';
 
 const { generatorHandler } = prismaGeneratorHelper;
-
-// TODO:Maybe Refactor out of this file
-const generatorName = 'Prisma NestJS/GraphQL - Updates For Bun Support';
-const baseDirectory = resolve(
-	process.cwd(),
-	'src/app/models/common/@generated',
-);
 
 generatorHandler({
 	onManifest() {
@@ -26,10 +21,13 @@ generatorHandler({
 
 		try {
 			for (const model of models) {
-				const modelName = model.name;
-
 				await updateListRelationFilterFile({
-					modelName,
+					model,
+					baseDirectory,
+				});
+
+				await updateModelFile({
+					model,
 					baseDirectory,
 				});
 			}

@@ -3,7 +3,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Cookie } from '@base/session-store/common/enums';
 import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
-import { PrismaService } from '@base/services/prisma/prisma.service';
+import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 import {
 	ILogOutProps,
 	IAuthenticatedRequest,
