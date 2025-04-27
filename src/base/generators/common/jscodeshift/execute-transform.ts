@@ -2,7 +2,7 @@ import { File, Transform } from '@base/generators/common/enums';
 import { filePaths, transformPaths } from '@base/generators/common/constants';
 import { executeJscodeshiftTransform } from '@base/generators/common/jscodeshift/execute-jscodeshift-transform';
 
-interface IWrapperOptions {
+interface Params {
 	file: File;
 	transform: Transform;
 	options?: Record<string, string | number | boolean>;
@@ -10,9 +10,9 @@ interface IWrapperOptions {
 
 export const executeTransform = async ({
 	file,
-	transform,
 	options,
-}: IWrapperOptions) => {
+	transform,
+}: Params) => {
 	const filePath = filePaths[file];
 	const transformPath = transformPaths[transform];
 	console.log(

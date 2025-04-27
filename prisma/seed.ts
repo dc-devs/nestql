@@ -1,4 +1,4 @@
-import { users } from '@seeds/index';
+import { users, posts } from '@seeds/index';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

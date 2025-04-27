@@ -5,7 +5,7 @@ interface IOptions {
 	modelName: string;
 }
 
-export const addSeedImportToSeedsIndex = async ({ modelName }: IOptions) => {
+export const addSeedExportToSeedsIndex = async ({ modelName }: IOptions) => {
 	await executeTransform({
 		file: File.SeedsIndex,
 		transform: Transform.AddSeedImportToSeedsIndex,
