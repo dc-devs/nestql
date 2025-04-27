@@ -20,7 +20,6 @@ const transformer = (file, { jscodeshift }, { modelName }) => {
 		quote: 'single',
 		useTabs: true,
 		tabWidth: 4,
-		wrapColumn: 100,
 	});
 };
 

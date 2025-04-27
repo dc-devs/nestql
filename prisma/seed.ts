@@ -7,6 +7,10 @@ const main = async () => {
 	await prisma.user.createMany({
 		data: [...users],
 	});
+
+	await prisma.post.createMany({
+		data: [...posts],
+	});
 };
 
 main()
