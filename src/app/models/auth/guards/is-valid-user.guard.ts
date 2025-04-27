@@ -1,19 +1,24 @@
+import { PrismaClient } from '@prisma/client';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
-import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
 import { SessionInput } from '@models/auth/dto/inputs';
 import { UserSafe } from '@models/users/common/entities/user-safe';
+import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
-interface IValidateUser extends SessionInput {
-	prisma: PrismaService;
-}
-
-const validateUser = async ({ email, password, prisma }: IValidateUser) => {
+const validateUser = async ({ email, password }: SessionInput) => {
 	try {
-		const user = await prisma.user.findUnique({
+		// Create a temporary prisma client instance without the password omit
+		const tempPrisma = new PrismaClient();
+
+		// Get full user data including password
+		const user = await tempPrisma.user.findUnique({
 			where: { email },
 		});
+
+		// Disconnect the temporary client
+		await tempPrisma.$disconnect();
+
 		let validatedUser: UserSafe | null = null;
 
 		if (user) {
@@ -47,10 +52,7 @@ export class IsValidUser implements CanActivate {
 			const { req: request } = context;
 			const { sessionInput } = ctx.getArgs();
 
-			const user = await validateUser({
-				...sessionInput,
-				prisma: this.prisma,
-			});
+			const user = await validateUser(sessionInput);
 
 			request.user = user;
 
