@@ -41,12 +41,12 @@ export const moduleImportsPush = ({
 					importsProperty &&
 					importsProperty.value.type === 'ArrayExpression'
 				) {
-					// Check if PostsModule is already in the imports array
-					const hasPostsModule = importsProperty.value.elements.some(
+					// Check if ModelsModule is already in the imports array
+					const hasModelsModule = importsProperty.value.elements.some(
 						(element) => element.name === moduleName,
 					);
 
-					if (!hasPostsModule) {
+					if (!hasModelsModule) {
 						importsProperty.value.elements.push(
 							identifier(moduleName),
 						);

@@ -1,2 +1,2 @@
-export { models as users } from '@seeds/users.seed';
-export { models as posts } from '@seeds/posts.seed';
+export { posts } from '@seeds/posts.seed';
+export { users } from '@seeds/users.seed';

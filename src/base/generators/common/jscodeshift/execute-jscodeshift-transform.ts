@@ -14,7 +14,7 @@ export const executeJscodeshiftTransform = async ({
 	await run(transformPath, [filePath], {
 		dry: false,
 		print: false,
-		verbose: 1,
+		verbose: 0,
 		...options,
 	});
 };

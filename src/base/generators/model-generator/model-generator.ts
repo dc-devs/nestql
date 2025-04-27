@@ -1,13 +1,15 @@
-import { updateAppFiles } from '@base/generators/model-generator/update-app-files';
+import { DMMF } from '@prisma/generator-helper';
+import { updateAppModelFiles } from '@base/generators/model-generator/update-app-model-files';
 import { generateSeedFiles } from '@base/generators/model-generator/generate-seed-files';
 import { generateModelFiles } from '@base/generators/model-generator/generate-model-files';
+import { updateAppSeedFiles } from '@base/generators/model-generator/update-app-seed-files';
 import {
 	handleNoModelNameError,
 	handleNoPrismaSchemaError,
 } from '@base/generators/model-generator/common/handle-errors';
 import {
+	getPrismaModel,
 	getCommandLineArgs,
-	getParsedPrismaSchema,
 } from '@base/generators/common/utils';
 
 export const modelGenerator = async () => {
@@ -18,15 +20,18 @@ export const modelGenerator = async () => {
 		handleNoModelNameError();
 	}
 
-	const parsedPrismaSchema = await getParsedPrismaSchema({ modelName });
+	const prismaModel = (await getPrismaModel({ modelName })) as DMMF.Model;
 
-	if (!parsedPrismaSchema) {
+	if (!prismaModel) {
 		handleNoPrismaSchemaError({ modelName });
 	}
 
 	await generateModelFiles({ modelName });
-	await generateSeedFiles({ modelName });
-	await updateAppFiles({ modelName });
+	await updateAppModelFiles({ modelName });
+
+	await generateSeedFiles({ modelName, prismaModel });
+	await updateAppSeedFiles({ modelName });
+
 	console.log('Model generated successfully 🎉');
 
 	process.exit(0);

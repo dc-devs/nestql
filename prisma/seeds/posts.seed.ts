@@ -1,40 +1,33 @@
-const models = [];
+const posts = [];
 
-const firstModel = {
-	title: 'First Post',
-	content: 'This is the first post',
+const firstPost = {
+	title: 'Lorem ipsum',
+	content: 'Lorem ipsum',
 	userId: 1,
 };
-models.push(firstModel);
+posts.push(firstPost);
 
-const secondModel = {
-	title: 'Second Post',
-	content: 'This is the second post',
+const secondPost = {
+	title: 'Lorem ipsum',
+	content: 'Lorem ipsum',
 	userId: 1,
 };
-models.push(secondModel);
+posts.push(secondPost);
 
-const thirdModel = {
-	title: 'Third Post',
-	content: 'This is the third post',
+const thirdPost = {
+	title: 'Lorem ipsum',
+	content: 'Lorem ipsum',
 	userId: 1,
 };
-models.push(thirdModel);
+posts.push(thirdPost);
 
-const fourthModel = {
-	title: 'Fourth Post',
-	content: 'This is the fourth post',
+const fourthPost = {
+	title: 'Lorem ipsum',
+	content: 'Lorem ipsum',
 	userId: 1,
 };
-models.push(fourthModel);
+posts.push(fourthPost);
 
-const allModelsCount = models.length;
+const allPostsCount = posts.length;
 
-export {
-	models,
-	firstModel,
-	secondModel,
-	thirdModel,
-	fourthModel,
-	allModelsCount,
-};
+export { posts, firstPost, secondPost, thirdPost, fourthPost, allPostsCount };

@@ -18,14 +18,14 @@ export const select = {};
 
 /*
 
-/posts.service.ts
+/users.service.ts
 
 1. Import the select object
 ----------------------------------------------
 	import { 
 		select,
 		modelName,
-	} from '@models/posts/common/constants';
+	} from '@models/users/common/constants';
 ----------------------------------------------
 
 2. Add the select object to the constructor

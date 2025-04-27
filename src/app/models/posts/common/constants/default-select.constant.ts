@@ -25,7 +25,7 @@ export const select = {};
 	import { 
 		select,
 		modelName,
-	} from '@models/posts/common/constants';
+	} from '@models/users/common/constants';
 ----------------------------------------------
 
 2. Add the select object to the constructor

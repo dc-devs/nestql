@@ -1,12 +1,12 @@
-// @ts-nocheck TODO: fix this
 import { getDMMF } from '@prisma/internals';
+import { DMMF } from '@prisma/generator-helper';
 
 interface IOptions {
 	modelName?: string;
 }
 
-export const getParsedPrismaSchema = async ({ modelName }: IOptions = {}) => {
-	let parsedPrismaSchema = null;
+export const getPrismaModel = async ({ modelName }: IOptions = {}) => {
+	let parsedPrismaSchema: DMMF.Model | DMMF.Model[] | null = null;
 	const dmmf = await getDMMF({
 		datamodelPath: './prisma/schema.prisma',
 	});
@@ -17,9 +17,9 @@ export const getParsedPrismaSchema = async ({ modelName }: IOptions = {}) => {
 	if (modelName) {
 		const model = models.find((model) => model.name === modelName);
 
-		parsedPrismaSchema = model;
+		parsedPrismaSchema = model as DMMF.Model;
 	} else {
-		parsedPrismaSchema = models;
+		parsedPrismaSchema = models as DMMF.Model[];
 	}
 
 	return parsedPrismaSchema;

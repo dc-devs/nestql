@@ -1,16 +1,17 @@
-import { plural } from 'pluralize';
-import { kebabCase } from 'change-case';
+import { JSCodeshift } from 'jscodeshift';
 
 interface IOptions {
 	root: any;
-	jscodeshift: any;
-	modelName: string;
+	moduleName: string;
+	modulePath: string;
+	jscodeshift: JSCodeshift;
 }
 
 export const addNewImportBeforeLast = ({
 	root,
+	moduleName,
+	modulePath,
 	jscodeshift,
-	modelName,
 }: IOptions) => {
 	const {
 		literal,
@@ -19,18 +20,12 @@ export const addNewImportBeforeLast = ({
 		importDeclaration,
 		ImportDeclaration,
 	} = jscodeshift;
-	const modelNamePascalPluralized = plural(modelName);
-	const modelNameLowerKebabCasePluralized = kebabCase(
-		modelNamePascalPluralized,
-	);
-	const modulePath = `@models/${modelNameLowerKebabCasePluralized}/${modelNameLowerKebabCasePluralized}.module`;
-	const moduleName = `${modelNamePascalPluralized}Module`;
 
 	// Find all import declarations
 	const imports = root.find(ImportDeclaration);
 
 	// If there are no imports, return unchanged
-	if (imports.length === 0) return root.toSource();
+	if (imports.length === 0) return root.toSource({ quote: 'single' });
 
 	// Get the last import
 	const lastImportIndex = imports.length - 1;
@@ -42,15 +37,15 @@ export const addNewImportBeforeLast = ({
 		literal(modulePath),
 	);
 
-	// Check if PostsModule import already exists
-	const existingPostsImport = imports.filter((path) => {
+	// Check if import already exists
+	const existingImport = imports.filter((path) => {
 		const source = path.value.source.value;
 		const importPathExists = source === modulePath;
 
 		return importPathExists;
 	});
 
-	if (existingPostsImport.length === 0) {
+	if (existingImport.length === 0) {
 		// Simply insert the new import before the last one
 		// Note: Cannot find an easy way to insert the new import after the last one without line break :/
 		lastImport.insertBefore(newImport);
