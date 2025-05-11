@@ -3,7 +3,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 @ObjectType()
 export class LogOutResponse {
 	@Field()
-	userId: number;
+	userId: string;
 
 	@Field()
 	isAuthenticated: boolean;

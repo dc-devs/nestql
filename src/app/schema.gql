@@ -47,7 +47,7 @@ scalar JSON
 
 type LogOutResponse {
   isAuthenticated: Boolean!
-  userId: Float!
+  userId: String!
 }
 
 type Mutation {
@@ -58,7 +58,7 @@ type Mutation {
   deletePost(select: SelectInput, where: PostWhereUniqueInput!): Post!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
   signIn(sessionInput: SessionInput!): SessionResponse!
-  signOut(userId: Float!): LogOutResponse!
+  signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
   updateManyPost(data: PostUpdateManyMutationInput!, where: PostWhereInput): Count!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!

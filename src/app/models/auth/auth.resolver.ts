@@ -23,7 +23,7 @@ export class AuthResolver {
 	signOut(
 		@Context('res') response,
 		@Context('req') request,
-		@Args('userId') userId: number,
+		@Args('userId') userId: string,
 	) {
 		return this.authService.signOut({ request, response, userId });
 	}
