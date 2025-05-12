@@ -2,7 +2,7 @@ import { Field } from '@nestjs/graphql';
 import { ObjectType } from '@nestjs/graphql';
 import { ID } from '@nestjs/graphql';
 import { UserRole } from '../prisma/user-role.enum';
-import { Post } from '../post/post.model';
+import { ChatSession } from '../chat-session/chat-session.model';
 import { UserCount } from './user-count.output';
 
 @ObjectType()
@@ -26,8 +26,8 @@ export class User {
     @Field(() => Date, {nullable:false})
     updatedAt!: Date;
 
-    @Field(() => [Post], {nullable:true})
-    posts?: Array<Post>;
+    @Field(() => [ChatSession], {nullable:true})
+    chatSessions?: Array<ChatSession>;
 
     @Field(() => UserCount, {nullable:false})
     _count?: UserCount;

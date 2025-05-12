@@ -1,4 +1,4 @@
-import { users, posts } from '@seeds/index';
+import { users } from '@seeds/index';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -6,10 +6,6 @@ const prisma = new PrismaClient();
 const main = async () => {
 	await prisma.user.createMany({
 		data: [...users],
-	});
-
-	await prisma.post.createMany({
-		data: [...posts],
 	});
 };
 

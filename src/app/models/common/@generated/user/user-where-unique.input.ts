@@ -6,7 +6,7 @@ import { UserWhereInput } from './user-where.input';
 import { StringFilter } from '../prisma/string-filter.input';
 import { EnumUserRoleFilter } from '../prisma/enum-user-role-filter.input';
 import { DateTimeFilter } from '../prisma/date-time-filter.input';
-import { PostListRelationFilter } from '../post/post-list-relation-filter.input';
+import { ChatSessionListRelationFilter } from '../chat-session/chat-session-list-relation-filter.input';
 
 @InputType()
 export class UserWhereUniqueInput {
@@ -39,6 +39,6 @@ export class UserWhereUniqueInput {
     @Field(() => DateTimeFilter, {nullable:true})
     updatedAt?: DateTimeFilter;
 
-    @Field(() => PostListRelationFilter, {nullable:true})
-    posts?: PostListRelationFilter;
+    @Field(() => ChatSessionListRelationFilter, {nullable:true})
+    chatSessions?: ChatSessionListRelationFilter;
 }

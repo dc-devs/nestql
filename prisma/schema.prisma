@@ -46,22 +46,32 @@ model User {
 	createdAt				DateTime		@default(now())
 	updatedAt				DateTime		@updatedAt
 
-	posts						Post[]
+	chatSessions			ChatSession[]
 
 	@@index([id, email])
 }
 
-model Post {
-	id							Int				@default(autoincrement()) @id
-	
-	title						String
-	content						String			
+model ChatSession {
+	id					Int					@default(autoincrement()) @id
+	userId				Int
+	user				User				@relation(fields: [userId], references: [id])
+	title				String?
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@updatedAt
+	messages			Message[]
 
-	createdAt					DateTime		@default(now())
-	updatedAt					DateTime		@updatedAt
+	@@index([id, userId])
+}
 
-	userId						Int
-	user						User 			@relation(fields: [userId], references: [id])
+model Message {
+	id					Int					@default(autoincrement()) @id
+	sessionId			Int
+	session				ChatSession			@relation(fields: [sessionId], references: [id])
+	sender				String				// 'user' or 'agent'
+	type				String				@default("text") // 'text', 'tool_call', 'tool_result', etc.
+	content				String?
+	payload				Json?
+	timestamp			DateTime			@default(now())
 
-	@@index([id])
+	@@index([id, sessionId])
 }
