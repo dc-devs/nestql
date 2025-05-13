@@ -12,19 +12,19 @@ import { ChatSessionSumOrderByAggregateInput } from './chat-session-sum-order-by
 export class ChatSessionOrderByWithAggregationInput {
 
     @Field(() => SortOrder, {nullable:true})
-    id?: keyof typeof SortOrder;
-
-    @Field(() => SortOrder, {nullable:true})
-    userId?: keyof typeof SortOrder;
+    id?: `${SortOrder}`;
 
     @Field(() => SortOrderInput, {nullable:true})
     title?: SortOrderInput;
 
     @Field(() => SortOrder, {nullable:true})
-    createdAt?: keyof typeof SortOrder;
+    createdAt?: `${SortOrder}`;
 
     @Field(() => SortOrder, {nullable:true})
-    updatedAt?: keyof typeof SortOrder;
+    updatedAt?: `${SortOrder}`;
+
+    @Field(() => SortOrder, {nullable:true})
+    userId?: `${SortOrder}`;
 
     @Field(() => ChatSessionCountOrderByAggregateInput, {nullable:true})
     _count?: ChatSessionCountOrderByAggregateInput;

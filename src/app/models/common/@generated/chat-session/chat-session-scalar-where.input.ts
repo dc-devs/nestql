@@ -19,9 +19,6 @@ export class ChatSessionScalarWhereInput {
     @Field(() => IntFilter, {nullable:true})
     id?: IntFilter;
 
-    @Field(() => IntFilter, {nullable:true})
-    userId?: IntFilter;
-
     @Field(() => StringNullableFilter, {nullable:true})
     title?: StringNullableFilter;
 
@@ -30,4 +27,7 @@ export class ChatSessionScalarWhereInput {
 
     @Field(() => DateTimeFilter, {nullable:true})
     updatedAt?: DateTimeFilter;
+
+    @Field(() => IntFilter, {nullable:true})
+    userId?: IntFilter;
 }

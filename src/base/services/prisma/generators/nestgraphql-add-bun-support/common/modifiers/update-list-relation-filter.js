@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import { kebabCase } from 'change-case';
 import { checkIfFileExists } from '../utils/check-if-file-exists.js';
 
 export const updateListRelationFilterFile = async ({
@@ -8,10 +9,11 @@ export const updateListRelationFilterFile = async ({
 }) => {
 	// Setup variables
 	const modelName = model.name;
-	const modelNameLower = modelName.toLowerCase();
+	const modelNameKebab = kebabCase(modelName);
+	const modelNameKebabLower = modelNameKebab.toLowerCase();
 	const filePath = join(
 		baseDirectory,
-		`${modelNameLower}/${modelNameLower}-list-relation-filter.input.ts`,
+		`${modelNameKebabLower}/${modelNameKebabLower}-list-relation-filter.input.ts`,
 	);
 
 	// Check if the file exists

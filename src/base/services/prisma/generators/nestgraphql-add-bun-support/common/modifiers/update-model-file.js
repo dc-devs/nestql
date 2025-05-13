@@ -1,14 +1,17 @@
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import { kebabCase } from 'change-case';
 import { checkIfFileExists } from '../utils/check-if-file-exists.js';
 import { getFieldsWithRelationFromFields } from '../utils/get-fields-with-relation-from-fields.js';
+
 export const updateModelFile = async ({ model, baseDirectory }) => {
 	// Setup variables
 	const modelName = model.name;
-	const modelNameLower = modelName.toLowerCase();
+	const modelNameKebab = kebabCase(modelName);
+	const modelNameKebabLower = modelNameKebab.toLowerCase();
 	const filePath = join(
 		baseDirectory,
-		`${modelNameLower}/${modelNameLower}.model.ts`,
+		`${modelNameKebabLower}/${modelNameKebabLower}.model.ts`,
 	);
 
 	// Check if the file exists

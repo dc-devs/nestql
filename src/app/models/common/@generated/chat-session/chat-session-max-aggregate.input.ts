@@ -8,9 +8,6 @@ export class ChatSessionMaxAggregateInput {
     id?: true;
 
     @Field(() => Boolean, {nullable:true})
-    userId?: true;
-
-    @Field(() => Boolean, {nullable:true})
     title?: true;
 
     @Field(() => Boolean, {nullable:true})
@@ -18,4 +15,7 @@ export class ChatSessionMaxAggregateInput {
 
     @Field(() => Boolean, {nullable:true})
     updatedAt?: true;
+
+    @Field(() => Boolean, {nullable:true})
+    userId?: true;
 }

@@ -17,8 +17,8 @@ export class User {
     @Field(() => String, {nullable:false})
     password!: string;
 
-    @Field(() => UserRole, {nullable:false,defaultValue:'USER'})
-    role!: keyof typeof UserRole;
+    @Field(() => UserRole, {defaultValue:'USER',nullable:false})
+    role!: `${UserRole}`;
 
     @Field(() => Date, {nullable:false})
     createdAt!: Date;

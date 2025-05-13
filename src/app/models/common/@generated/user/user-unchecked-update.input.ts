@@ -21,7 +21,7 @@ export class UserUncheckedUpdateInput {
     password?: string;
 
     @Field(() => UserRole, {nullable:true})
-    role?: keyof typeof UserRole;
+    role?: `${UserRole}`;
 
     @Field(() => Date, {nullable:true})
     createdAt?: Date | string;

@@ -23,7 +23,7 @@ export class ChatSessionGroupByArgs {
     orderBy?: Array<ChatSessionOrderByWithAggregationInput>;
 
     @Field(() => [ChatSessionScalarFieldEnum], {nullable:false})
-    by!: Array<keyof typeof ChatSessionScalarFieldEnum>;
+    by!: Array<`${ChatSessionScalarFieldEnum}`>;
 
     @Field(() => ChatSessionScalarWhereWithAggregatesInput, {nullable:true})
     having?: ChatSessionScalarWhereWithAggregatesInput;

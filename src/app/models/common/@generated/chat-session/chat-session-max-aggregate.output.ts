@@ -8,9 +8,6 @@ export class ChatSessionMaxAggregate {
     @Field(() => Int, {nullable:true})
     id?: number;
 
-    @Field(() => Int, {nullable:true})
-    userId?: number;
-
     @Field(() => String, {nullable:true})
     title?: string;
 
@@ -19,4 +16,7 @@ export class ChatSessionMaxAggregate {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => Int, {nullable:true})
+    userId?: number;
 }

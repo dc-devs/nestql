@@ -9,9 +9,6 @@ export class ChatSessionCountAggregate {
     id!: number;
 
     @Field(() => Int, {nullable:false})
-    userId!: number;
-
-    @Field(() => Int, {nullable:false})
     title!: number;
 
     @Field(() => Int, {nullable:false})
@@ -19,6 +16,9 @@ export class ChatSessionCountAggregate {
 
     @Field(() => Int, {nullable:false})
     updatedAt!: number;
+
+    @Field(() => Int, {nullable:false})
+    userId!: number;
 
     @Field(() => Int, {nullable:false})
     _all!: number;

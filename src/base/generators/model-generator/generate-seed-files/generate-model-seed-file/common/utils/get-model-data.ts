@@ -7,7 +7,7 @@ const values = {
 	Int: 1,
 	Boolean: true,
 	Float: 1.1,
-	DateTime: new Date(),
+	DateTime: new Date().toISOString(),
 };
 
 export const getModelData = ({ fieldsAndTypes }: IOptions) => {

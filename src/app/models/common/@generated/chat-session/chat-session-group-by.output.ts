@@ -13,9 +13,6 @@ export class ChatSessionGroupBy {
     @Field(() => Int, {nullable:false})
     id!: number;
 
-    @Field(() => Int, {nullable:false})
-    userId!: number;
-
     @Field(() => String, {nullable:true})
     title?: string;
 
@@ -24,6 +21,9 @@ export class ChatSessionGroupBy {
 
     @Field(() => Date, {nullable:false})
     updatedAt!: Date | string;
+
+    @Field(() => Int, {nullable:false})
+    userId!: number;
 
     @Field(() => ChatSessionCountAggregate, {nullable:true})
     _count?: ChatSessionCountAggregate;

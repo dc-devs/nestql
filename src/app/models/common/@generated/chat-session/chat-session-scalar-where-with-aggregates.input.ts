@@ -19,9 +19,6 @@ export class ChatSessionScalarWhereWithAggregatesInput {
     @Field(() => IntWithAggregatesFilter, {nullable:true})
     id?: IntWithAggregatesFilter;
 
-    @Field(() => IntWithAggregatesFilter, {nullable:true})
-    userId?: IntWithAggregatesFilter;
-
     @Field(() => StringNullableWithAggregatesFilter, {nullable:true})
     title?: StringNullableWithAggregatesFilter;
 
@@ -30,4 +27,7 @@ export class ChatSessionScalarWhereWithAggregatesInput {
 
     @Field(() => DateTimeWithAggregatesFilter, {nullable:true})
     updatedAt?: DateTimeWithAggregatesFilter;
+
+    @Field(() => IntWithAggregatesFilter, {nullable:true})
+    userId?: IntWithAggregatesFilter;
 }

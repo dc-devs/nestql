@@ -2,11 +2,10 @@ import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import { Int } from '@nestjs/graphql';
 import { ChatSessionWhereInput } from './chat-session-where.input';
-import { IntFilter } from '../prisma/int-filter.input';
 import { StringNullableFilter } from '../prisma/string-nullable-filter.input';
 import { DateTimeFilter } from '../prisma/date-time-filter.input';
-import { UserScalarRelationFilter } from '../prisma/user-scalar-relation-filter.input';
-import { MessageListRelationFilter } from '../message/message-list-relation-filter.input';
+import { IntFilter } from '../prisma/int-filter.input';
+import { UserScalarRelationFilter } from '../user/user-scalar-relation-filter.input';
 
 @InputType()
 export class ChatSessionWhereUniqueInput {
@@ -23,9 +22,6 @@ export class ChatSessionWhereUniqueInput {
     @Field(() => [ChatSessionWhereInput], {nullable:true})
     NOT?: Array<ChatSessionWhereInput>;
 
-    @Field(() => IntFilter, {nullable:true})
-    userId?: IntFilter;
-
     @Field(() => StringNullableFilter, {nullable:true})
     title?: StringNullableFilter;
 
@@ -35,9 +31,9 @@ export class ChatSessionWhereUniqueInput {
     @Field(() => DateTimeFilter, {nullable:true})
     updatedAt?: DateTimeFilter;
 
+    @Field(() => IntFilter, {nullable:true})
+    userId?: IntFilter;
+
     @Field(() => UserScalarRelationFilter, {nullable:true})
     user?: UserScalarRelationFilter;
-
-    @Field(() => MessageListRelationFilter, {nullable:true})
-    messages?: MessageListRelationFilter;
 }

@@ -21,7 +21,7 @@ export class UserGroupBy {
     password!: string;
 
     @Field(() => UserRole, {nullable:false})
-    role!: keyof typeof UserRole;
+    role!: `${UserRole}`;
 
     @Field(() => Date, {nullable:false})
     createdAt!: Date | string;

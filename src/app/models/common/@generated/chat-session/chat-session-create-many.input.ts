@@ -8,9 +8,6 @@ export class ChatSessionCreateManyInput {
     @Field(() => Int, {nullable:true})
     id?: number;
 
-    @Field(() => Int, {nullable:false})
-    userId!: number;
-
     @Field(() => String, {nullable:true})
     title?: string;
 
@@ -19,4 +16,7 @@ export class ChatSessionCreateManyInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => Int, {nullable:false})
+    userId!: number;
 }

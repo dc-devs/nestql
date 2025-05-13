@@ -6,11 +6,11 @@ import { ChatSessionWhereInput } from './chat-session-where.input';
 export class ChatSessionListRelationFilter {
 
     @Field(() => ChatSessionWhereInput, {nullable:true})
-    every?: ChatSessionWhereInput;
+    every?: ChatSessionWhereInput & {};
 
     @Field(() => ChatSessionWhereInput, {nullable:true})
-    some?: ChatSessionWhereInput;
+    some?: ChatSessionWhereInput & {};
 
     @Field(() => ChatSessionWhereInput, {nullable:true})
-    none?: ChatSessionWhereInput;
+    none?: ChatSessionWhereInput & {};
 }

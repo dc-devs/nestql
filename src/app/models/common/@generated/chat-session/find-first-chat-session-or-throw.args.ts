@@ -28,5 +28,5 @@ export class FindFirstChatSessionOrThrowArgs {
     skip?: number;
 
     @Field(() => [ChatSessionScalarFieldEnum], {nullable:true})
-    distinct?: Array<keyof typeof ChatSessionScalarFieldEnum>;
+    distinct?: Array<`${ChatSessionScalarFieldEnum}`>;
 }

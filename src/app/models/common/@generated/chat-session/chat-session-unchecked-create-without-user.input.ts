@@ -1,7 +1,6 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import { Int } from '@nestjs/graphql';
-import { MessageUncheckedCreateNestedManyWithoutSessionInput } from '../message/message-unchecked-create-nested-many-without-session.input';
 
 @InputType()
 export class ChatSessionUncheckedCreateWithoutUserInput {
@@ -17,7 +16,4 @@ export class ChatSessionUncheckedCreateWithoutUserInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
-
-    @Field(() => MessageUncheckedCreateNestedManyWithoutSessionInput, {nullable:true})
-    messages?: MessageUncheckedCreateNestedManyWithoutSessionInput;
 }

@@ -8,13 +8,13 @@ import { NestedEnumUserRoleFilter } from './nested-enum-user-role-filter.input';
 export class NestedEnumUserRoleWithAggregatesFilter {
 
     @Field(() => UserRole, {nullable:true})
-    equals?: keyof typeof UserRole;
+    equals?: `${UserRole}`;
 
     @Field(() => [UserRole], {nullable:true})
-    in?: Array<keyof typeof UserRole>;
+    in?: Array<`${UserRole}`>;
 
     @Field(() => [UserRole], {nullable:true})
-    notIn?: Array<keyof typeof UserRole>;
+    notIn?: Array<`${UserRole}`>;
 
     @Field(() => NestedEnumUserRoleWithAggregatesFilter, {nullable:true})
     not?: NestedEnumUserRoleWithAggregatesFilter;

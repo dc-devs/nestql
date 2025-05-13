@@ -1,0 +1,515 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ChatSession {
+  createdAt: DateTime!
+  id: ID!
+  title: String
+  updatedAt: DateTime!
+  user: User!
+  userId: Int!
+}
+
+input ChatSessionCreateInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+  user: UserCreateNestedOneWithoutChatSessionsInput!
+}
+
+input ChatSessionCreateManyInput {
+  createdAt: DateTime
+  id: Int
+  title: String
+  updatedAt: DateTime
+  userId: Int!
+}
+
+input ChatSessionCreateManyUserInput {
+  createdAt: DateTime
+  id: Int
+  title: String
+  updatedAt: DateTime
+}
+
+input ChatSessionCreateManyUserInputEnvelope {
+  data: [ChatSessionCreateManyUserInput!]!
+  skipDuplicates: Boolean
+}
+
+input ChatSessionCreateNestedManyWithoutUserInput {
+  connect: [ChatSessionWhereUniqueInput!]
+  connectOrCreate: [ChatSessionCreateOrConnectWithoutUserInput!]
+  create: [ChatSessionCreateWithoutUserInput!]
+  createMany: ChatSessionCreateManyUserInputEnvelope
+}
+
+input ChatSessionCreateOrConnectWithoutUserInput {
+  create: ChatSessionCreateWithoutUserInput!
+  where: ChatSessionWhereUniqueInput!
+}
+
+input ChatSessionCreateWithoutUserInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input ChatSessionListRelationFilter {
+  every: ChatSessionWhereInput
+  none: ChatSessionWhereInput
+  some: ChatSessionWhereInput
+}
+
+input ChatSessionOrderByRelationAggregateInput {
+  _count: SortOrder
+}
+
+input ChatSessionOrderByWithRelationInput {
+  createdAt: SortOrder
+  id: SortOrder
+  title: SortOrderInput
+  updatedAt: SortOrder
+  user: UserOrderByWithRelationInput
+  userId: SortOrder
+}
+
+enum ChatSessionScalarFieldEnum {
+  createdAt
+  id
+  title
+  updatedAt
+  userId
+}
+
+input ChatSessionScalarWhereInput {
+  AND: [ChatSessionScalarWhereInput!]
+  NOT: [ChatSessionScalarWhereInput!]
+  OR: [ChatSessionScalarWhereInput!]
+  createdAt: DateTimeFilter
+  id: IntFilter
+  title: StringNullableFilter
+  updatedAt: DateTimeFilter
+  userId: IntFilter
+}
+
+input ChatSessionUpdateInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+  user: UserUpdateOneRequiredWithoutChatSessionsNestedInput
+}
+
+input ChatSessionUpdateManyMutationInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input ChatSessionUpdateManyWithWhereWithoutUserInput {
+  data: ChatSessionUpdateManyMutationInput!
+  where: ChatSessionScalarWhereInput!
+}
+
+input ChatSessionUpdateManyWithoutUserNestedInput {
+  connect: [ChatSessionWhereUniqueInput!]
+  connectOrCreate: [ChatSessionCreateOrConnectWithoutUserInput!]
+  create: [ChatSessionCreateWithoutUserInput!]
+  createMany: ChatSessionCreateManyUserInputEnvelope
+  delete: [ChatSessionWhereUniqueInput!]
+  deleteMany: [ChatSessionScalarWhereInput!]
+  disconnect: [ChatSessionWhereUniqueInput!]
+  set: [ChatSessionWhereUniqueInput!]
+  update: [ChatSessionUpdateWithWhereUniqueWithoutUserInput!]
+  updateMany: [ChatSessionUpdateManyWithWhereWithoutUserInput!]
+  upsert: [ChatSessionUpsertWithWhereUniqueWithoutUserInput!]
+}
+
+input ChatSessionUpdateWithWhereUniqueWithoutUserInput {
+  data: ChatSessionUpdateWithoutUserInput!
+  where: ChatSessionWhereUniqueInput!
+}
+
+input ChatSessionUpdateWithoutUserInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+}
+
+input ChatSessionUpsertWithWhereUniqueWithoutUserInput {
+  create: ChatSessionCreateWithoutUserInput!
+  update: ChatSessionUpdateWithoutUserInput!
+  where: ChatSessionWhereUniqueInput!
+}
+
+input ChatSessionWhereInput {
+  AND: [ChatSessionWhereInput!]
+  NOT: [ChatSessionWhereInput!]
+  OR: [ChatSessionWhereInput!]
+  createdAt: DateTimeFilter
+  id: IntFilter
+  title: StringNullableFilter
+  updatedAt: DateTimeFilter
+  user: UserScalarRelationFilter
+  userId: IntFilter
+}
+
+input ChatSessionWhereUniqueInput {
+  AND: [ChatSessionWhereInput!]
+  NOT: [ChatSessionWhereInput!]
+  OR: [ChatSessionWhereInput!]
+  createdAt: DateTimeFilter
+  id: Int
+  title: StringNullableFilter
+  updatedAt: DateTimeFilter
+  user: UserScalarRelationFilter
+  userId: IntFilter
+}
+
+type Count {
+  count: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DateTimeFilter {
+  equals: DateTime
+  gt: DateTime
+  gte: DateTime
+  in: [DateTime!]
+  lt: DateTime
+  lte: DateTime
+  not: NestedDateTimeFilter
+  notIn: [DateTime!]
+}
+
+input EnumUserRoleFilter {
+  equals: UserRole
+  in: [UserRole!]
+  not: NestedEnumUserRoleFilter
+  notIn: [UserRole!]
+}
+
+input IntFilter {
+  equals: Int
+  gt: Int
+  gte: Int
+  in: [Int!]
+  lt: Int
+  lte: Int
+  not: NestedIntFilter
+  notIn: [Int!]
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type LogOutResponse {
+  isAuthenticated: Boolean!
+  userId: String!
+}
+
+type Mutation {
+  createChatSession(data: ChatSessionCreateInput!, select: SelectInput): ChatSession!
+  createManyChatSession(data: [ChatSessionCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createManyUser(data: [UserCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createUser(data: UserCreateInput!, select: SelectInput): User!
+  deleteChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
+  deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
+  signIn(sessionInput: SessionInput!): SessionResponse!
+  signOut(userId: String!): LogOutResponse!
+  signUp(data: UserCreateInput!): SessionResponse!
+  updateChatSession(data: ChatSessionUpdateInput!, select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
+  updateManyChatSession(data: ChatSessionUpdateManyMutationInput!, where: ChatSessionWhereInput): Count!
+  updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
+  updateUser(data: UserUpdateInput!, select: SelectInput, where: UserWhereUniqueInput!): User!
+}
+
+input NestedDateTimeFilter {
+  equals: DateTime
+  gt: DateTime
+  gte: DateTime
+  in: [DateTime!]
+  lt: DateTime
+  lte: DateTime
+  not: NestedDateTimeFilter
+  notIn: [DateTime!]
+}
+
+input NestedEnumUserRoleFilter {
+  equals: UserRole
+  in: [UserRole!]
+  not: NestedEnumUserRoleFilter
+  notIn: [UserRole!]
+}
+
+input NestedIntFilter {
+  equals: Int
+  gt: Int
+  gte: Int
+  in: [Int!]
+  lt: Int
+  lte: Int
+  not: NestedIntFilter
+  notIn: [Int!]
+}
+
+input NestedStringFilter {
+  contains: String
+  endsWith: String
+  equals: String
+  gt: String
+  gte: String
+  in: [String!]
+  lt: String
+  lte: String
+  not: NestedStringFilter
+  notIn: [String!]
+  startsWith: String
+}
+
+input NestedStringNullableFilter {
+  contains: String
+  endsWith: String
+  equals: String
+  gt: String
+  gte: String
+  in: [String!]
+  lt: String
+  lte: String
+  not: NestedStringNullableFilter
+  notIn: [String!]
+  startsWith: String
+}
+
+enum NullsOrder {
+  first
+  last
+}
+
+type Query {
+  currentUser: SessionResponse!
+  findAllChatSessions(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): [ChatSession!]!
+  findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
+  findFirstChatSession(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): ChatSession
+  findFirstUser(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): User
+  findOneChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession
+  findOneUser(select: SelectInput, where: UserWhereUniqueInput!): User
+}
+
+enum QueryMode {
+  default
+  insensitive
+}
+
+input SelectInput {
+  include: JSON
+}
+
+input SessionInput {
+  email: String!
+  password: String!
+}
+
+type SessionResponse {
+  isAuthenticated: Boolean
+  user: User
+}
+
+enum SortOrder {
+  asc
+  desc
+}
+
+input SortOrderInput {
+  nulls: NullsOrder
+  sort: SortOrder!
+}
+
+input StringFilter {
+  contains: String
+  endsWith: String
+  equals: String
+  gt: String
+  gte: String
+  in: [String!]
+  lt: String
+  lte: String
+  mode: QueryMode
+  not: NestedStringFilter
+  notIn: [String!]
+  startsWith: String
+}
+
+input StringNullableFilter {
+  contains: String
+  endsWith: String
+  equals: String
+  gt: String
+  gte: String
+  in: [String!]
+  lt: String
+  lte: String
+  mode: QueryMode
+  not: NestedStringNullableFilter
+  notIn: [String!]
+  startsWith: String
+}
+
+type User {
+  _count: UserCount!
+  chatSessions: [ChatSession!]
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  password: String!
+  role: UserRole!
+  updatedAt: DateTime!
+}
+
+type UserCount {
+  chatSessions: Int!
+}
+
+input UserCreateInput {
+  chatSessions: ChatSessionCreateNestedManyWithoutUserInput
+  createdAt: DateTime
+  email: String!
+  password: String!
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserCreateManyInput {
+  createdAt: DateTime
+  email: String!
+  id: Int
+  password: String!
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserCreateNestedOneWithoutChatSessionsInput {
+  connect: UserWhereUniqueInput
+  connectOrCreate: UserCreateOrConnectWithoutChatSessionsInput
+  create: UserCreateWithoutChatSessionsInput
+}
+
+input UserCreateOrConnectWithoutChatSessionsInput {
+  create: UserCreateWithoutChatSessionsInput!
+  where: UserWhereUniqueInput!
+}
+
+input UserCreateWithoutChatSessionsInput {
+  createdAt: DateTime
+  email: String!
+  password: String!
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserOrderByWithRelationInput {
+  chatSessions: ChatSessionOrderByRelationAggregateInput
+  createdAt: SortOrder
+  email: SortOrder
+  id: SortOrder
+  password: SortOrder
+  role: SortOrder
+  updatedAt: SortOrder
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  USER
+}
+
+enum UserScalarFieldEnum {
+  createdAt
+  email
+  id
+  password
+  role
+  updatedAt
+}
+
+input UserScalarRelationFilter {
+  is: UserWhereInput
+  isNot: UserWhereInput
+}
+
+input UserUpdateInput {
+  chatSessions: ChatSessionUpdateManyWithoutUserNestedInput
+  createdAt: DateTime
+  email: String
+  password: String
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserUpdateManyMutationInput {
+  createdAt: DateTime
+  email: String
+  password: String
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserUpdateOneRequiredWithoutChatSessionsNestedInput {
+  connect: UserWhereUniqueInput
+  connectOrCreate: UserCreateOrConnectWithoutChatSessionsInput
+  create: UserCreateWithoutChatSessionsInput
+  update: UserUpdateToOneWithWhereWithoutChatSessionsInput
+  upsert: UserUpsertWithoutChatSessionsInput
+}
+
+input UserUpdateToOneWithWhereWithoutChatSessionsInput {
+  data: UserUpdateWithoutChatSessionsInput!
+  where: UserWhereInput
+}
+
+input UserUpdateWithoutChatSessionsInput {
+  createdAt: DateTime
+  email: String
+  password: String
+  role: UserRole
+  updatedAt: DateTime
+}
+
+input UserUpsertWithoutChatSessionsInput {
+  create: UserCreateWithoutChatSessionsInput!
+  update: UserUpdateWithoutChatSessionsInput!
+  where: UserWhereInput
+}
+
+input UserWhereInput {
+  AND: [UserWhereInput!]
+  NOT: [UserWhereInput!]
+  OR: [UserWhereInput!]
+  chatSessions: ChatSessionListRelationFilter
+  createdAt: DateTimeFilter
+  email: StringFilter
+  id: IntFilter
+  password: StringFilter
+  role: EnumUserRoleFilter
+  updatedAt: DateTimeFilter
+}
+
+input UserWhereUniqueInput {
+  AND: [UserWhereInput!]
+  NOT: [UserWhereInput!]
+  OR: [UserWhereInput!]
+  chatSessions: ChatSessionListRelationFilter
+  createdAt: DateTimeFilter
+  email: String
+  id: Int
+  password: StringFilter
+  role: EnumUserRoleFilter
+  updatedAt: DateTimeFilter
+}
