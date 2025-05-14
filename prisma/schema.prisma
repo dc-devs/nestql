@@ -53,26 +53,30 @@ model User {
 
 model ChatSession {
 	id					Int					@default(autoincrement()) @id
-	title				String?
+	title				String
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@updatedAt
-	// messages			Message[]
 	
-	userId				Int
+	userId				Int					
 	user				User				@relation(fields: [userId], references: [id])
+	
+	messages			Message[]
 
 	@@index([id, userId])
 }
 
-// model Message {
-// 	id					Int					@default(autoincrement()) @id
-// 	sessionId			Int
-// 	session				ChatSession			@relation(fields: [sessionId], references: [id])
-// 	sender				String				// 'user' or 'agent'
-// 	type				String				@default("text") // 'text', 'tool_call', 'tool_result', etc.
-// 	content				String?
-// 	payload				Json?
-// 	timestamp			DateTime			@default(now())
+model Message {
+	id					Int					@default(autoincrement()) @id
+	sender				String				// 'user' or 'agent'
+	type				String				@default("text") // 'text', 'tool_call', 'tool_result', etc.
+	content				String?
+	payload				Json?
+	timestamp			DateTime			@default(now())
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@updatedAt
+	
+	chatSessionId		Int
+	chatSession			ChatSession			@relation(fields: [chatSessionId], references: [id])
 
-// 	@@index([id, sessionId])
-// }
+	@@index([id, chatSessionId])
+}

@@ -13,8 +13,8 @@ export class ChatSessionGroupBy {
     @Field(() => Int, {nullable:false})
     id!: number;
 
-    @Field(() => String, {nullable:true})
-    title?: string;
+    @Field(() => String, {nullable:false})
+    title!: string;
 
     @Field(() => Date, {nullable:false})
     createdAt!: Date | string;

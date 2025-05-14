@@ -22,7 +22,7 @@ export const generateModelServiceFile = async ({
 		`${modelNameLowerKebabCasePluralized}.service.ts`,
 	);
 	const fileContent = `import { Injectable } from '@nestjs/common';
-import { modelName} from '@models/${modelNameLowerKebabCasePluralized}/common/constants';
+import { select, modelName} from '@models/${modelNameLowerKebabCasePluralized}/common/constants';
 import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { ${modelName} } from '@generated/${modelNameLowerKebabCaseSingular}/${modelNameLowerKebabCaseSingular}.model';
@@ -51,6 +51,7 @@ export class ${modelNamePascalPluralized}Service extends BasePrismaService<
 > {
 	constructor(protected prisma: PrismaService) {
 		super({
+			select,
 			prisma,
 			modelName,
 		});

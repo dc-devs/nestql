@@ -1,7 +1,7 @@
 import { Resolver } from '@nestjs/graphql';
-import { User } from '@generated/user/user.model';
+import { BasePrismaResolver } from '@base/app/resolver/base-prisma-resolver';
 import { UsersService } from '@models/users/users.service';
-import { UserSafe } from '@models/users/common/entities/user-safe';
+import { User } from '@generated/user/user.model';
 import { UserUpdateInput } from '@generated/user/user-update.input';
 import { UserCreateInput } from '@generated/user/user-create.input';
 import { FindManyUserArgs } from '@generated/user/find-many-user.args';
@@ -10,12 +10,11 @@ import { DeleteOneUserArgs } from '@generated/user/delete-one-user.args';
 import { FindUniqueUserArgs } from '@generated/user/find-unique-user.args';
 import { CreateManyUserArgs } from '@generated/user/create-many-user.args';
 import { UpdateManyUserArgs } from '@generated/user/update-many-user.args';
-import { BasePrismaResolver } from '@base/app/resolver/base-prisma-resolver';
 import { UserWhereUniqueInput } from '@generated/user/user-where-unique.input';
 
 @Resolver(() => User)
 export class UsersResolver extends BasePrismaResolver<
-	UserSafe,
+	User,
 	UserWhereUniqueInput,
 	FindUniqueUserArgs,
 	FindFirstUserArgs,

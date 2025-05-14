@@ -1,36 +1,29 @@
 const chatSessions = [];
 
 const firstChatSession = {
+	title: 'Lorem ipsum',
 	userId: 1,
-	title: 'Tariffs summary',
 };
 chatSessions.push(firstChatSession);
 
 const secondChatSession = {
+	title: 'Lorem ipsum',
 	userId: 1,
-	title: 'Stephen Curry injury',
 };
 chatSessions.push(secondChatSession);
 
 const thirdChatSession = {
+	title: 'Lorem ipsum',
 	userId: 1,
-	title: 'Ammend git commit',
 };
 chatSessions.push(thirdChatSession);
 
 const fourthChatSession = {
+	title: 'Lorem ipsum',
 	userId: 1,
-	title: 'Microplastics in the ocean',
 };
 chatSessions.push(fourthChatSession);
 
 const allChatSessionsCount = chatSessions.length;
 
-export {
-	chatSessions,
-	firstChatSession,
-	secondChatSession,
-	thirdChatSession,
-	fourthChatSession,
-	allChatSessionsCount,
-};
+export { chatSessions, firstChatSession, secondChatSession, thirdChatSession, fourthChatSession, allChatSessionsCount };

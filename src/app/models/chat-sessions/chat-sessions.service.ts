@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { modelName} from '@models/chat-sessions/common/constants';
+import { select,modelName } from '@models/chat-sessions/common/constants';
 import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { ChatSession } from '@generated/chat-session/chat-session.model';
@@ -28,6 +28,7 @@ export class ChatSessionsService extends BasePrismaService<
 > {
 	constructor(protected prisma: PrismaService) {
 		super({
+			select,
 			prisma,
 			modelName,
 		});

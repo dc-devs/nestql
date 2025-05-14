@@ -26,7 +26,9 @@ export const modelGenerator = async () => {
 		handleNoPrismaSchemaError({ modelName });
 	}
 
-	await generateModelFiles({ modelName });
+	console.log('prismaModel', prismaModel);
+
+	await generateModelFiles({ modelName, prismaModel });
 	await updateAppModelFiles({ modelName });
 
 	await generateSeedFiles({ modelName, prismaModel });

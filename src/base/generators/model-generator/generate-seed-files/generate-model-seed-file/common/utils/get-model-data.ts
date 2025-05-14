@@ -8,6 +8,9 @@ const values = {
 	Boolean: true,
 	Float: 1.1,
 	DateTime: new Date().toISOString(),
+	Json: {
+		content: 'Lorem ipsum',
+	},
 };
 
 export const getModelData = ({ fieldsAndTypes }: IOptions) => {

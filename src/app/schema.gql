@@ -3,17 +3,24 @@
 # ------------------------------------------------------
 
 type ChatSession {
+  _count: ChatSessionCount!
   createdAt: DateTime!
   id: ID!
-  title: String
+  messages: [Message!]
+  title: String!
   updatedAt: DateTime!
   user: User!
   userId: Int!
 }
 
+type ChatSessionCount {
+  messages: Int!
+}
+
 input ChatSessionCreateInput {
   createdAt: DateTime
-  title: String
+  messages: MessageCreateNestedManyWithoutChatSessionInput
+  title: String!
   updatedAt: DateTime
   user: UserCreateNestedOneWithoutChatSessionsInput!
 }
@@ -21,7 +28,7 @@ input ChatSessionCreateInput {
 input ChatSessionCreateManyInput {
   createdAt: DateTime
   id: Int
-  title: String
+  title: String!
   updatedAt: DateTime
   userId: Int!
 }
@@ -29,7 +36,7 @@ input ChatSessionCreateManyInput {
 input ChatSessionCreateManyUserInput {
   createdAt: DateTime
   id: Int
-  title: String
+  title: String!
   updatedAt: DateTime
 }
 
@@ -45,14 +52,33 @@ input ChatSessionCreateNestedManyWithoutUserInput {
   createMany: ChatSessionCreateManyUserInputEnvelope
 }
 
+input ChatSessionCreateNestedOneWithoutMessagesInput {
+  connect: ChatSessionWhereUniqueInput
+  connectOrCreate: ChatSessionCreateOrConnectWithoutMessagesInput
+  create: ChatSessionCreateWithoutMessagesInput
+}
+
+input ChatSessionCreateOrConnectWithoutMessagesInput {
+  create: ChatSessionCreateWithoutMessagesInput!
+  where: ChatSessionWhereUniqueInput!
+}
+
 input ChatSessionCreateOrConnectWithoutUserInput {
   create: ChatSessionCreateWithoutUserInput!
   where: ChatSessionWhereUniqueInput!
 }
 
+input ChatSessionCreateWithoutMessagesInput {
+  createdAt: DateTime
+  title: String!
+  updatedAt: DateTime
+  user: UserCreateNestedOneWithoutChatSessionsInput!
+}
+
 input ChatSessionCreateWithoutUserInput {
   createdAt: DateTime
-  title: String
+  messages: MessageCreateNestedManyWithoutChatSessionInput
+  title: String!
   updatedAt: DateTime
 }
 
@@ -69,7 +95,8 @@ input ChatSessionOrderByRelationAggregateInput {
 input ChatSessionOrderByWithRelationInput {
   createdAt: SortOrder
   id: SortOrder
-  title: SortOrderInput
+  messages: MessageOrderByRelationAggregateInput
+  title: SortOrder
   updatedAt: SortOrder
   user: UserOrderByWithRelationInput
   userId: SortOrder
@@ -83,19 +110,25 @@ enum ChatSessionScalarFieldEnum {
   userId
 }
 
+input ChatSessionScalarRelationFilter {
+  is: ChatSessionWhereInput
+  isNot: ChatSessionWhereInput
+}
+
 input ChatSessionScalarWhereInput {
   AND: [ChatSessionScalarWhereInput!]
   NOT: [ChatSessionScalarWhereInput!]
   OR: [ChatSessionScalarWhereInput!]
   createdAt: DateTimeFilter
   id: IntFilter
-  title: StringNullableFilter
+  title: StringFilter
   updatedAt: DateTimeFilter
   userId: IntFilter
 }
 
 input ChatSessionUpdateInput {
   createdAt: DateTime
+  messages: MessageUpdateManyWithoutChatSessionNestedInput
   title: String
   updatedAt: DateTime
   user: UserUpdateOneRequiredWithoutChatSessionsNestedInput
@@ -126,13 +159,34 @@ input ChatSessionUpdateManyWithoutUserNestedInput {
   upsert: [ChatSessionUpsertWithWhereUniqueWithoutUserInput!]
 }
 
+input ChatSessionUpdateOneRequiredWithoutMessagesNestedInput {
+  connect: ChatSessionWhereUniqueInput
+  connectOrCreate: ChatSessionCreateOrConnectWithoutMessagesInput
+  create: ChatSessionCreateWithoutMessagesInput
+  update: ChatSessionUpdateToOneWithWhereWithoutMessagesInput
+  upsert: ChatSessionUpsertWithoutMessagesInput
+}
+
+input ChatSessionUpdateToOneWithWhereWithoutMessagesInput {
+  data: ChatSessionUpdateWithoutMessagesInput!
+  where: ChatSessionWhereInput
+}
+
 input ChatSessionUpdateWithWhereUniqueWithoutUserInput {
   data: ChatSessionUpdateWithoutUserInput!
   where: ChatSessionWhereUniqueInput!
 }
 
+input ChatSessionUpdateWithoutMessagesInput {
+  createdAt: DateTime
+  title: String
+  updatedAt: DateTime
+  user: UserUpdateOneRequiredWithoutChatSessionsNestedInput
+}
+
 input ChatSessionUpdateWithoutUserInput {
   createdAt: DateTime
+  messages: MessageUpdateManyWithoutChatSessionNestedInput
   title: String
   updatedAt: DateTime
 }
@@ -143,13 +197,20 @@ input ChatSessionUpsertWithWhereUniqueWithoutUserInput {
   where: ChatSessionWhereUniqueInput!
 }
 
+input ChatSessionUpsertWithoutMessagesInput {
+  create: ChatSessionCreateWithoutMessagesInput!
+  update: ChatSessionUpdateWithoutMessagesInput!
+  where: ChatSessionWhereInput
+}
+
 input ChatSessionWhereInput {
   AND: [ChatSessionWhereInput!]
   NOT: [ChatSessionWhereInput!]
   OR: [ChatSessionWhereInput!]
   createdAt: DateTimeFilter
   id: IntFilter
-  title: StringNullableFilter
+  messages: MessageListRelationFilter
+  title: StringFilter
   updatedAt: DateTimeFilter
   user: UserScalarRelationFilter
   userId: IntFilter
@@ -161,7 +222,8 @@ input ChatSessionWhereUniqueInput {
   OR: [ChatSessionWhereInput!]
   createdAt: DateTimeFilter
   id: Int
-  title: StringNullableFilter
+  messages: MessageListRelationFilter
+  title: StringFilter
   updatedAt: DateTimeFilter
   user: UserScalarRelationFilter
   userId: IntFilter
@@ -210,24 +272,262 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+input JsonNullableFilter {
+  array_contains: JSON
+  array_ends_with: JSON
+  array_starts_with: JSON
+  equals: JSON
+  gt: JSON
+  gte: JSON
+  lt: JSON
+  lte: JSON
+  not: JSON
+  path: [String!]
+  string_contains: String
+  string_ends_with: String
+  string_starts_with: String
+}
+
 type LogOutResponse {
   isAuthenticated: Boolean!
   userId: String!
 }
 
+type Message {
+  chatSession: ChatSession!
+  chatSessionId: Int!
+  content: String
+  createdAt: DateTime!
+  id: ID!
+  payload: JSON
+  sender: String!
+  timestamp: DateTime!
+  type: String!
+  updatedAt: DateTime!
+}
+
+input MessageCreateInput {
+  chatSession: ChatSessionCreateNestedOneWithoutMessagesInput!
+  content: String
+  createdAt: DateTime
+  payload: JSON
+  sender: String!
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageCreateManyChatSessionInput {
+  content: String
+  createdAt: DateTime
+  id: Int
+  payload: JSON
+  sender: String!
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageCreateManyChatSessionInputEnvelope {
+  data: [MessageCreateManyChatSessionInput!]!
+  skipDuplicates: Boolean
+}
+
+input MessageCreateManyInput {
+  chatSessionId: Int!
+  content: String
+  createdAt: DateTime
+  id: Int
+  payload: JSON
+  sender: String!
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageCreateNestedManyWithoutChatSessionInput {
+  connect: [MessageWhereUniqueInput!]
+  connectOrCreate: [MessageCreateOrConnectWithoutChatSessionInput!]
+  create: [MessageCreateWithoutChatSessionInput!]
+  createMany: MessageCreateManyChatSessionInputEnvelope
+}
+
+input MessageCreateOrConnectWithoutChatSessionInput {
+  create: MessageCreateWithoutChatSessionInput!
+  where: MessageWhereUniqueInput!
+}
+
+input MessageCreateWithoutChatSessionInput {
+  content: String
+  createdAt: DateTime
+  payload: JSON
+  sender: String!
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageListRelationFilter {
+  every: MessageWhereInput
+  none: MessageWhereInput
+  some: MessageWhereInput
+}
+
+input MessageOrderByRelationAggregateInput {
+  _count: SortOrder
+}
+
+input MessageOrderByWithRelationInput {
+  chatSession: ChatSessionOrderByWithRelationInput
+  chatSessionId: SortOrder
+  content: SortOrderInput
+  createdAt: SortOrder
+  id: SortOrder
+  payload: SortOrderInput
+  sender: SortOrder
+  timestamp: SortOrder
+  type: SortOrder
+  updatedAt: SortOrder
+}
+
+enum MessageScalarFieldEnum {
+  chatSessionId
+  content
+  createdAt
+  id
+  payload
+  sender
+  timestamp
+  type
+  updatedAt
+}
+
+input MessageScalarWhereInput {
+  AND: [MessageScalarWhereInput!]
+  NOT: [MessageScalarWhereInput!]
+  OR: [MessageScalarWhereInput!]
+  chatSessionId: IntFilter
+  content: StringNullableFilter
+  createdAt: DateTimeFilter
+  id: IntFilter
+  payload: JsonNullableFilter
+  sender: StringFilter
+  timestamp: DateTimeFilter
+  type: StringFilter
+  updatedAt: DateTimeFilter
+}
+
+input MessageUpdateInput {
+  chatSession: ChatSessionUpdateOneRequiredWithoutMessagesNestedInput
+  content: String
+  createdAt: DateTime
+  payload: JSON
+  sender: String
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageUpdateManyMutationInput {
+  content: String
+  createdAt: DateTime
+  payload: JSON
+  sender: String
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageUpdateManyWithWhereWithoutChatSessionInput {
+  data: MessageUpdateManyMutationInput!
+  where: MessageScalarWhereInput!
+}
+
+input MessageUpdateManyWithoutChatSessionNestedInput {
+  connect: [MessageWhereUniqueInput!]
+  connectOrCreate: [MessageCreateOrConnectWithoutChatSessionInput!]
+  create: [MessageCreateWithoutChatSessionInput!]
+  createMany: MessageCreateManyChatSessionInputEnvelope
+  delete: [MessageWhereUniqueInput!]
+  deleteMany: [MessageScalarWhereInput!]
+  disconnect: [MessageWhereUniqueInput!]
+  set: [MessageWhereUniqueInput!]
+  update: [MessageUpdateWithWhereUniqueWithoutChatSessionInput!]
+  updateMany: [MessageUpdateManyWithWhereWithoutChatSessionInput!]
+  upsert: [MessageUpsertWithWhereUniqueWithoutChatSessionInput!]
+}
+
+input MessageUpdateWithWhereUniqueWithoutChatSessionInput {
+  data: MessageUpdateWithoutChatSessionInput!
+  where: MessageWhereUniqueInput!
+}
+
+input MessageUpdateWithoutChatSessionInput {
+  content: String
+  createdAt: DateTime
+  payload: JSON
+  sender: String
+  timestamp: DateTime
+  type: String
+  updatedAt: DateTime
+}
+
+input MessageUpsertWithWhereUniqueWithoutChatSessionInput {
+  create: MessageCreateWithoutChatSessionInput!
+  update: MessageUpdateWithoutChatSessionInput!
+  where: MessageWhereUniqueInput!
+}
+
+input MessageWhereInput {
+  AND: [MessageWhereInput!]
+  NOT: [MessageWhereInput!]
+  OR: [MessageWhereInput!]
+  chatSession: ChatSessionScalarRelationFilter
+  chatSessionId: IntFilter
+  content: StringNullableFilter
+  createdAt: DateTimeFilter
+  id: IntFilter
+  payload: JsonNullableFilter
+  sender: StringFilter
+  timestamp: DateTimeFilter
+  type: StringFilter
+  updatedAt: DateTimeFilter
+}
+
+input MessageWhereUniqueInput {
+  AND: [MessageWhereInput!]
+  NOT: [MessageWhereInput!]
+  OR: [MessageWhereInput!]
+  chatSession: ChatSessionScalarRelationFilter
+  chatSessionId: IntFilter
+  content: StringNullableFilter
+  createdAt: DateTimeFilter
+  id: Int
+  payload: JsonNullableFilter
+  sender: StringFilter
+  timestamp: DateTimeFilter
+  type: StringFilter
+  updatedAt: DateTimeFilter
+}
+
 type Mutation {
   createChatSession(data: ChatSessionCreateInput!, select: SelectInput): ChatSession!
   createManyChatSession(data: [ChatSessionCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createManyMessage(data: [MessageCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createManyUser(data: [UserCreateManyInput!]!, skipDuplicates: Boolean): Count!
+  createMessage(data: MessageCreateInput!, select: SelectInput): Message!
   createUser(data: UserCreateInput!, select: SelectInput): User!
   deleteChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
+  deleteMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
   updateChatSession(data: ChatSessionUpdateInput!, select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
   updateManyChatSession(data: ChatSessionUpdateManyMutationInput!, where: ChatSessionWhereInput): Count!
+  updateManyMessage(data: MessageUpdateManyMutationInput!, where: MessageWhereInput): Count!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
+  updateMessage(data: MessageUpdateInput!, select: SelectInput, where: MessageWhereUniqueInput!): Message!
   updateUser(data: UserUpdateInput!, select: SelectInput, where: UserWhereUniqueInput!): User!
 }
 
@@ -296,10 +596,13 @@ enum NullsOrder {
 type Query {
   currentUser: SessionResponse!
   findAllChatSessions(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): [ChatSession!]!
+  findAllMessages(cursor: MessageWhereUniqueInput, distinct: [MessageScalarFieldEnum!], orderBy: [MessageOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: MessageWhereInput): [Message!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
   findFirstChatSession(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): ChatSession
+  findFirstMessage(cursor: MessageWhereUniqueInput, distinct: [MessageScalarFieldEnum!], orderBy: [MessageOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: MessageWhereInput): Message
   findFirstUser(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): User
   findOneChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession
+  findOneMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message
   findOneUser(select: SelectInput, where: UserWhereUniqueInput!): User
 }
 

@@ -17,8 +17,8 @@ export const generateModelConstantsIndexFile = async ({
 		modelNamePascalPluralized,
 	);
 	const filePath = join(basePath, 'index.ts');
-	const fileContent = `export { modelName } from '@models/${modelNameLowerKebabCasePluralized}/common/constants/model-name.constant';
-export { select } from '@models/${modelNameLowerKebabCasePluralized}/common/constants/default-select.constant';
+	const fileContent = `export { select } from '@models/${modelNameLowerKebabCasePluralized}/common/constants/select.constant';
+export { modelName } from '@models/${modelNameLowerKebabCasePluralized}/common/constants/model-name.constant';
 `;
 
 	await writeFile(filePath, fileContent);

@@ -1,5 +1,6 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
+import { MessageUpdateManyWithoutChatSessionNestedInput } from '../message/message-update-many-without-chat-session-nested.input';
 
 @InputType()
 export class ChatSessionUpdateWithoutUserInput {
@@ -12,4 +13,7 @@ export class ChatSessionUpdateWithoutUserInput {
 
     @Field(() => Date, {nullable:true})
     updatedAt?: Date | string;
+
+    @Field(() => MessageUpdateManyWithoutChatSessionNestedInput, {nullable:true})
+    messages?: MessageUpdateManyWithoutChatSessionNestedInput;
 }
