@@ -15,12 +15,6 @@ export const executeTransform = async ({
 }: Params) => {
 	const filePath = filePaths[file];
 	const transformPath = transformPaths[transform];
-	console.log(
-		'[Generator]::executeTransform',
-		filePath,
-		transformPath,
-		options,
-	);
 
 	await executeJscodeshiftTransform({
 		filePath,
