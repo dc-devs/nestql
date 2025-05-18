@@ -9,13 +9,13 @@ import { ChatSessionsModule } from '@models/chat-sessions/chat-sessions.module';
 
 @Module({
 	imports: [
-        AuthModule,
-        UsersModule,
-        ConfigModule,
-        GraphQLModule,
-        ChatSessionsModule,
-        MessagesModule
-    ],
+		AuthModule,
+		UsersModule,
+		ConfigModule,
+		GraphQLModule,
+		ChatSessionsModule,
+		MessagesModule,
+	],
 	controllers: [AppController],
 	providers: [AppService],
 })

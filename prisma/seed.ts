@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const main = async () => {
-    await prisma.user.createMany({
+	await prisma.user.createMany({
 		data: [...users],
 	});
 
@@ -14,46 +14,6 @@ const main = async () => {
 
 	await prisma.message.createMany({
 		data: [...messages],
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.user.createMany({
-	    data: [...users]
-	});
-
-	await prisma.chatSession.createMany({
-	    data: [...chatSessions]
-	});
-
-	await prisma.message.createMany({
-	    data: [...messages]
 	});
 };
 

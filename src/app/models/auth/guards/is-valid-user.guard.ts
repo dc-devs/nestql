@@ -51,7 +51,6 @@ export class IsValidUser implements CanActivate {
 			const context = ctx.getContext();
 			const { req: request } = context;
 			const { sessionInput } = ctx.getArgs();
-
 			const user = await validateUser(sessionInput);
 
 			request.user = user;

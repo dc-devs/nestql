@@ -1,26 +1,32 @@
+import { UserRole } from '@prisma/client';
+import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
+
 const users = [];
+const password = '12345678';
 
 const firstUser = {
-	email: 'Lorem ipsum',
-	password: 'Lorem ipsum',
+	role: UserRole.SUPER_ADMIN,
+	email: 'david@nestql.com',
+	password: await hashPassword(password),
 };
 users.push(firstUser);
 
 const secondUser = {
-	email: 'Lorem ipsum',
-	password: 'Lorem ipsum',
+	role: UserRole.ADMIN,
+	email: 'admin@nestql.com',
+	password: await hashPassword(password),
 };
 users.push(secondUser);
 
 const thirdUser = {
-	email: 'Lorem ipsum',
-	password: 'Lorem ipsum',
+	email: 'demo@nestql.com',
+	password: await hashPassword(password),
 };
 users.push(thirdUser);
 
 const fourthUser = {
-	email: 'Lorem ipsum',
-	password: 'Lorem ipsum',
+	email: 'test@nestql.com',
+	password: await hashPassword(password),
 };
 users.push(fourthUser);
 
