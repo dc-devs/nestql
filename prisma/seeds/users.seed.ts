@@ -2,7 +2,7 @@ import { UserRole } from '@prisma/client';
 import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
 
 const users = [];
-const password = '12345678';
+const password = 'n@st123!';
 
 const firstUser = {
 	role: UserRole.SUPER_ADMIN,

@@ -3,6 +3,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Cookie } from '@base/session-store/common/enums';
 import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
+import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 import {
 	ILogOutProps,
@@ -23,8 +24,13 @@ export class AuthService {
 		request: IAuthenticatedRequest;
 		userCreateInput: UserCreateInput;
 	}) {
+		// Hash password
+		userCreateInput.password = await hashPassword(userCreateInput.password);
+
+		// Create user
 		const user = await this.usersService.create(userCreateInput);
 
+		// Set user in session
 		request.user = user;
 
 		return await this.signIn({ request });
@@ -59,7 +65,7 @@ export class AuthService {
 		return { isAuthenticated: false, userId };
 	}
 
-	getCurrentUserResponse({ request }: { request: IAuthenticatedRequest }) {
+	getAuthSession({ request }: { request: IAuthenticatedRequest }) {
 		const { user } = request;
 
 		return { isAuthenticated: true, user };

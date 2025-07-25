@@ -54,6 +54,8 @@
 		"prisma:migrate:dev:reset:full:docker": "docker exec -it nql-app-development bash -c 'rm -rf prisma/migrations && bunx prisma migrate reset --force && bunx prisma migrate dev --name init && bun prisma/seed.ts' && reset",
 		"---------NQL---------": "-----------------------------------",
 		"nql:dev:graphql:url": "echo 'https://local.nestql.com/graphql'",
+		"nql:gen:password": "bun -e \"import { randomBytes } from 'crypto'; console.log(randomBytes(12).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 16))\"",
+		"nql:gen:session-secret": "bun -e \"import { randomBytes } from 'crypto'; console.log(randomBytes(24).toString('hex'))\"",
 		"nql:dev:app:generate-certs": "sudo src/base/sh-scripts/generate-certs.sh && sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:update-hosts": "sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:setup": "bun nql:dev:app:generate-certs && bun nql:dev:app:update-hosts",

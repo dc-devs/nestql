@@ -39,7 +39,7 @@ export class AuthResolver {
 
 	@Query(() => SessionResponse)
 	@UseGuards(IsAuthenticated)
-	async currentUser(@Context('req') request: Request) {
-		return this.authService.getCurrentUserResponse({ request });
+	async getAuthSession(@Context('req') request: Request) {
+		return this.authService.getAuthSession({ request });
 	}
 }

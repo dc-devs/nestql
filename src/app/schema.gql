@@ -594,7 +594,6 @@ enum NullsOrder {
 }
 
 type Query {
-  currentUser: SessionResponse!
   findAllChatSessions(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): [ChatSession!]!
   findAllMessages(cursor: MessageWhereUniqueInput, distinct: [MessageScalarFieldEnum!], orderBy: [MessageOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: MessageWhereInput): [Message!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
@@ -604,6 +603,7 @@ type Query {
   findOneChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession
   findOneMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message
   findOneUser(select: SelectInput, where: UserWhereUniqueInput!): User
+  getAuthSession: SessionResponse!
 }
 
 enum QueryMode {
