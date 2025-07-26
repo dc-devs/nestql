@@ -1,0 +1,109 @@
+# NestQL Project - AI Assistant Instructions
+
+## Tech Stack & Environment
+
+-   **Runtime**: Bun (not Node.js) - use `bun` commands, not `npm` or `yarn`
+-   **Framework**: NestJS with TypeScript (ESNext modules)
+-   **Database**: PostgreSQL with Prisma ORM
+-   **API**: GraphQL-first with Apollo Server
+-   **AI Framework**: Mastra for agents, workflows, tools, and providers
+-   **Containerization**: Docker for development and production
+-   **Session Storage**: Redis with connect-redis
+-   **Testing**: Bun test runner
+
+## Code Style & Formatting
+
+-   Use **tabs for indentation** (tabWidth: 4) - never spaces
+-   **Single quotes** for strings
+-   **Semicolons** required
+-   **Trailing commas** in objects and arrays
+-   **Arrow parentheses** always: `(param) => {}`
+-   Follow existing **Prettier** and **ESLint** configurations
+-   Use **class-validator** decorators for validation
+
+## TypeScript Guidelines
+
+-   Target: **ESNext** with **ESNext modules**
+-   Use **strict typing** where possible, but `noImplicitAny: false` is allowed
+-   Leverage **decorators** extensively (NestJS pattern)
+-   Use **class-transformer** for data transformation
+-   Follow **path aliases** defined in tsconfig:
+    -   `@root/*` for root level
+    -   `@src/*` for src directory
+    -   `@base/*` for base utilities
+    -   `@models/*` for database models
+    -   `@services/*` for business logic
+    -   `@generated/*` for Prisma generated files
+
+## NestJS Architecture Patterns
+
+-   Use **dependency injection** throughout
+-   Create **modules** for feature organization
+-   Use **guards**, **interceptors**, and **pipes** appropriately
+-   Follow **controller → service → repository** pattern
+-   Use **DTOs** for data transfer objects
+-   Implement **GraphQL resolvers** with proper typing
+
+## Mastra AI Integration
+
+-   Organize AI code in `src/mastra/` directory:
+    -   `agents/` for AI agents
+    -   `workflows/` for business processes
+    -   `tools/` for AI tools and functions
+    -   `providers/` for AI model providers
+-   Follow **Mastra conventions** for agent and workflow definitions
+-   Use **proper typing** for AI tool inputs/outputs
+-   Implement **error handling** for AI operations
+
+## Docker & Development
+
+-   Use **Docker Compose** for local development
+-   Reference existing scripts for container management
+-   Use **multi-stage builds** for production
+-   Keep **environment variables** properly configured
+-   Use **volume mounts** for development hot-reload
+
+## File Organization
+
+-   Keep **related files together** in feature directories
+-   Use **barrel exports** (index.ts) for clean imports
+-   Place **shared utilities** in `src/base/`
+-   Keep **generated files** separate from source code
+-   Organize **tests** alongside source files
+
+## Security & Performance
+
+-   Implement **proper authentication** and authorization
+-   Use **rate limiting** for API endpoints
+-   Validate **all inputs** with class-validator
+-   Implement **proper logging** throughout the application
+-   Use **caching** strategies with Redis
+-   Follow **GraphQL security** best practices
+
+## Error Handling
+
+-   Use **custom exceptions** that extend NestJS base exceptions
+-   Implement **global exception filters**
+-   Provide **meaningful error messages**
+-   Log **errors appropriately** for debugging
+-   Handle **async operations** with proper error boundaries
+
+## Code Generation
+
+-   Leverage **Prisma generators** for model generation
+-   Use **NestJS CLI** for scaffolding when appropriate
+-   Keep **generated code** separate from manual code
+-   Use **custom generators** when needed (in `src/base/generators/`)
+
+## When suggesting changes:
+
+1. Always consider the **Bun runtime** differences from Node.js
+2. Respect the **existing architecture patterns**
+3. Follow the **established code style** strictly
+4. Consider **GraphQL schema** implications
+5. Think about **database performance** impact
+6. Ensure **AI integration** follows Mastra patterns
+7. Maintain **Docker compatibility**
+8. Preserve **path alias** usage
+9. You have access to Mastra AI documentation via MCP (mastra)
+10. You have access to NestJS documentation, and others via MCP (context7)

@@ -12,7 +12,7 @@ export const mastra: Mastra = new Mastra({
 	}),
 	logger: new PinoLogger({
 		name: 'Mastra',
-		level: 'debug',
+		level: 'info',
 	}),
 	server: {
 		port: 3004,

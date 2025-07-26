@@ -12,12 +12,6 @@ export const weatherInfoTool = createTool({
 	}),
 	description: `Fetches the current weather information for a given city`,
 	execute: async ({ context }) => {
-		// Tool logic here (e.g., API call)
-		console.log(
-			'Using tool to fetch weather information for',
-			context.city,
-		);
-
-		return { temperature: 20, conditions: 'Sunny' }; // Example return
+		return { temperature: 20, conditions: 'Sunny' };
 	},
 });
