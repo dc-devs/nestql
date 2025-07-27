@@ -1,11 +1,11 @@
 import { Request } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
-import { SessionInput } from '@models/auth/dto/inputs';
-import { AuthService } from '@models/auth/auth.service';
+import { SessionInput } from '@routes/auth/dto/inputs';
+import { AuthService } from '@routes/auth/auth.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
-import { SessionResponse, LogOutResponse } from '@models/auth/dto/models';
+import { SessionResponse, LogOutResponse } from '@routes/auth/dto/models';
 import { Resolver, Mutation, Query, Args, Context } from '@nestjs/graphql';
-import { IsValidUser, IsAuthenticated } from '@models/auth/guards';
+import { IsValidUser, IsAuthenticated } from '@routes/auth/guards';
 
 @Resolver()
 export class AuthResolver {

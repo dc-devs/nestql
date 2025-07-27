@@ -1,6 +1,6 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
 import { AppService } from '@src/app/app.service';
-import { AuthModule } from '@models/auth/auth.module';
+import { AuthModule } from '@routes/auth/auth.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from '@src/app/app.controller';
 import { UsersModule } from '@models/users/users.module';

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
-import { SessionInput } from '@models/auth/dto/inputs';
+import { SessionInput } from '@routes/auth/dto/inputs';
 import { UserSafe } from '@models/users/common/entities/user-safe';
 import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';

@@ -8,7 +8,7 @@ import { PrismaService } from '@root/src/base/services/prisma/service/prisma.ser
 import {
 	ILogOutProps,
 	IAuthenticatedRequest,
-} from '@models/auth/common/interfaces';
+} from '@routes/auth/common/interfaces';
 
 @Injectable()
 export class AuthService {

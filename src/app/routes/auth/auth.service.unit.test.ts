@@ -1,12 +1,12 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
-import { AuthService } from '@models/auth/auth.service';
-import { AuthResolver } from '@models/auth/auth.resolver';
-import { UsersModule } from '@models/users/users.module';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from '@routes/auth/auth.service';
+import { AuthResolver } from '@routes/auth/auth.resolver';
+import { UsersModule } from '@models/users/users.module';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
-describe('AuthResolver', () => {
-	let resolver: AuthResolver;
+describe('AuthService', () => {
+	let service: AuthService;
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
@@ -14,10 +14,10 @@ describe('AuthResolver', () => {
 			providers: [AuthResolver, AuthService, PrismaService],
 		}).compile();
 
-		resolver = module.get<AuthResolver>(AuthResolver);
+		service = module.get<AuthService>(AuthService);
 	});
 
 	test('should be defined', () => {
-		expect(resolver).toBeDefined();
+		expect(service).toBeDefined();
 	});
 });
