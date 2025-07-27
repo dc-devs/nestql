@@ -5,6 +5,7 @@ interface IOptions {
 	environment: string;
 	redisUrl: string | undefined;
 	databaseUrl: string | undefined;
+	mastraDatabaseUrl: string | undefined;
 }
 
 export const logInitMessage = ({
@@ -12,6 +13,7 @@ export const logInitMessage = ({
 	redisUrl,
 	environment,
 	databaseUrl,
+	mastraDatabaseUrl,
 }: IOptions) => {
 	const logger = new Logger('NestApplication');
 
@@ -22,5 +24,6 @@ export const logInitMessage = ({
 	logger.log('');
 	logger.log(`Redis: ${redisUrl}`);
 	logger.log(`Database: ${databaseUrl}`);
+	logger.log(`Mastra Database: ${mastraDatabaseUrl}`);
 	console.log('');
 };

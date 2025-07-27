@@ -22,6 +22,6 @@ services:
     volumes:
       - ${PWD}/src/base/docker/nql-nginx/certs:/etc/nginx/certs
       - ${PWD}/src/base/docker/nql-nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template
-    depends_on:
-      nql-app:
-        condition: service_healthy
+    # depends_on:
+    #   nql-app:
+    #     condition: service_healthy

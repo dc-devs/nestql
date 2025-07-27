@@ -39,5 +39,6 @@ export async function bootstrap<AppModule>({
 		environment,
 		redisUrl: Bun.env.REDIS_URL,
 		databaseUrl: Bun.env.DATABASE_URL,
+		mastraDatabaseUrl: Bun.env.MASTRA_DATABASE_URL,
 	});
 }
