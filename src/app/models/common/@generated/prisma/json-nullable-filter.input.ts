@@ -1,6 +1,7 @@
 import { Field } from '@nestjs/graphql';
 import { InputType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-type-json';
+import { QueryMode } from './query-mode.enum';
 
 @InputType()
 export class JsonNullableFilter {
@@ -10,6 +11,9 @@ export class JsonNullableFilter {
 
     @Field(() => [String], {nullable:true})
     path?: Array<string>;
+
+    @Field(() => QueryMode, {nullable:true})
+    mode?: `${QueryMode}`;
 
     @Field(() => String, {nullable:true})
     string_contains?: string;
@@ -21,13 +25,13 @@ export class JsonNullableFilter {
     string_ends_with?: string;
 
     @Field(() => GraphQLJSON, {nullable:true})
-    array_contains?: any;
-
-    @Field(() => GraphQLJSON, {nullable:true})
     array_starts_with?: any;
 
     @Field(() => GraphQLJSON, {nullable:true})
     array_ends_with?: any;
+
+    @Field(() => GraphQLJSON, {nullable:true})
+    array_contains?: any;
 
     @Field(() => GraphQLJSON, {nullable:true})
     lt?: any;

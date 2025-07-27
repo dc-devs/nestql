@@ -3,6 +3,7 @@ import { ArgsType } from '@nestjs/graphql';
 import { MessageUpdateManyMutationInput } from './message-update-many-mutation.input';
 import { Type } from 'class-transformer';
 import { MessageWhereInput } from './message-where.input';
+import { Int } from '@nestjs/graphql';
 
 @ArgsType()
 export class UpdateManyMessageArgs {
@@ -14,4 +15,7 @@ export class UpdateManyMessageArgs {
     @Field(() => MessageWhereInput, {nullable:true})
     @Type(() => MessageWhereInput)
     where?: MessageWhereInput;
+
+    @Field(() => Int, {nullable:true})
+    limit?: number;
 }

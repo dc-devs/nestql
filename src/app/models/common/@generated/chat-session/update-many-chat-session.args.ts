@@ -3,6 +3,7 @@ import { ArgsType } from '@nestjs/graphql';
 import { ChatSessionUpdateManyMutationInput } from './chat-session-update-many-mutation.input';
 import { Type } from 'class-transformer';
 import { ChatSessionWhereInput } from './chat-session-where.input';
+import { Int } from '@nestjs/graphql';
 
 @ArgsType()
 export class UpdateManyChatSessionArgs {
@@ -14,4 +15,7 @@ export class UpdateManyChatSessionArgs {
     @Field(() => ChatSessionWhereInput, {nullable:true})
     @Type(() => ChatSessionWhereInput)
     where?: ChatSessionWhereInput;
+
+    @Field(() => Int, {nullable:true})
+    limit?: number;
 }

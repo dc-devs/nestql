@@ -281,6 +281,7 @@ input JsonNullableFilter {
   gte: JSON
   lt: JSON
   lte: JSON
+  mode: QueryMode
   not: JSON
   path: [String!]
   string_contains: String
@@ -524,9 +525,9 @@ type Mutation {
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
   updateChatSession(data: ChatSessionUpdateInput!, select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
-  updateManyChatSession(data: ChatSessionUpdateManyMutationInput!, where: ChatSessionWhereInput): Count!
-  updateManyMessage(data: MessageUpdateManyMutationInput!, where: MessageWhereInput): Count!
-  updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): Count!
+  updateManyChatSession(data: ChatSessionUpdateManyMutationInput!, limit: Int, where: ChatSessionWhereInput): Count!
+  updateManyMessage(data: MessageUpdateManyMutationInput!, limit: Int, where: MessageWhereInput): Count!
+  updateManyUser(data: UserUpdateManyMutationInput!, limit: Int, where: UserWhereInput): Count!
   updateMessage(data: MessageUpdateInput!, select: SelectInput, where: MessageWhereUniqueInput!): Message!
   updateUser(data: UserUpdateInput!, select: SelectInput, where: UserWhereUniqueInput!): User!
 }
