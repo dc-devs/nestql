@@ -1,6 +1,5 @@
 # Base image for all stages
-# Hardocding to 1.1.29 to resolve Prisma generation issues with 1.1.30
-FROM oven/bun:1.1.29 AS base
+FROM oven/bun:1.2.19 AS base
 WORKDIR /usr/src/app
 
 # Install necessary tools for healthcheck
@@ -16,12 +15,12 @@ FROM base AS install
 
 # Install dependencies into temp directories
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
+COPY package.json bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
 # Install production dependencies separately
 RUN mkdir -p /temp/prod
-COPY package.json bun.lockb /temp/prod/
+COPY package.json bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 ###############################
