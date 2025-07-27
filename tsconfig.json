@@ -28,6 +28,7 @@
 			"@base/*": ["./src/base/*"],
 			"@seeds/*": ["./prisma/seeds/*"],
 			"@models/*": ["./src/app/models/*"],
+			"@routes/*": ["./src/app/routes/*"],
 			"@packages/*": ["./src/packages/*"],
 			"@services/*": ["./src/app/services/*"],
 			"@generated/*": ["./src/app/models/common/@generated/*"],

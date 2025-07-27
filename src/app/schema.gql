@@ -2,6 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Chat {
+  id: String!
+}
+
 type ChatSession {
   _count: ChatSessionCount!
   createdAt: DateTime!
@@ -521,6 +525,8 @@ type Mutation {
   deleteChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
   deleteMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
+  newChat: Chat!
+  newMessage: Chat!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!

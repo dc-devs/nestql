@@ -24,6 +24,22 @@ export interface ChatResponse {
 	metadata?: Record<string, any>;
 }
 
+export interface ConversationRequest {
+	messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+	agentId?: string;
+	resourceId?: string;
+	threadId?: string;
+}
+
+export interface ConversationResponse {
+	text: string;
+	metadata?: Record<string, any>;
+}
+
+export interface StreamingConversationRequest extends ConversationRequest {
+	onComplete?: (fullResponse: string) => Promise<void>;
+}
+
 export interface WorkflowExecutionRequest {
 	workflowId: string;
 	inputData: Record<string, any>;
@@ -168,6 +184,97 @@ export class MastraService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
+	 * Generate a response with conversation history and memory support
+	 */
+	async generateResponse(
+		request: ConversationRequest,
+	): Promise<ConversationResponse> {
+		try {
+			const agentId = request.agentId || 'chatAgent'; // Default to chatAgent
+			const agent = this.getAgent(agentId);
+
+			this.logger.debug(
+				`Generating response with agent '${agentId}' for ${request.messages.length} messages`,
+			);
+
+			const options: any = {};
+
+			// Add memory configuration if resourceId and threadId are provided
+			if (request.resourceId && request.threadId) {
+				options.memory = {
+					resource: request.resourceId,
+					thread: request.threadId,
+				};
+			}
+
+			const result = await agent.generate(request.messages, options);
+
+			return {
+				text: result.text,
+				metadata: {
+					agentId,
+					resourceId: request.resourceId,
+					threadId: request.threadId,
+					timestamp: new Date().toISOString(),
+				},
+			};
+		} catch (error) {
+			this.logger.error(
+				`Response generation failed: ${error.message}`,
+				error.stack,
+			);
+			throw new InternalServerErrorException(
+				`Response generation failed: ${error.message}`,
+			);
+		}
+	}
+
+	/**
+	 * Stream a response with conversation history and memory support
+	 */
+	async streamResponse(
+		request: StreamingConversationRequest,
+	): Promise<AsyncIterable<string>> {
+		try {
+			const agentId = request.agentId || 'chatAgent'; // Default to chatAgent
+			const agent = this.getAgent(agentId);
+
+			this.logger.debug(
+				`Streaming response with agent '${agentId}' for ${request.messages.length} messages`,
+			);
+
+			const options: any = {};
+
+			// Add memory configuration if resourceId and threadId are provided
+			if (request.resourceId && request.threadId) {
+				options.memory = {
+					resource: request.resourceId,
+					thread: request.threadId,
+				};
+			}
+
+			// Add onFinish callback if onComplete is provided
+			if (request.onComplete) {
+				options.onFinish = ({ text }: { text: string }) => {
+					request.onComplete!(text);
+				};
+			}
+
+			const stream = await agent.stream(request.messages, options);
+
+			return stream.textStream;
+		} catch (error) {
+			this.logger.error(
+				`Response streaming failed: ${error.message}`,
+				error.stack,
+			);
+			throw new InternalServerErrorException(
+				`Response streaming failed: ${error.message}`,
+			);
+		}
+	}
+
+	/**
 	 * Execute a workflow
 	 */
 	async executeWorkflow(
@@ -190,11 +297,17 @@ export class MastraService implements OnModuleInit, OnModuleDestroy {
 				`Workflow '${request.workflowId}' completed with status: ${result.status}`,
 			);
 
+			// Generate a simple runId since the actual runId might not be available in the result
+			const runId = `workflow_${request.workflowId}_${Date.now()}`;
+
 			return {
-				runId: run.id,
+				runId,
 				status: result.status as 'success' | 'failed' | 'suspended',
 				result: result.status === 'success' ? result.result : undefined,
-				error: result.status === 'failed' ? result.error : undefined,
+				error:
+					result.status === 'failed'
+						? String(result.error || 'Unknown error')
+						: undefined,
 				suspended:
 					result.status === 'suspended'
 						? result.suspended
@@ -241,10 +354,13 @@ export class MastraService implements OnModuleInit, OnModuleDestroy {
 			);
 
 			return {
-				runId: run.id,
+				runId, // Use the provided runId
 				status: result.status as 'success' | 'failed' | 'suspended',
 				result: result.status === 'success' ? result.result : undefined,
-				error: result.status === 'failed' ? result.error : undefined,
+				error:
+					result.status === 'failed'
+						? String(result.error || 'Unknown error')
+						: undefined,
 				suspended:
 					result.status === 'suspended'
 						? result.suspended
@@ -265,13 +381,15 @@ export class MastraService implements OnModuleInit, OnModuleDestroy {
 	 * Get list of available agents
 	 */
 	getAvailableAgents(): string[] {
-		return Object.keys(this._mastra.agents || {});
+		const agents = this._mastra.getAgents();
+		return Object.keys(agents || {});
 	}
 
 	/**
 	 * Get list of available workflows
 	 */
 	getAvailableWorkflows(): string[] {
-		return Object.keys(this._mastra.workflows || {});
+		const workflows = this._mastra.getWorkflows();
+		return Object.keys(workflows || {});
 	}
 }
