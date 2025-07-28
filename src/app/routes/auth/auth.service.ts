@@ -5,7 +5,7 @@ import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
 import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
-import {
+import type {
 	ILogOutProps,
 	IAuthenticatedRequest,
 } from '@routes/auth/common/interfaces';

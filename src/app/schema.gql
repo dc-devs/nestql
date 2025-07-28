@@ -3,7 +3,8 @@
 # ------------------------------------------------------
 
 type Chat {
-  id: String!
+  chatSession: ChatSession!
+  message: Message!
 }
 
 type ChatSession {
@@ -525,8 +526,7 @@ type Mutation {
   deleteChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
   deleteMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
-  newChat: Chat!
-  newMessage: Chat!
+  newChatMessage(input: NewChatInput!): Chat!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
@@ -593,6 +593,11 @@ input NestedStringNullableFilter {
   not: NestedStringNullableFilter
   notIn: [String!]
   startsWith: String
+}
+
+input NewChatInput {
+  """The message content from the user"""
+  message: String!
 }
 
 enum NullsOrder {
