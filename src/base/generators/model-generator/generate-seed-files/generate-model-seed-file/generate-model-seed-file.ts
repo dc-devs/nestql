@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { plural } from 'pluralize';
 import { writeFile } from 'fs/promises';
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 import { camelCase, kebabCase } from 'change-case';
 import {
 	getModelData,

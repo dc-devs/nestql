@@ -5,5 +5,5 @@ export const select = {
 	updatedAt: true,
 	userId: true,
 	user: true,
-	messages: true
-}
+	messages: true,
+};

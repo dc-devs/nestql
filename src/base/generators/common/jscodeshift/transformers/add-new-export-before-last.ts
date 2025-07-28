@@ -1,4 +1,4 @@
-import { JSCodeshift } from 'jscodeshift';
+import type { JSCodeshift } from 'jscodeshift';
 
 interface IOptions {
 	root: any;

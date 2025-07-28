@@ -1,4 +1,4 @@
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 import { generateModelConstantsFolder } from '@base/generators/model-generator/generate-model-files/generate-model-constants/generate-model-constants-folder';
 import { generateModelConstantsIndexFile } from '@base/generators/model-generator/generate-model-files/generate-model-constants/generate-model-constants-index-file';
 import { generateModelConstantsSelectFile } from '@base/generators/model-generator/generate-model-files/generate-model-constants/generate-model-constants-select-file';

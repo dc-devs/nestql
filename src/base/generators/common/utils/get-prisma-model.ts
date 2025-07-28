@@ -1,5 +1,5 @@
 import { getDMMF } from '@prisma/internals';
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 
 interface IOptions {
 	modelName?: string;

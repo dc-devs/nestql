@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 import { generateModelSeedFile } from '@root/src/base/generators/model-generator/generate-seed-files/generate-model-seed-file/generate-model-seed-file';
 
 interface IOptions {

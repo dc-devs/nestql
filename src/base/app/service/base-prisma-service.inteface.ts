@@ -1,4 +1,4 @@
-import { SelectInput, Count } from '@base/app/dto';
+import type { SelectInput, Count } from '@base/app/dto';
 
 export interface IBasePrismaService<
 	Entity,

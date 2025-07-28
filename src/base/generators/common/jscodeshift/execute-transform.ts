@@ -1,4 +1,4 @@
-import { File, Transform } from '@base/generators/common/enums';
+import type { File, Transform } from '@base/generators/common/enums';
 import { filePaths, transformPaths } from '@base/generators/common/constants';
 import { executeJscodeshiftTransform } from '@base/generators/common/jscodeshift/execute-jscodeshift-transform';
 

@@ -1,6 +1,6 @@
-import { SelectInput, Count } from '@base/app/dto';
-import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
-import { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
+import type { SelectInput, Count } from '@base/app/dto';
+import type { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
+import type { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
 
 interface IConstructorOptions {
 	modelName: string;

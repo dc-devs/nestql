@@ -1,9 +1,9 @@
 import { App } from '@base/common/enums';
-import { Type } from '@nestjs/common';
+import type { Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { logInitMessage } from '@base/common/utils';
 import { initializeSession } from '@base/session-store';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { port, corsOptions, validationPipe } from '@base/server/config';
 import {
 	environment,

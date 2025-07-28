@@ -22,6 +22,7 @@
 		"types": ["bun-types"], // Added for Bun type definitions
 		"allowJs": true,  // Add this line
 		"moduleDetection": "force", // Add this line
+		"verbatimModuleSyntax": true, // Enforce explicit type imports
 		"paths": {
 			"@root/*": ["./*"],
 			"@src/*": ["./src/*"],

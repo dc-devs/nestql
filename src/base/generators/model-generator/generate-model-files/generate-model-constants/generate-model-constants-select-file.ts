@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { writeFile } from 'fs/promises';
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 
 interface IOptions {
 	basePath: string;

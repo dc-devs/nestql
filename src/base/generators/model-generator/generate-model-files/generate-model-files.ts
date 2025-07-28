@@ -1,4 +1,4 @@
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 import { generateModelEnums } from '@base/generators/model-generator/generate-model-files/generate-model-enums/generate-model-enums';
 import { generateModelFolder } from '@base/generators/model-generator/generate-model-files/generate-model-folder';
 import { generateModelConstants } from '@base/generators/model-generator/generate-model-files/generate-model-constants/generate-model-constants';

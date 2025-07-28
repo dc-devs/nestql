@@ -1,4 +1,4 @@
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 import { updateAppModelFiles } from '@base/generators/model-generator/update-app-model-files';
 import { generateSeedFiles } from '@base/generators/model-generator/generate-seed-files';
 import { generateModelFiles } from '@base/generators/model-generator/generate-model-files';

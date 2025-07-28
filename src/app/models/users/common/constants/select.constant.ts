@@ -4,5 +4,5 @@ export const select = {
 	role: true,
 	createdAt: true,
 	updatedAt: true,
-	chatSessions: true
-}
+	chatSessions: true,
+};

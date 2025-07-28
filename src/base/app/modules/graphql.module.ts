@@ -1,6 +1,6 @@
 import { join } from 'path';
-import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { type GraphQLError, type GraphQLFormattedError } from 'graphql';
+import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule as GraphqlModule } from '@nestjs/graphql';
 import { isDevelopmentEnv } from '@base/common/constants/environment';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';

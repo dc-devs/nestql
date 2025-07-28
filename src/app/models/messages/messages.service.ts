@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { select, modelName} from '@models/messages/common/constants';
+import { select, modelName } from '@models/messages/common/constants';
 import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { Message } from '@generated/message/message.model';

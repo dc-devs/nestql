@@ -1,5 +1,5 @@
 import { describe, expect, beforeEach, test } from 'bun:test';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { UsersService } from '@models/users/users.service';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 

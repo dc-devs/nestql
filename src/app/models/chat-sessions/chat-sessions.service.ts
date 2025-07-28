@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { select,modelName } from '@models/chat-sessions/common/constants';
+import { select, modelName } from '@models/chat-sessions/common/constants';
 import { PrismaService } from '@base/services/prisma/service/prisma.service';
 import { BasePrismaService } from '@base/app/service/base-prisma-service';
 import { ChatSession } from '@generated/chat-session/chat-session.model';

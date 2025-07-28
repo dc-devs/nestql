@@ -8,5 +8,5 @@ export const select = {
 	createdAt: true,
 	updatedAt: true,
 	chatSessionId: true,
-	chatSession: true
-}
+	chatSession: true,
+};

@@ -1,6 +1,6 @@
 import { plural } from 'pluralize';
 import { camelCase } from 'change-case';
-import { JSCodeshift } from 'jscodeshift';
+import type { JSCodeshift } from 'jscodeshift';
 
 interface IOptions {
 	root: any;
