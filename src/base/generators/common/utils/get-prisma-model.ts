@@ -1,14 +1,18 @@
 import { getDMMF } from '@prisma/internals';
 import type { DMMF } from '@prisma/generator-helper';
+import { readFile } from 'fs/promises';
 
 interface IOptions {
 	modelName?: string;
 }
 
-export const getPrismaModel = async ({ modelName }: IOptions = {}) => {
+export const getPrismaModel = async ({ modelName }: IOptions = {}): Promise<
+	DMMF.Model | DMMF.Model[] | null
+> => {
 	let parsedPrismaSchema: DMMF.Model | DMMF.Model[] | null = null;
+	const schemaContent = await readFile('./prisma/schema.prisma', 'utf8');
 	const dmmf = await getDMMF({
-		datamodelPath: './prisma/schema.prisma',
+		datamodel: schemaContent,
 	});
 
 	// Access the parsed schema
