@@ -2,20 +2,14 @@ import { Module } from '@nestjs/common';
 import { ChatService } from '@routes/chat/chat.service';
 import { AuthModule } from '@routes/auth/auth.module';
 import { ChatResolver } from '@routes/chat/chat.resolver';
-import { MessagesService } from '@models/messages/messages.service';
+import { MessagesModule } from '@models/messages/messages.module';
 import { MastraModule } from '@src/app/modules/mastra/mastra.module';
 import { PrismaService } from '@base/services/prisma/service/prisma.service';
-import { ChatSessionsService } from '@models/chat-sessions/chat-sessions.service';
+import { ChatSessionsModule } from '@models/chat-sessions/chat-sessions.module';
 
 @Module({
-	imports: [MastraModule, AuthModule],
-	providers: [
-		ChatService,
-		ChatResolver,
-		PrismaService,
-		MessagesService,
-		ChatSessionsService,
-	],
+	imports: [AuthModule, MastraModule, MessagesModule, ChatSessionsModule],
+	providers: [PrismaService, ChatService, ChatResolver],
 	exports: [ChatService],
 })
 export class ChatModule {}
