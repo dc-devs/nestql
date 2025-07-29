@@ -7,6 +7,6 @@ export class Chat {
 	@Field(() => ChatSession)
 	chatSession: ChatSession;
 
-	@Field(() => Message)
-	message: Message;
+	@Field(() => [Message])
+	messages: Message[];
 }

@@ -4,7 +4,7 @@
 
 type Chat {
   chatSession: ChatSession!
-  message: Message!
+  messages: [Message!]!
 }
 
 type ChatSession {
@@ -517,6 +517,7 @@ input MessageWhereUniqueInput {
 }
 
 type Mutation {
+  chatNew(input: NewChatInput!): Chat!
   createChatSession(data: ChatSessionCreateInput!, select: SelectInput): ChatSession!
   createManyChatSession(data: [ChatSessionCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createManyMessage(data: [MessageCreateManyInput!]!, skipDuplicates: Boolean): Count!
@@ -526,7 +527,6 @@ type Mutation {
   deleteChatSession(select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
   deleteMessage(select: SelectInput, where: MessageWhereUniqueInput!): Message!
   deleteUser(select: SelectInput, where: UserWhereUniqueInput!): User!
-  newChatMessage(input: NewChatInput!): Chat!
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!

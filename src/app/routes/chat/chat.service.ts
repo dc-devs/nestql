@@ -41,7 +41,7 @@ export class ChatService {
 
 		return {
 			chatSession,
-			message: newMessage,
+			messages: [newMessage],
 		};
 	}
 }
