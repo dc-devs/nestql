@@ -4,7 +4,7 @@ import { /* InjectQueue, */ Processor, WorkerHost } from '@nestjs/bullmq';
 import { MessagesService } from '@models/messages/messages.service';
 import { MastraService } from '@src/app/modules/mastra/mastra.service';
 import { MessageType, MessageSender } from '@models/messages/common/enums';
-import { ChatJobs, ChatQueues } from '@routes/chat/queues/common/enums';
+import { ChatJobs, ChatQueues } from '@routes/chat/jobs/common/enums';
 
 interface GenerateAssistantJobData {
 	chatSessionId: number;

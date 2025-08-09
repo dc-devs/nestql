@@ -8,7 +8,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { connectedRedisClient } from '@base/session-store/initialize-redis';
 import { ChatAssistantGenerationStatus } from '@routes/chat/dto/models';
-import { ChatQueues, ChatJobs } from '@routes/chat/queues/common/enums';
+import { ChatQueues, ChatJobs } from '@routes/chat/jobs/common/enums';
 
 @Injectable()
 export class ChatService {
