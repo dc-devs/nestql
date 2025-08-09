@@ -1,1 +1,1 @@
-export { NewChatInput } from '@routes/chat/dto/inputs/new-chat.input';
+export { CreateChatInput } from '@routes/chat/dto/inputs/create-chat.input';

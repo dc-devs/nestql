@@ -1,24 +1,49 @@
 import { UseGuards } from '@nestjs/common';
 import { ChatService } from '@routes/chat/chat.service';
-import { Chat } from '@routes/chat/dto/models';
-import { NewChatInput } from '@routes/chat/dto/inputs';
+import { CreateChatInput } from '@routes/chat/dto/inputs';
 import { IsAuthenticated } from '@routes/auth/guards';
-import { Mutation, Resolver, Args, Context } from '@nestjs/graphql';
+import { Mutation, Resolver, Args, Context, Query, Int } from '@nestjs/graphql';
+import { ChatSession } from '@generated/chat-session/chat-session.model';
 import type { IAuthenticatedRequest } from '@routes/auth/common/interfaces/authenticated-request.interface';
+import { ChatAssistantGenerationStatus } from '@routes/chat/dto/models';
 
-@Resolver(() => Chat)
+@Resolver(() => ChatSession)
 @UseGuards(IsAuthenticated)
 export class ChatResolver {
 	constructor(private readonly chatService: ChatService) {}
 
-	@Mutation(() => Chat)
-	async chatNew(
+	@Mutation(() => ChatSession)
+	async createChat(
 		@Context('req') request: IAuthenticatedRequest,
-		@Args('input') input: NewChatInput,
-	): Promise<Chat> {
-		return await this.chatService.createChatWithMessage(
+		@Args('input') input: CreateChatInput,
+	): Promise<ChatSession> {
+		return await this.chatService.createChat({
 			input,
-			request.user!,
-		);
+			user: request.user!,
+		});
 	}
+
+	@Query(() => ChatAssistantGenerationStatus, {
+		nullable: true,
+		description: 'Get assistant job status for a chat session',
+	})
+	async chatAssistantGenerationStatus(
+		@Args('chatSessionId', { type: () => Int }) chatSessionId: number,
+	): Promise<ChatAssistantGenerationStatus | null> {
+		const result = await this.chatService.getChatAssistantGenerationStatus({
+			chatSessionId,
+		});
+		return result;
+	}
+
+	// @Mutation(() => Chat)
+	// async updateChat(
+	// 	@Context('req') request: IAuthenticatedRequest,
+	// 	@Args('input') input: ChatInput,
+	// ): Promise<Chat> {
+	// 	return await this.chatService.updateChat({
+	// 		input,
+	// 		user: request.user!,
+	// 	});
+	// }
 }

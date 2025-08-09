@@ -2,9 +2,9 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Chat {
-  chatSession: ChatSession!
-  messages: [Message!]!
+type ChatAssistantGenerationStatus {
+  lastUserMessageId: Int
+  status: String
 }
 
 type ChatSession {
@@ -236,6 +236,11 @@ input ChatSessionWhereUniqueInput {
 
 type Count {
   count: Int!
+}
+
+input CreateChatInput {
+  """The message content from the user"""
+  message: String!
 }
 
 """
@@ -517,7 +522,7 @@ input MessageWhereUniqueInput {
 }
 
 type Mutation {
-  chatNew(input: NewChatInput!): Chat!
+  createChat(input: CreateChatInput!): ChatSession!
   createChatSession(data: ChatSessionCreateInput!, select: SelectInput): ChatSession!
   createManyChatSession(data: [ChatSessionCreateManyInput!]!, skipDuplicates: Boolean): Count!
   createManyMessage(data: [MessageCreateManyInput!]!, skipDuplicates: Boolean): Count!
@@ -595,17 +600,14 @@ input NestedStringNullableFilter {
   startsWith: String
 }
 
-input NewChatInput {
-  """The message content from the user"""
-  message: String!
-}
-
 enum NullsOrder {
   first
   last
 }
 
 type Query {
+  """Get assistant job status for a chat session"""
+  chatAssistantGenerationStatus(chatSessionId: Int!): ChatAssistantGenerationStatus
   findAllChatSessions(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): [ChatSession!]!
   findAllMessages(cursor: MessageWhereUniqueInput, distinct: [MessageScalarFieldEnum!], orderBy: [MessageOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: MessageWhereInput): [Message!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
