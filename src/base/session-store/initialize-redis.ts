@@ -1,16 +1,18 @@
-import { createClient } from 'redis';
+import { createClient, type RedisClientType } from 'redis';
 import { Logger } from '@nestjs/common';
 
-let connectedRedisClient;
+type RedisClient = RedisClientType<any, any, any>;
 
-const redisClient = createClient({
+let connectedRedisClient: RedisClient | undefined;
+
+const redisClient: RedisClient = createClient({
 	url: Bun.env.REDIS_URL,
 });
 
-const initializeRedis = async () => {
+const initializeRedis = async (): Promise<RedisClient> => {
 	const logger = new Logger('Redis');
 
-	return new Promise(async (resolve, reject) => {
+	return new Promise<RedisClient>(async (resolve, reject) => {
 		redisClient.on('error', (error) => {
 			logger.error('Redis:', error);
 			console.log('');

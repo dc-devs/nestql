@@ -25,14 +25,20 @@ export class ChatResolver {
 
 	@Query(() => ChatAssistantGenerationStatus, {
 		nullable: true,
-		description: 'Get assistant job status for a chat session',
+		description:
+			'Get assistant generation job status for a specific user message',
 	})
-	async chatAssistantGenerationStatus(
-		@Args('chatSessionId', { type: () => Int }) chatSessionId: number,
+	async chatAssistantGenerationStatusByMessage(
+		@Args('chatSessionId', { type: () => Int })
+		chatSessionId: number,
+		@Args('lastUserMessageId', { type: () => Int })
+		lastUserMessageId: number,
 	): Promise<ChatAssistantGenerationStatus | null> {
-		const result = await this.chatService.getChatAssistantGenerationStatus({
-			chatSessionId,
-		});
+		const result =
+			await this.chatService.getChatAssistantGenerationStatusByMessage({
+				chatSessionId,
+				lastUserMessageId,
+			});
 		return result;
 	}
 

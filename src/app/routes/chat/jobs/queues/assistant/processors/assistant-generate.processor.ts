@@ -1,6 +1,6 @@
-import { Job /*, Queue */ } from 'bullmq';
+import { Job } from 'bullmq';
 import { Injectable, Logger } from '@nestjs/common';
-import { /* InjectQueue, */ Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { MessagesService } from '@models/messages/messages.service';
 import { MastraService } from '@src/app/modules/mastra/mastra.service';
 import { MessageType, MessageSender } from '@models/messages/common/enums';
@@ -26,22 +26,10 @@ export class AssistantGenerateProcessor extends WorkerHost {
 	constructor(
 		private readonly mastraService: MastraService,
 		private readonly messagesService: MessagesService,
-		// @InjectQueue(ChatJobs.AssistantGenerate)
-		// private readonly assistantQueue: Queue,
 	) {
 		super();
 	}
 
-	/**
-	 * Handle incoming jobs from the `chat.assistant` queue.
-	 *
-	 * Steps:
-	 * 1) Guard by job name to ensure we only process `chat.assistant.generate` tasks.
-	 * 2) Extract payload (session id, prompt).
-	 * 3) Generate an LLM response via Mastra `chatAgent`.
-	 * 4) Persist the assistant message associated to the chat session.
-	 * 5) Log completion for observability.
-	 */
 	async process(
 		job: Job<GenerateAssistantJobData, any, string>,
 	): Promise<void> {

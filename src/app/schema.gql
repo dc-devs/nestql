@@ -606,8 +606,8 @@ enum NullsOrder {
 }
 
 type Query {
-  """Get assistant job status for a chat session"""
-  chatAssistantGenerationStatus(chatSessionId: Int!): ChatAssistantGenerationStatus
+  """Get assistant generation job status for a specific user message"""
+  chatAssistantGenerationStatusByMessage(chatSessionId: Int!, lastUserMessageId: Int!): ChatAssistantGenerationStatus
   findAllChatSessions(cursor: ChatSessionWhereUniqueInput, distinct: [ChatSessionScalarFieldEnum!], orderBy: [ChatSessionOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: ChatSessionWhereInput): [ChatSession!]!
   findAllMessages(cursor: MessageWhereUniqueInput, distinct: [MessageScalarFieldEnum!], orderBy: [MessageOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: MessageWhereInput): [Message!]!
   findAllUsers(cursor: UserWhereUniqueInput, distinct: [UserScalarFieldEnum!], orderBy: [UserOrderByWithRelationInput!], select: SelectInput, skip: Int, take: Int, where: UserWhereInput): [User!]!
