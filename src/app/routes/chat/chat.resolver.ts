@@ -4,6 +4,7 @@ import { CreateChatInput } from '@routes/chat/dto/inputs';
 import { IsAuthenticated } from '@routes/auth/guards';
 import { Mutation, Resolver, Args, Context, Query, Int } from '@nestjs/graphql';
 import { ChatSession } from '@generated/chat-session/chat-session.model';
+import { Message } from '@generated/message/message.model';
 import type { IAuthenticatedRequest } from '@routes/auth/common/interfaces/authenticated-request.interface';
 import { ChatAssistantGenerationStatus } from '@routes/chat/dto/models';
 
@@ -23,12 +24,27 @@ export class ChatResolver {
 		});
 	}
 
+	@Mutation(() => Message)
+	async updateChat(
+		@Context('req') request: IAuthenticatedRequest,
+		@Args('chatSessionId', { type: () => Int })
+		chatSessionId: number,
+		@Args('input') input: CreateChatInput,
+	): Promise<Message> {
+		return await this.chatService.updateChat({
+			input,
+			chatSessionId,
+			user: request.user!,
+		});
+	}
+
 	@Query(() => ChatAssistantGenerationStatus, {
 		nullable: true,
 		description:
 			'Get assistant generation job status for a specific user message',
 	})
 	async chatAssistantGenerationStatusByMessage(
+		@Context('req') request: IAuthenticatedRequest,
 		@Args('chatSessionId', { type: () => Int })
 		chatSessionId: number,
 		@Args('lastUserMessageId', { type: () => Int })
@@ -38,18 +54,8 @@ export class ChatResolver {
 			await this.chatService.getChatAssistantGenerationStatusByMessage({
 				chatSessionId,
 				lastUserMessageId,
+				user: request.user!,
 			});
 		return result;
 	}
-
-	// @Mutation(() => Chat)
-	// async updateChat(
-	// 	@Context('req') request: IAuthenticatedRequest,
-	// 	@Args('input') input: ChatInput,
-	// ): Promise<Chat> {
-	// 	return await this.chatService.updateChat({
-	// 		input,
-	// 		user: request.user!,
-	// 	});
-	// }
 }

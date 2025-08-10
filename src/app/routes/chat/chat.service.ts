@@ -1,13 +1,15 @@
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateChatInput } from '@routes/chat/dto/inputs';
 import { UserSafe } from '@models/users/common/entities/user-safe';
 import { ChatQueues, ChatJobs } from '@routes/chat/jobs/common/enums';
 import { ChatAssistantGenerationStatus } from '@routes/chat/dto/models';
 import { ChatSession } from '@generated/chat-session/chat-session.model';
+import { Message } from '@generated/message/message.model';
 import { MessageType, MessageSender } from '@models/messages/common/enums';
 import { ChatSessionsService } from '@models/chat-sessions/chat-sessions.service';
+import { MessagesService } from '@models/messages/messages.service';
 
 @Injectable()
 export class ChatService {
@@ -15,6 +17,7 @@ export class ChatService {
 
 	constructor(
 		private readonly chatSessionsService: ChatSessionsService,
+		private readonly messageSessionsService: MessagesService,
 		@InjectQueue(ChatQueues.Assistant)
 		private readonly assistantQueue: Queue,
 	) {}
@@ -69,13 +72,85 @@ export class ChatService {
 		return chatSession;
 	}
 
+	async updateChat({
+		input,
+		chatSessionId,
+		user,
+	}: {
+		chatSessionId: number;
+		input: CreateChatInput;
+		user: UserSafe;
+	}): Promise<Message> {
+		const { message } = input;
+
+		// Verify the chat session exists and belongs to the user
+		const chatSession = await this.chatSessionsService.findFirst({
+			where: {
+				id: { equals: chatSessionId },
+				userId: { equals: user.id },
+			},
+		});
+
+		if (!chatSession) {
+			throw new NotFoundException(
+				`Chat session ${chatSessionId} not found or access denied`,
+			);
+		}
+
+		// Add new message to the chat session
+		const newMessage = await this.messageSessionsService.create({
+			sender: MessageSender.User,
+			type: MessageType.Text,
+			content: message,
+			chatSession: {
+				connect: { id: chatSessionId },
+			},
+		});
+
+		/**
+		 * Enqueue assistant-generation job (per-message deterministic jobId)
+		 */
+		const jobName = ChatJobs.AssistantGenerate;
+		const lastUserMessageId = newMessage?.id!;
+		const jobData = {
+			chatSessionId: chatSessionId,
+			lastUserMessageId,
+			prompt: message,
+		};
+		const jobOptions = {
+			// keep completed job for 5 minutes before removal
+			removeOnComplete: { age: 60 * 5 },
+			removeOnFail: false,
+			jobId: `${ChatQueues.Assistant}:${chatSessionId}.${lastUserMessageId}`,
+		};
+		await this.assistantQueue.add(jobName, jobData, jobOptions);
+
+		return newMessage;
+	}
+
 	async getChatAssistantGenerationStatusByMessage({
 		chatSessionId,
 		lastUserMessageId,
+		user,
 	}: {
 		chatSessionId: number;
 		lastUserMessageId: number;
+		user: UserSafe;
 	}): Promise<ChatAssistantGenerationStatus> {
+		// Verify the chat session exists and belongs to the user
+		const chatSession = await this.chatSessionsService.findFirst({
+			where: {
+				id: { equals: chatSessionId },
+				userId: { equals: user.id },
+			},
+		});
+
+		if (!chatSession) {
+			throw new NotFoundException(
+				`Chat session ${chatSessionId} not found or access denied`,
+			);
+		}
+
 		/**
 		 * Determine status for a specific user message's assistant-generation job.
 		 * Uses deterministic jobId per message: `${ChatQueues.Assistant}:${chatSessionId}.${lastUserMessageId}`.
@@ -95,58 +170,4 @@ export class ChatService {
 			lastUserMessageId: job.data?.lastUserMessageId ?? lastUserMessageId,
 		};
 	}
-
-	// async updateChat({
-	// 	input,
-	// 	user,
-	// }: {
-	// 	input: ChatInput;
-	// 	user: UserSafe;
-	// }): Promise<Chat> {
-	// 	const { message } = input;
-
-	// 	// Create new chat session
-	// 	const chatSession = await this.chatSessionsService.create(
-	// 		{
-	// 			title: new Date().toISOString(),
-	// 			user: {
-	// 				connect: { id: user.id },
-	// 			},
-	// 		},
-	// 		{ include: { messages: true } },
-	// 	);
-
-	// 	// Create the new message
-	// 	const newMessage = await this.messagesService.create({
-	// 		sender: 'user',
-	// 		type: 'text',
-	// 		content: message,
-	// 		chatSession: {
-	// 			connect: { id: chatSession.id },
-	// 		},
-	// 	});
-
-	// 	// Get LLM response
-	// 	const chatAgent = await this.mastraService.mastra.getAgent('chatAgent');
-
-	// 	const response = await chatAgent.generate([
-	// 		{
-	// 			role: 'user',
-	// 			content: message,
-	// 		},
-	// 	]);
-	// 	const assistantMessage = await this.messagesService.create({
-	// 		sender: 'user',
-	// 		type: 'text',
-	// 		content: response.text,
-	// 		chatSession: {
-	// 			connect: { id: chatSession.id },
-	// 		},
-	// 	});
-
-	// 	return {
-	// 		chatSession,
-	// 		messages: [newMessage, assistantMessage],
-	// 	};
-	// }
 }

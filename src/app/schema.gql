@@ -535,6 +535,7 @@ type Mutation {
   signIn(sessionInput: SessionInput!): SessionResponse!
   signOut(userId: String!): LogOutResponse!
   signUp(data: UserCreateInput!): SessionResponse!
+  updateChat(chatSessionId: Int!, input: CreateChatInput!): Message!
   updateChatSession(data: ChatSessionUpdateInput!, select: SelectInput, where: ChatSessionWhereUniqueInput!): ChatSession!
   updateManyChatSession(data: ChatSessionUpdateManyMutationInput!, limit: Int, where: ChatSessionWhereInput): Count!
   updateManyMessage(data: MessageUpdateManyMutationInput!, limit: Int, where: MessageWhereInput): Count!
