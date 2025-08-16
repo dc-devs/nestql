@@ -6,7 +6,7 @@ import { BullModule } from '@nestjs/bullmq';
 	imports: [
 		BullModule.forRoot({
 			connection: {
-				url: Bun.env.REDIS_URL!,
+				url: (Bun.env.REDIS_URL ?? process.env.REDIS_URL)!,
 			},
 		}),
 	],

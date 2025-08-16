@@ -1,1 +1,2 @@
-export const SessionSecret = Bun.env.SESSION_SECRET;
+export const SessionSecret = (Bun.env.SESSION_SECRET ??
+	process.env.SESSION_SECRET)!;

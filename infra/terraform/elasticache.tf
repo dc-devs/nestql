@@ -35,3 +35,7 @@ resource "aws_elasticache_cluster" "main" {
     Name = "${var.app_name}-redis"
   }
 } 
+
+locals {
+  redis_host = aws_elasticache_cluster.main.cache_nodes[0].address
+}

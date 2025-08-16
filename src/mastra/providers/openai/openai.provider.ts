@@ -2,5 +2,5 @@ import { createOpenAI } from '@ai-sdk/openai';
 
 export const openaiProvider = createOpenAI({
 	compatibility: 'strict',
-	apiKey: process.env.OPENAI_API_KEY,
+	apiKey: (Bun.env.OPENAI_API_KEY ?? process.env.OPENAI_API_KEY)!,
 });

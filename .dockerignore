@@ -8,3 +8,20 @@ dist
 .dockerignore
 Dockerfile
 
+
+# Exclude scratch workspace and local tests/coverage
+scratch/
+scratch/**
+test/
+**/*.spec.ts
+coverage/
+
+# Editor/IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Terraform local artifacts
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup

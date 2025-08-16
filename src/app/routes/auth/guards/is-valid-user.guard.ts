@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { UnauthorizedException } from '@nestjs/common';
-import { SessionInput } from '@routes/auth/dto/inputs';
-import { UserSafe } from '@models/users/common/entities/user-safe';
-import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
+import { UnauthorizedException, Injectable } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import type { SessionInput } from '@routes/auth/dto/inputs';
+import type { UserSafe } from '@models/users/common/entities/user-safe';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
 const validateUser = async ({ email, password }: SessionInput) => {

@@ -9,5 +9,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 } 
+
+variable "aws_region" {
+  description = "AWS region to deploy to."
+  type        = string
+  default     = "us-east-1"
+}

@@ -21,3 +21,11 @@ output "db_endpoint" {
 output "redis_endpoint" {
   value = aws_elasticache_cluster.main.cache_nodes[0].address
 } 
+
+output "api_domain" {
+  value = local.api_fqdn
+}
+
+output "mastra_db_endpoint" {
+  value = aws_db_instance.mastra.address
+}

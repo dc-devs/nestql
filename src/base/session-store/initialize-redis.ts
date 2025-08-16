@@ -6,7 +6,7 @@ type RedisClient = RedisClientType<any, any, any>;
 let connectedRedisClient: RedisClient | undefined;
 
 const redisClient: RedisClient = createClient({
-	url: Bun.env.REDIS_URL,
+	url: (Bun.env.REDIS_URL ?? process.env.REDIS_URL)!,
 });
 
 const initializeRedis = async (): Promise<RedisClient> => {

@@ -7,7 +7,8 @@ export const mastra: Mastra = new Mastra({
 	workflows: {},
 	agents: { chatAgent },
 	storage: new PostgresStore({
-		connectionString: process.env.MASTRA_DATABASE_URL!,
+		connectionString: (Bun.env.MASTRA_DATABASE_URL ??
+			process.env.MASTRA_DATABASE_URL)!,
 	}),
 	logger: new PinoLogger({
 		name: 'Mastra',

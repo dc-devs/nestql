@@ -6,7 +6,7 @@
 	"private": true,
 	"license": "UNLICENSED",
 	"scripts": {
-		"build": "nest build",
+		"build": "nest build && tsc-alias -p tsconfig.json",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "bun src/app/main.ts",
 		"start:dev": "bun --watch run src/app/main.ts",
@@ -58,7 +58,7 @@
 		"---------NQL---------": "-----------------------------------",
 		"nql:dev:graphql:url": "echo 'https://local.nestql.com/graphql'",
 		"nql:gen:password": "bun -e \"import { randomBytes } from 'crypto'; console.log(randomBytes(12).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 16))\"",
-		"nql:gen:session-secret": "bun -e \"import { randomBytes } from 'crypto'; console.log(randomBytes(24).toString('hex'))\"",
+		"nql:gen:strong-password": "bun -e \"import { randomBytes } from 'crypto'; console.log(randomBytes(32).toString('hex'))\"",
 		"nql:dev:app:generate-certs": "sudo src/base/sh-scripts/generate-certs.sh && sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:update-hosts": "sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:setup": "bun nql:dev:app:generate-certs && bun nql:dev:app:update-hosts",
@@ -125,7 +125,8 @@
 		"prettier": "3.6.2",
 		"source-map-support": "0.5.21",
 		"tsconfig-paths": "4.2.0",
-		"typescript": "5.8.3"
+		"typescript": "5.8.3",
+		"tsc-alias": "1.8.10"
 	},
 	"type": "module",
 	"main": "src/main.ts",

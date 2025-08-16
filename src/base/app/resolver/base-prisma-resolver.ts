@@ -1,8 +1,8 @@
-import { Type } from '@nestjs/common';
+import type { Type } from '@nestjs/common';
 import * as pluralize from 'pluralize';
 import { SelectInput, Count } from '@base/app/dto';
 import { Args, Query, Resolver, Mutation } from '@nestjs/graphql';
-import { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
+import type { IBasePrismaService } from '@base/app/service/base-prisma-service.inteface';
 
 export function BasePrismaResolver<
 	Entity,

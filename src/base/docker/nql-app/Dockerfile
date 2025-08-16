@@ -2,8 +2,11 @@
 FROM oven/bun:1.2.19 AS base
 WORKDIR /usr/src/app
 
-# Install necessary tools for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install necessary tools and CA bundle for TLS to RDS
+RUN apt-get update \
+	&& apt-get install -y curl ca-certificates \
+	&& update-ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Default port for the app
 ARG PORT=3001 
@@ -67,14 +70,17 @@ COPY --from=build /usr/src/app/dist dist
 COPY package.json .
 COPY prisma prisma
 COPY bunfig.toml .
-COPY tsconfig.json . 
+
+# Add AWS RDS CA bundle so Node trusts RDS certificates
+RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /etc/ssl/certs/rds-ca-bundle.pem
 
 # Set correct permissions before switching user
 RUN chown -R bun:bun /usr/src/app
 USER bun
 
-# Generate Prisma client in production
-RUN bunx prisma generate
+# Copy generated Prisma client/binaries from build stage so we don't need to generate in prod
+COPY --from=build /usr/src/app/node_modules/.prisma node_modules/.prisma
+COPY --from=build /usr/src/app/node_modules/@prisma node_modules/@prisma
 
 EXPOSE ${PORT}
 

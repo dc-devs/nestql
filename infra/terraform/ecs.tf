@@ -2,6 +2,17 @@ resource "aws_ecs_cluster" "main" {
   name = "${var.app_name}-cluster"
 }
 
+resource "aws_cloudwatch_log_group" "app" {
+  name              = "/ecs/${var.app_name}"
+  retention_in_days = 14
+}
+
+# Log group for one-off psql runner tasks used by infra/scripts/create-db-users.sh
+resource "aws_cloudwatch_log_group" "psql" {
+  name              = "/ecs/${var.app_name}-psql"
+  retention_in_days = 14
+}
+
 resource "aws_security_group" "ecs" {
   name        = "${var.app_name}-ecs-sg"
   description = "Allow ALB to access ECS tasks"
@@ -41,3 +52,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
   role       = aws_iam_role.ecs_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 } 
+
+# Allow execution role to write logs and get secrets
+// AmazonECSTaskExecutionRolePolicy already grants required ECR, Logs and Secrets permissions

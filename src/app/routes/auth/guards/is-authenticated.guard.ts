@@ -1,7 +1,7 @@
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
-import { CanActivate, Injectable, ExecutionContext } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
 
 @Injectable()
 export class IsAuthenticated implements CanActivate {
