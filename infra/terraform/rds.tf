@@ -38,6 +38,14 @@ resource "aws_db_instance" "main" {
   multi_az                = false
   storage_encrypted       = true
   backup_retention_period = 7
+  backup_window          = "03:00-04:00"  # UTC - adjust for your timezone
+  maintenance_window     = "sun:04:00-sun:05:00"  # UTC
+  copy_tags_to_snapshot  = true
+  delete_automated_backups = true
+  performance_insights_enabled = true
+  monitoring_interval     = 60
+  monitoring_role_arn    = aws_iam_role.rds_monitoring.arn
+  deletion_protection    = false  # Keep false for MVP flexibility
   tags = {
     Name = "${var.app_name}-rds"
   }

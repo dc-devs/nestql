@@ -43,3 +43,30 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_secrets_policy_attach" 
   role       = aws_iam_role.ecs_task_execution.name
   policy_arn = aws_iam_policy.ecs_task_secrets_policy_least_priv.arn
 }
+
+# RDS Enhanced Monitoring Role
+resource "aws_iam_role" "rds_monitoring" {
+  name = "${var.app_name}-rds-monitoring-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.app_name}-rds-monitoring-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring" {
+  role       = aws_iam_role.rds_monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}

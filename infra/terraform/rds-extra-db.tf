@@ -40,6 +40,14 @@ resource "aws_db_instance" "mastra" {
   multi_az                    = false
   storage_encrypted           = true
   backup_retention_period     = 7
+  backup_window               = "03:30-04:30"  # UTC - offset from main DB
+  maintenance_window          = "sun:04:30-sun:05:30"  # UTC - offset from main DB
+  copy_tags_to_snapshot       = true
+  delete_automated_backups    = true
+  performance_insights_enabled = true
+  monitoring_interval         = 60
+  monitoring_role_arn        = aws_iam_role.rds_monitoring.arn
+  deletion_protection        = false  # Keep false for MVP flexibility
   tags = {
     Name = "${var.app_name}-rds-mastra"
   }
