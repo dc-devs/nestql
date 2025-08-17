@@ -5,7 +5,7 @@ set -euo pipefail
 AWS_REGION="${AWS_REGION:-us-east-1}"
 TF_DIR="infra/terraform"
 ECR_REPO="$(terraform -chdir="${TF_DIR}" output -raw ecr_repository_url)"
-IMAGE_TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD)}"
+IMAGE_TAG="$(git rev-parse --short HEAD)"
 
 #########################
 # Env validation & info #
@@ -64,8 +64,9 @@ docker push "${ECR_REPO}:${IMAGE_TAG}"
 docker push "${ECR_REPO}:latest"
 
 echo "Forcing ECS service to deploy new task..."
-CLUSTER="$(terraform -chdir="${TF_DIR}" output -raw ecs_cluster_name)"
-SERVICE="$(terraform -chdir="${TF_DIR}" output -raw ecs_service_name)"
+export TF_DIR="infra/terraform"
+export CLUSTER="$(terraform -chdir="${TF_DIR}" output -raw ecs_cluster_name)"
+export SERVICE="$(terraform -chdir="${TF_DIR}" output -raw ecs_service_name)"
 echo "CLUSTER: ${CLUSTER}"
 echo "SERVICE: ${SERVICE}"
 aws ecs update-service --cluster "${CLUSTER}" --service "${SERVICE}" --force-new-deployment >/dev/null

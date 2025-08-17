@@ -1,152 +1,414 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REGION="us-east-1"
-APP_NAME="nestql"
+# =============================================================================
+# NestQL Database User Creation Script (Rewritten)
+# =============================================================================
+# This script creates application users on RDS PostgreSQL instances.
+# It avoids the complex shell escaping issues of the original by using
+# environment variables and simpler command construction.
+#
+# USAGE:
+#   export NESTQL_APP_PASSWORD="your-secure-password-for-nestql-db"
+#   export MASTRA_APP_PASSWORD="your-secure-password-for-mastra-db"
+#   ./infra/scripts/create-db-users-new.sh
+#
+# REQUIREMENTS:
+#   - AWS CLI configured with appropriate permissions
+#   - Terraform applied (for infrastructure discovery)
+#   - Both password environment variables must be set
+#   - Passwords must be at least 12 characters long
+# =============================================================================
 
-# Names created by Terraform
-CLUSTER_NAME="$(terraform -chdir=infra/terraform output -raw ecs_cluster_name)"
-ECS_SG_ID="$(aws ec2 describe-security-groups --region "$REGION" \
-  --filters "Name=group-name,Values=${APP_NAME}-ecs-sg" \
-  --query "SecurityGroups[0].GroupId" --output text)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REGION="${AWS_REGION:-us-east-1}"
+readonly APP_NAME="nestql"
 
-# Private subnets (named like nestql-private-0/1)
-SUBNET_IDS_JSON="$(aws ec2 describe-subnets --region "$REGION" \
-  --filters "Name=tag:Name,Values=${APP_NAME}-private-*" \
-  --query "Subnets[].SubnetId" --output json)"
+# Colors for output
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
 
-# RDS endpoints + master creds
-MAIN_DB_ID="${APP_NAME}-db"
-MASTRA_DB_ID="${APP_NAME}-mastra-db"
+# Logging functions
+log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
 
-get_db_info() {
-  local db_id="$1"
-  local endpoint secret_arn secret_json user pass
-  endpoint="$(aws rds describe-db-instances --region "$REGION" \
-    --db-instance-identifier "$db_id" \
-    --query "DBInstances[0].Endpoint.Address" --output text)"
-  secret_arn="$(aws rds describe-db-instances --region "$REGION" \
-    --db-instance-identifier "$db_id" \
-    --query "DBInstances[0].MasterUserSecret.SecretArn" --output text)"
-  secret_json="$(aws secretsmanager get-secret-value --region "$REGION" \
-    --secret-id "$secret_arn" --query SecretString --output text)"
-  user="$(jq -r .username <<<"$secret_json")"
-  pass="$(jq -r .password <<<"$secret_json")"
-  echo "$endpoint|$user|$pass"
+# Error handling
+cleanup() {
+	local exit_code=$?
+	if [[ -n "${TEMP_FILES:-}" ]]; then
+		rm -f $TEMP_FILES
+	fi
+	exit $exit_code
+}
+trap cleanup EXIT
+
+# =============================================================================
+# Configuration and Validation
+# =============================================================================
+
+# Get infrastructure details from Terraform
+get_terraform_output() {
+	local output_name="$1"
+	terraform -chdir="${SCRIPT_DIR}/../terraform" output -raw "$output_name" 2>/dev/null || {
+		log_error "Failed to get Terraform output: $output_name"
+		log_error "Make sure you've run 'terraform apply' first"
+		exit 1
+	}
 }
 
-read -r MAIN_HOST MAIN_USER MAIN_PASS <<<"$(get_db_info "$MAIN_DB_ID" | tr '|' ' ')"
-read -r MASTRA_HOST MASTRA_USER MASTRA_PASS <<<"$(get_db_info "$MASTRA_DB_ID" | tr '|' ' ')"
+log_info "Getting infrastructure details from Terraform..."
+readonly CLUSTER_NAME="$(get_terraform_output ecs_cluster_name)"
+readonly DB_ENDPOINT="$(get_terraform_output db_endpoint)"
+readonly MASTRA_DB_ENDPOINT="$(get_terraform_output mastra_db_endpoint)"
 
-# App DB users to create (set your strong passwords)
-NESTQL_APP_USER="nestql_app"
-NESTQL_APP_PASSWORD="${NESTQL_APP_PASSWORD:-changeMeNestql!}"   # export NESTQL_APP_PASSWORD=... to override
-NESTQL_DB_NAME="nestql"
+# Get security group and subnets
+readonly ECS_SG_ID="$(aws ec2 describe-security-groups --region "$REGION" \
+	--filters "Name=group-name,Values=${APP_NAME}-ecs-sg" \
+	--query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "")"
 
-MASTRA_APP_USER="mastra_app"
-MASTRA_APP_PASSWORD="${MASTRA_APP_PASSWORD:-changeMeMastra!}"   # export MASTRA_APP_PASSWORD=... to override
-MASTRA_DB_NAME="mastra"
+readonly SUBNET_IDS="$(aws ec2 describe-subnets --region "$REGION" \
+	--filters "Name=tag:Name,Values=${APP_NAME}-private-*" \
+	--query "Subnets[].SubnetId" --output json 2>/dev/null || echo "[]")"
 
-# TEMPORARY DEBUG LOGGING — remove before committing to CI/CD
-echo "================ DEBUG (temp) ================"
-echo "REGION=$REGION APP_NAME=$APP_NAME"
-echo "CLUSTER_NAME=$CLUSTER_NAME"
-echo "ECS_SG_ID=$ECS_SG_ID"
-echo "SUBNET_IDS=$(jq -r '.[]?' <<<"$SUBNET_IDS_JSON" | xargs echo)"
-echo "MAIN_HOST=$MAIN_HOST MASTRA_HOST=$MASTRA_HOST"
-echo "NESTQL_APP_USER=$NESTQL_APP_USER NESTQL_DB_NAME=$NESTQL_DB_NAME"
-echo "MASTRA_APP_USER=$MASTRA_APP_USER MASTRA_DB_NAME=$MASTRA_DB_NAME"
-# Do not print secrets; show length and whether defaults are in use
-echo "NESTQL_APP_PASSWORD_LEN=${#NESTQL_APP_PASSWORD} DEFAULT_USED=$( [ "$NESTQL_APP_PASSWORD" = "changeMeNestql!" ] && echo yes || echo no )"
-echo "MASTRA_APP_PASSWORD_LEN=${#MASTRA_APP_PASSWORD} DEFAULT_USED=$( [ "$MASTRA_APP_PASSWORD" = "changeMeMastra!" ] && echo yes || echo no )"
-# Show hex of last byte to detect stray newlines without exposing value
-printf '%s' "$NESTQL_APP_PASSWORD" | tail -c1 | od -An -t x1 | awk '{print "NESTQL_APP_PASSWORD_LASTBYTE_HEX="$1}'
-printf '%s' "$MASTRA_APP_PASSWORD" | tail -c1 | od -An -t x1 | awk '{print "MASTRA_APP_PASSWORD_LASTBYTE_HEX="$1}'
-echo "============================================="
+# Validate required infrastructure
+[[ -n "$CLUSTER_NAME" ]] || { log_error "ECS cluster not found"; exit 1; }
+[[ -n "$DB_ENDPOINT" ]] || { log_error "Main DB endpoint not found"; exit 1; }
+[[ -n "$MASTRA_DB_ENDPOINT" ]] || { log_error "Mastra DB endpoint not found"; exit 1; }
+[[ -n "$ECS_SG_ID" ]] || { log_error "ECS security group not found"; exit 1; }
+[[ "$SUBNET_IDS" != "[]" ]] || { log_error "Private subnets not found"; exit 1; }
 
-# Create a simple Fargate task definition using postgres client
-TASK_FAMILY="${APP_NAME}-psql-runner"
-EXEC_ROLE_ARN="$(aws iam get-role --region "$REGION" \
-  --role-name "${APP_NAME}-ecs-task-execution-role" --query 'Role.Arn' --output text)"
+log_info "Infrastructure validated successfully"
 
-register_td() {
-  aws ecs register-task-definition --region "$REGION" \
-    --family "$TASK_FAMILY" \
-    --requires-compatibilities FARGATE \
-    --network-mode awsvpc \
-    --cpu "256" --memory "512" \
-    --execution-role-arn "$EXEC_ROLE_ARN" \
-    --container-definitions '[
-      {
-        "name": "psql",
-        "image": "postgres:16-alpine",
-        "essential": true,
-        "entryPoint": ["/bin/sh","-lc"],
-        "command": ["echo ready"],
-        "logConfiguration": {
-          "logDriver": "awslogs",
-          "options": {
-            "awslogs-create-group": "true",
-            "awslogs-group": "/ecs/'"$APP_NAME"'-psql",
-            "awslogs-region": "'"$REGION"'",
-            "awslogs-stream-prefix": "psql"
-          }
-        }
-      }
-    ]' >/dev/null
+# =============================================================================
+# Database Connection Details
+# =============================================================================
+
+get_rds_master_credentials() {
+	local db_instance_id="$1"
+	local secret_arn
+	local secret_json
+	
+	log_info "Getting master credentials for $db_instance_id..." >&2
+	
+	secret_arn="$(aws rds describe-db-instances --region "$REGION" \
+		--db-instance-identifier "$db_instance_id" \
+		--query "DBInstances[0].MasterUserSecret.SecretArn" --output text 2>/dev/null || echo "")"
+	
+	[[ -n "$secret_arn" && "$secret_arn" != "None" ]] || {
+		log_error "Master user secret not found for $db_instance_id" >&2
+		exit 1
+	}
+	
+	secret_json="$(aws secretsmanager get-secret-value --region "$REGION" \
+		--secret-id "$secret_arn" --query SecretString --output text)"
+	
+	echo "$secret_json"
 }
 
-run_sql() {
-  local host="$1" m_user="$2" m_pass="$3" target_db="$4" app_user="$5" app_pass="$6"
-  local cmd
-  # Chain with && so any failure aborts; ensure DB exists; require TLS.
-  printf -v cmd "%s && %s && %s && %s && %s" \
-    "PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$app_user'\" | grep -q 1 || PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -c \"CREATE USER $app_user WITH PASSWORD '$app_pass' NOSUPERUSER;\"" \
-    "PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -c \"ALTER USER $app_user WITH PASSWORD '$app_pass';\"" \
-    "PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -tAc \"SELECT 1 FROM pg_database WHERE datname='$target_db'\" | grep -q 1 || PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -c \"CREATE DATABASE $target_db;\"" \
-    "PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d postgres -v ON_ERROR_STOP=1 -c \"GRANT CONNECT ON DATABASE $target_db TO $app_user;\"" \
-    "PGPASSWORD='$m_pass' PGSSLMODE=require psql -h '$host' -U '$m_user' -d '$target_db' -v ON_ERROR_STOP=1 -c \"GRANT USAGE, CREATE ON SCHEMA public TO $app_user;\" -c \"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO $app_user;\" -c \"GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO $app_user;\" -c \"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO $app_user;\" -c \"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO $app_user;\""
+# Get master credentials
+log_info "Retrieving master database credentials..."
+readonly MAIN_DB_MASTER_JSON="$(get_rds_master_credentials "${APP_NAME}-db")"
+readonly MASTRA_DB_MASTER_JSON="$(get_rds_master_credentials "${APP_NAME}-mastra-db")"
 
-  local netcfg
-  netcfg="$(jq -c -n --argjson subnets "$SUBNET_IDS_JSON" --arg sg "$ECS_SG_ID" '{awsvpcConfiguration:{subnets:$subnets,securityGroups:[$sg],assignPublicIp:"DISABLED"}}')"
+readonly MAIN_DB_MASTER_USER="$(echo "$MAIN_DB_MASTER_JSON" | jq -r '.username // empty')"
+readonly MAIN_DB_MASTER_PASS="$(echo "$MAIN_DB_MASTER_JSON" | jq -r '.password // empty')"
+readonly MASTRA_DB_MASTER_USER="$(echo "$MASTRA_DB_MASTER_JSON" | jq -r '.username // empty')"
+readonly MASTRA_DB_MASTER_PASS="$(echo "$MASTRA_DB_MASTER_JSON" | jq -r '.password // empty')"
 
-  aws ecs run-task --region "$REGION" \
-    --cluster "$CLUSTER_NAME" \
-    --launch-type FARGATE \
-    --task-definition "$TASK_FAMILY" \
-    --network-configuration "$netcfg" \
-    --overrides "$(jq -n --arg CMD "$cmd" '{containerOverrides:[{name:"psql",command:["/bin/sh","-lc", $CMD]}]}' )" \
-    --query 'tasks[0].taskArn' --output text
+# Validate credentials were extracted
+[[ -n "$MAIN_DB_MASTER_USER" && "$MAIN_DB_MASTER_USER" != "null" ]] || { 
+	log_error "Failed to extract main DB master username"; 
+	log_error "Raw JSON: $MAIN_DB_MASTER_JSON"; 
+	exit 1; 
+}
+[[ -n "$MASTRA_DB_MASTER_USER" && "$MASTRA_DB_MASTER_USER" != "null" ]] || { 
+	log_error "Failed to extract Mastra DB master username"; 
+	log_error "Raw JSON: $MASTRA_DB_MASTER_JSON"; 
+	exit 1; 
 }
 
-wait_task() {
-  local task_arn="$1"
-  aws ecs wait tasks-stopped --region "$REGION" --cluster "$CLUSTER_NAME" --tasks "$task_arn"
-  aws ecs describe-tasks --region "$REGION" --cluster "$CLUSTER_NAME" --tasks "$task_arn" \
-    --query 'tasks[0].containers[0].exitCode' --output text
-}
+log_info "Master users: main=$MAIN_DB_MASTER_USER, mastra=$MASTRA_DB_MASTER_USER"
 
-echo "Registering task definition..."
-register_td
+# Application user details
+readonly NESTQL_APP_USER="nestql_app"
+readonly NESTQL_DB_NAME="nestql"
+readonly MASTRA_APP_USER="mastra_app"
+readonly MASTRA_DB_NAME="mastra"
 
-echo "Creating/granting user on $NESTQL_DB_NAME..."
-TASK1="$(run_sql "$MAIN_HOST" "$MAIN_USER" "$MAIN_PASS" "$NESTQL_DB_NAME" "$NESTQL_APP_USER" "$NESTQL_APP_PASSWORD")"
-echo "Task: $TASK1"
-CODE1="$(wait_task "$TASK1")"
-echo "Exit code: $CODE1"
-
-echo "Creating/granting user on $MASTRA_DB_NAME..."
-TASK2="$(run_sql "$MASTRA_HOST" "$MASTRA_USER" "$MASTRA_PASS" "$MASTRA_DB_NAME" "$MASTRA_APP_USER" "$MASTRA_APP_PASSWORD")"
-echo "Task: $TASK2"
-CODE2="$(wait_task "$TASK2")"
-echo "Exit code: $CODE2"
-
-if [[ "$CODE1" == "0" && "$CODE2" == "0" ]]; then
-  echo "Success."
-else
-  echo "One or more tasks failed." >&2
-  exit 1
+# Validate required environment variables
+log_info "Validating required environment variables..."
+if [[ -z "${NESTQL_APP_PASSWORD:-}" ]]; then
+	log_error "NESTQL_APP_PASSWORD environment variable is required"
+	log_error "Please set it with: export NESTQL_APP_PASSWORD='your-secure-password'"
+	exit 1
 fi
 
-# Optional cleanup: keep TD for future reuse, or uncomment to clean old revisions periodically
-# aws ecs list-task-definitions --family-prefix "$TASK_FAMILY" --region "$REGION" --status ACTIVE --query 'taskDefinitionArns' --output text | xargs -n1 -r aws ecs deregister-task-definition --region "$REGION" --task-definition
+if [[ -z "${MASTRA_APP_PASSWORD:-}" ]]; then
+	log_error "MASTRA_APP_PASSWORD environment variable is required"
+	log_error "Please set it with: export MASTRA_APP_PASSWORD='your-secure-password'"
+	exit 1
+fi
+
+# Validate password strength (basic checks)
+if [[ ${#NESTQL_APP_PASSWORD} -lt 12 ]]; then
+	log_error "NESTQL_APP_PASSWORD must be at least 12 characters long"
+	exit 1
+fi
+
+if [[ ${#MASTRA_APP_PASSWORD} -lt 12 ]]; then
+	log_error "MASTRA_APP_PASSWORD must be at least 12 characters long"
+	exit 1
+fi
+
+readonly NESTQL_APP_PASSWORD
+readonly MASTRA_APP_PASSWORD
+
+log_success "Password validation passed (lengths: ${#NESTQL_APP_PASSWORD}, ${#MASTRA_APP_PASSWORD})"
+
+# =============================================================================
+# ECS Task Management
+# =============================================================================
+
+readonly TASK_FAMILY="${APP_NAME}-db-user-creator"
+readonly EXEC_ROLE_ARN="$(aws iam get-role --region "$REGION" \
+	--role-name "${APP_NAME}-ecs-task-execution-role" --query 'Role.Arn' --output text)"
+
+register_task_definition() {
+	log_info "Registering ECS task definition..."
+	
+	aws ecs register-task-definition --region "$REGION" \
+		--family "$TASK_FAMILY" \
+		--requires-compatibilities FARGATE \
+		--network-mode awsvpc \
+		--cpu "256" --memory "512" \
+		--execution-role-arn "$EXEC_ROLE_ARN" \
+		--container-definitions '[
+			{
+				"name": "psql",
+				"image": "postgres:16-alpine",
+				"essential": true,
+				"logConfiguration": {
+					"logDriver": "awslogs",
+					"options": {
+						"awslogs-create-group": "true",
+						"awslogs-group": "/ecs/'"$APP_NAME"'-db-setup",
+						"awslogs-region": "'"$REGION"'",
+						"awslogs-stream-prefix": "db-user-creation"
+					}
+				}
+			}
+		]' --query 'taskDefinition.taskDefinitionArn' --output text
+}
+
+run_database_task() {
+	local db_host="$1"
+	local master_user="$2"
+	local master_pass="$3"
+	local target_db="$4"
+	local app_user="$5"
+	local app_pass="$6"
+	
+	log_info "Creating user '$app_user' on database '$target_db' at $db_host"
+	
+	# Create network configuration
+	local network_config
+	network_config="$(jq -n \
+		--argjson subnets "$SUBNET_IDS" \
+		--arg sg "$ECS_SG_ID" \
+		'{awsvpcConfiguration:{subnets:$subnets,securityGroups:[$sg],assignPublicIp:"DISABLED"}}')"
+	
+	# Build the command that will run in the container
+	local container_command
+	container_command="$(cat << 'SCRIPT_END'
+set -e
+echo "=== Database User Creation Script ==="
+echo "Host: $PGHOST"
+echo "Master User: $PGUSER" 
+echo "Target DB: $TARGET_DB"
+echo "App User: $APP_USER"
+
+# Step 1: Create user and database on postgres database
+echo "=== Step 1: Creating user and database ==="
+psql -d postgres -v ON_ERROR_STOP=1 << SQL_END
+-- Create user if not exists
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '$APP_USER') THEN
+        EXECUTE format('CREATE USER %I WITH PASSWORD %L NOSUPERUSER', '$APP_USER', '$APP_PASS');
+        RAISE NOTICE 'Created user: $APP_USER';
+    ELSE
+        EXECUTE format('ALTER USER %I WITH PASSWORD %L', '$APP_USER', '$APP_PASS');
+        RAISE NOTICE 'Updated password for user: $APP_USER';
+    END IF;
+END \$\$;
+
+-- Create database if not exists
+SELECT 'Checking database...' as status;
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = '$TARGET_DB') THEN
+        EXECUTE format('CREATE DATABASE %I', '$TARGET_DB');
+        RAISE NOTICE 'Created database: $TARGET_DB';
+    ELSE
+        RAISE NOTICE 'Database already exists: $TARGET_DB';
+    END IF;
+END \$\$;
+
+-- Grant connection permission
+GRANT CONNECT ON DATABASE "$TARGET_DB" TO "$APP_USER";
+SQL_END
+
+# Step 2: Grant permissions on the target database
+echo "=== Step 2: Granting permissions on target database ==="
+psql -d "$TARGET_DB" -v ON_ERROR_STOP=1 << SQL_END
+GRANT USAGE, CREATE ON SCHEMA public TO "$APP_USER";
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO "$APP_USER";
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO "$APP_USER";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "$APP_USER";
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO "$APP_USER";
+SQL_END
+
+echo "=== Success! User $APP_USER created and configured ==="
+SCRIPT_END
+)"
+	
+	# Run the task
+	local task_arn
+	task_arn="$(aws ecs run-task --region "$REGION" \
+		--cluster "$CLUSTER_NAME" \
+		--launch-type FARGATE \
+		--task-definition "$TASK_FAMILY" \
+		--network-configuration "$network_config" \
+		--overrides "$(jq -n \
+			--arg host "$db_host" \
+			--arg master_user "$master_user" \
+			--arg master_pass "$master_pass" \
+			--arg target_db "$target_db" \
+			--arg app_user "$app_user" \
+			--arg app_pass "$app_pass" \
+			--arg script "$container_command" \
+			'{
+				containerOverrides: [{
+					name: "psql",
+					environment: [
+						{name: "PGHOST", value: $host},
+						{name: "PGUSER", value: $master_user},
+						{name: "PGPASSWORD", value: $master_pass},
+						{name: "PGSSLMODE", value: "require"},
+						{name: "TARGET_DB", value: $target_db},
+						{name: "APP_USER", value: $app_user},
+						{name: "APP_PASS", value: $app_pass}
+					],
+					command: ["/bin/sh", "-c", $script]
+				}]
+			}')" \
+		--query 'tasks[0].taskArn' --output text)"
+	
+	log_info "Started task: $task_arn"
+	
+	# Wait for completion
+	log_info "Waiting for task to complete..."
+	aws ecs wait tasks-stopped --region "$REGION" --cluster "$CLUSTER_NAME" --tasks "$task_arn"
+	
+	# Check exit code
+	local exit_code
+	exit_code="$(aws ecs describe-tasks --region "$REGION" --cluster "$CLUSTER_NAME" --tasks "$task_arn" \
+		--query 'tasks[0].containers[0].exitCode' --output text)"
+	
+	if [[ "$exit_code" == "0" ]]; then
+		log_success "User '$app_user' created successfully on '$target_db'"
+		return 0
+	else
+		log_error "Task failed with exit code: $exit_code"
+		log_error "Check logs: aws logs tail '/ecs/${APP_NAME}-db-setup' --since 10m"
+		return 1
+	fi
+}
+
+# =============================================================================
+# Main Execution
+# =============================================================================
+
+main() {
+	log_info "Starting database user creation for $APP_NAME"
+	log_info "Region: $REGION"
+	log_info "Main DB: $DB_ENDPOINT"
+	log_info "Mastra DB: $MASTRA_DB_ENDPOINT"
+	
+	# Register task definition
+	local task_def_arn
+	task_def_arn="$(register_task_definition)"
+	log_success "Task definition registered: $task_def_arn"
+	
+	# Create log group
+	aws logs create-log-group --region "$REGION" --log-group-name "/ecs/${APP_NAME}-db-setup" 2>/dev/null || true
+	
+	# Create users
+	local success=true
+	
+	if ! run_database_task "$DB_ENDPOINT" "$MAIN_DB_MASTER_USER" "$MAIN_DB_MASTER_PASS" \
+		"$NESTQL_DB_NAME" "$NESTQL_APP_USER" "$NESTQL_APP_PASSWORD"; then
+		success=false
+	fi
+	
+	if ! run_database_task "$MASTRA_DB_ENDPOINT" "$MASTRA_DB_MASTER_USER" "$MASTRA_DB_MASTER_PASS" \
+		"$MASTRA_DB_NAME" "$MASTRA_APP_USER" "$MASTRA_APP_PASSWORD"; then
+		success=false
+	fi
+	
+	if [[ "$success" == "true" ]]; then
+		log_success "All database users created successfully!"
+		log_info ""
+		log_info "Next steps:"
+		log_info "1. Update your secrets in AWS Secrets Manager with these passwords"
+		log_info "2. Redeploy your application"
+		log_info ""
+		log_info "To update secrets (run these commands):"
+		log_info ""
+		echo "# Update DATABASE_URL secret"
+		echo "aws secretsmanager put-secret-value --region $REGION --secret-id ${APP_NAME}/DATABASE_URL \\"
+		echo "  --secret-string \"postgresql://${NESTQL_APP_USER}:\${NESTQL_APP_PASSWORD}@${DB_ENDPOINT}:5432/${NESTQL_DB_NAME}?schema=public&sslmode=require&ssl=true\""
+		echo ""
+		echo "# Update MASTRA_DATABASE_URL secret"
+		echo "aws secretsmanager put-secret-value --region $REGION --secret-id ${APP_NAME}/MASTRA_DATABASE_URL \\"
+		echo "  --secret-string \"postgresql://${MASTRA_APP_USER}:\${MASTRA_APP_PASSWORD}@${MASTRA_DB_ENDPOINT}:5432/${MASTRA_DB_NAME}?schema=public&sslmode=require&ssl=true\""
+		echo ""
+		echo "# Redeploy application"
+		echo "aws ecs update-service --region $REGION \\"
+		echo "  --cluster \$(terraform -chdir=infra/terraform output -raw ecs_cluster_name) \\"
+		echo "  --service \$(terraform -chdir=infra/terraform output -raw ecs_service_name) \\"
+		echo "  --force-new-deployment"
+		return 0
+	else
+		log_error "Some operations failed. Check the logs above."
+		return 1
+	fi
+}
+
+# =============================================================================
+# Entry Point
+# =============================================================================
+
+# Validate prerequisites
+if ! command -v aws >/dev/null 2>&1; then
+	log_error "AWS CLI not found. Please install it first."
+	exit 1
+fi
+
+if ! command -v terraform >/dev/null 2>&1; then
+	log_error "Terraform not found. Please install it first."
+	exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+	log_error "jq not found. Please install it first."
+	exit 1
+fi
+
+# Run main function
+main "$@"

@@ -15,31 +15,6 @@ export async function bootstrap<AppModule>({
 }: {
 	AppModule: Type<AppModule>;
 }) {
-	// TETMP LOGGING:
-	console.log('NODE_ENV', Bun.env.NODE_ENV);
-	console.log('REDIS_URL', Bun.env.REDIS_URL ?? process.env.REDIS_URL);
-	console.log(
-		'DATABASE_URL',
-		Bun.env.DATABASE_URL ?? process.env.DATABASE_URL,
-	);
-	console.log(
-		'Bun.env.MASTRA_DATABASE_URL',
-		Bun.env.MASTRA_DATABASE_URL ?? process.env.MASTRA_DATABASE_URL,
-	);
-
-	try {
-		const url = new URL(
-			Bun.env.DATABASE_URL ?? process.env.DATABASE_URL ?? '',
-		);
-		console.log('DB_URL_PARSED', {
-			protocol: url.protocol,
-			host: url.hostname,
-			port: url.port || '5432',
-			database: url.pathname.replace(/^\//, ''),
-			ssl: url.searchParams.get('ssl') ?? url.searchParams.get('sslmode'),
-		});
-	} catch {}
-
 	const session = await initializeSession();
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		logger: ['verbose'],
