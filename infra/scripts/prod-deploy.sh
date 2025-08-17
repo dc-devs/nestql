@@ -4,6 +4,8 @@ set -euo pipefail
 # Config
 AWS_REGION="${AWS_REGION:-us-east-1}"
 TF_DIR="infra/terraform"
+ECR_REPO="$(terraform -chdir="${TF_DIR}" output -raw ecr_repository_url)"
+IMAGE_TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD)}"
 
 #########################
 # Env validation & info #
@@ -24,7 +26,8 @@ mask() {
 
 echo "================ Deploy Config (debug) ================"
 echo "AWS_REGION=${AWS_REGION}"
-echo "IMAGE_TAG=${IMAGE_TAG:-<auto git sha>}"
+echo "IMAGE_TAG=${IMAGE_TAG}"
+echo "ECR_REPO: ${ECR_REPO}"
 if [[ -n "${AWS_PROFILE:-}" ]]; then
 	echo "AWS auth: profile=${AWS_PROFILE}"
 elif [[ -n "${AWS_ACCESS_KEY_ID:-}" && -n "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
@@ -43,12 +46,6 @@ require() {
 require aws
 require terraform
 require docker
-
-ECR_REPO="$(terraform -chdir="${TF_DIR}" output -raw ecr_repository_url)"
-IMAGE_TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD)}"
-
-echo "ECR_REPO: ${ECR_REPO}"
-echo "IMAGE_TAG: ${IMAGE_TAG}"
 
 if [[ -z "${ECR_REPO}" ]]; then
 	echo "Error: ECR_REPO terraform output is empty" >&2
