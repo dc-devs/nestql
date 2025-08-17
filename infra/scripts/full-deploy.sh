@@ -188,7 +188,7 @@ step_build_and_push() {
 		build_args+=("$IMAGE_TAG")
 	fi
 	
-	if "${SCRIPT_DIR}/build-and-push.sh" "${build_args[@]}"; then
+	if "${SCRIPT_DIR}/build-and-push.sh" "${build_args[@]+"${build_args[@]}"}"; then
 		log_success "Build and push completed"
 	else
 		log_error "Build and push failed"
