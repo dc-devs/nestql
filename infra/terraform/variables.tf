@@ -7,7 +7,7 @@ variable "app_name" {
 variable "environment" {
   description = "Deployment environment."
   type        = string
-  default     = "prod"
+  default     = "production"
 }
 
 variable "db_username" {

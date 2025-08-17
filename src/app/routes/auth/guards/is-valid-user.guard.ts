@@ -9,7 +9,28 @@ import { PrismaService } from '@root/src/base/services/prisma/service/prisma.ser
 const validateUser = async ({ email, password }: SessionInput) => {
 	try {
 		// Create a temporary prisma client instance without the password omit
-		const tempPrisma = new PrismaClient();
+		const tempPrisma = new PrismaClient({
+			log: [
+				{ level: 'query', emit: 'event' },
+				{ level: 'info', emit: 'stdout' },
+				{ level: 'warn', emit: 'stdout' },
+				{ level: 'error', emit: 'stdout' },
+			],
+		});
+		tempPrisma.$on('query', (e) => {
+			try {
+				const limitedParams =
+					e.params?.length > 256
+						? e.params.slice(0, 256) + '…'
+						: e.params;
+				console.log(
+					'[PrismaGuard][query]',
+					e.query,
+					limitedParams,
+					`${e.duration}ms`,
+				);
+			} catch {}
+		});
 
 		// Get full user data including password
 		const user = await tempPrisma.user.findUnique({

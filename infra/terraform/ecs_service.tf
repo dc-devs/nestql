@@ -29,7 +29,8 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         { name = "NODE_ENV", value = var.environment },
         { name = "PORT", value = "3001" },
-        { name = "NODE_EXTRA_CA_CERTS", value = "/etc/ssl/certs/rds-ca-bundle.pem" }
+        { name = "NODE_EXTRA_CA_CERTS", value = "/etc/ssl/certs/rds-ca-bundle.pem" },
+        { name = "PRISMA_DISABLE_ENV_LOADER", value = "1" }
       ]
       secrets = [
         { name = "DATABASE_URL", valueFrom = aws_secretsmanager_secret.database_url.arn },
