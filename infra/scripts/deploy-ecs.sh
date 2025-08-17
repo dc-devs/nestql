@@ -132,11 +132,37 @@ apply_terraform() {
 	
 	log_info "Applying Terraform configuration..."
 	
-	if terraform -chdir="${SCRIPT_DIR}/../terraform" apply -auto-approve; then
-		log_success "Terraform apply completed"
+	# First try to apply - if it fails due to dependency lock issues, auto-fix
+	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply -auto-approve 2>&1; then
+		log_warn "Terraform apply failed, checking for dependency lock issues..."
+		
+		# Try to detect if it's a lock file issue
+		local plan_output
+		plan_output="$(terraform -chdir="${SCRIPT_DIR}/../terraform" plan 2>&1 || echo "")"
+		
+		if echo "$plan_output" | grep -q "Inconsistent dependency lock file"; then
+			log_info "Detected dependency lock file issue, running 'terraform init -upgrade'..."
+			
+			if terraform -chdir="${SCRIPT_DIR}/../terraform" init -upgrade; then
+				log_info "Dependencies updated, retrying terraform apply..."
+				
+				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply -auto-approve; then
+					log_success "Terraform apply completed (after dependency update)"
+					return 0
+				else
+					log_error "Terraform apply failed even after dependency update"
+					exit 1
+				fi
+			else
+				log_error "Failed to update Terraform dependencies"
+				exit 1
+			fi
+		else
+			log_error "Terraform apply failed for reasons other than dependency locks"
+			exit 1
+		fi
 	else
-		log_error "Terraform apply failed"
-		exit 1
+		log_success "Terraform apply completed"
 	fi
 }
 

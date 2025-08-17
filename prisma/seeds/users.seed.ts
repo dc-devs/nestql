@@ -1,5 +1,5 @@
 import { UserRole } from '@prisma/client';
-import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
+import { hashPassword } from '../../src/app/models/users/common/utils/hash-password';
 
 const users = [];
 const password = 'n@st123!';

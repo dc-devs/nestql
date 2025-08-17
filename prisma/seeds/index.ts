@@ -1,3 +1,3 @@
-export { chatSessions } from '@seeds/chat-sessions.seed';
-export { messages } from '@seeds/messages.seed';
-export { users } from '@seeds/users.seed';
+export { chatSessions } from './chat-sessions.seed';
+export { messages } from './messages.seed';
+export { users } from './users.seed';

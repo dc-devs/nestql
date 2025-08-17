@@ -97,6 +97,14 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Terraform generated files
+infra/terraform/backup_lambda.zip
+infra/terraform/*.zip
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.zip
+infra/terraform/crash.log
 
 # Mastra
 .mastra
