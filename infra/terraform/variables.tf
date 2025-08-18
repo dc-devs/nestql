@@ -46,3 +46,19 @@ variable "mastra_db_name" {
   type        = string
   default     = "mastra"
 }
+
+# ============================================================================
+# Netlify Configuration
+# ============================================================================
+
+variable "netlify_app_domain" {
+  type        = string
+  description = "Your Netlify app domain"
+  default     = "resplendent-bubblegum-0142bc.netlify.app"
+}
+
+variable "netlify_load_balancer" {
+  type        = string
+  description = "Netlify's apex load balancer domain (future-proof)"
+  default     = "apex-loadbalancer.netlifyglobalcdn.com"
+}

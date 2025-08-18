@@ -127,3 +127,28 @@ resource "aws_route53_record" "api" {
     evaluate_target_health = true
   }
 }
+
+# ============================================================================
+# Frontend DNS (Netlify)
+# ============================================================================
+
+# Root domain ALIAS record pointing to Netlify load balancer (future-proof)
+resource "aws_route53_record" "root_netlify" {
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = var.domain_name
+  type    = "A"
+  alias {
+    name                   = var.netlify_load_balancer
+    zone_id                = "Z2FDTNDATAQYW2" # CloudFront zone ID (used by Netlify)
+    evaluate_target_health = false
+  }
+}
+
+# WWW subdomain CNAME pointing to Netlify app
+resource "aws_route53_record" "www_netlify" {
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = "www.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = [var.netlify_app_domain]
+}
