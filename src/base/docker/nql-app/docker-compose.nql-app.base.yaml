@@ -15,5 +15,6 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
+      - APP_DOMAIN=${APP_DOMAIN}
     ports:
       - '${PORT}:${PORT}'

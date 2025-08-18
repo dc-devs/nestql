@@ -1,6 +1,7 @@
 import { App } from '@base/common/enums';
 import type { Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { getAppDomain } from '@base/common/utils';
 import { logInitMessage } from '@base/common/utils';
 import { initializeSession } from '@base/session-store';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -15,6 +16,7 @@ export async function bootstrap<AppModule>({
 }: {
 	AppModule: Type<AppModule>;
 }) {
+	const appDomain = getAppDomain();
 	const session = await initializeSession();
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		logger: ['verbose'],
@@ -37,6 +39,7 @@ export async function bootstrap<AppModule>({
 	logInitMessage({
 		port,
 		environment,
+		appDomain,
 		redisUrl: (Bun.env.REDIS_URL ?? process.env.REDIS_URL)!,
 		databaseUrl: (Bun.env.DATABASE_URL ?? process.env.DATABASE_URL)!,
 		mastraDatabaseUrl: (Bun.env.MASTRA_DATABASE_URL ??

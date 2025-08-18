@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 interface IOptions {
 	port: string | number;
 	environment: string;
+	appDomain: string;
 	redisUrl: string | undefined;
 	databaseUrl: string | undefined;
 	mastraDatabaseUrl: string | undefined;
@@ -39,6 +40,7 @@ const getConnectionSummary = (url: string | undefined): string => {
 export const logInitMessage = ({
 	port,
 	redisUrl,
+	appDomain,
 	environment,
 	databaseUrl,
 	mastraDatabaseUrl,
@@ -51,6 +53,7 @@ export const logInitMessage = ({
 	logger.log(`Application starting`);
 	logger.log(`Environment: ${environment}`);
 	logger.log(`Port: ${port}`);
+	logger.log(`App Domain: ${appDomain}`);
 	logger.log('');
 
 	if (isProduction) {
