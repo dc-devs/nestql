@@ -50,11 +50,12 @@ export class AuthService {
 
 	signOut({ request, response, userId }: ILogOutProps) {
 		request.session.userId = undefined;
+		const appDomain = Bun.env.APP_DOMAIN ?? process.env.APP_DOMAIN;
 
 		response.cookie(Cookie.Name, null, {
 			secure: true,
 			httpOnly: true,
-			domain: Cookie.Domain,
+			domain: appDomain ?? Cookie.DomainDefault,
 			expires: new Date(Cookie.ExpireDate),
 			sameSite: 'none',
 		});

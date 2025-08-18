@@ -38,7 +38,8 @@ resource "aws_ecs_task_definition" "app" {
         { name = "SESSION_SECRET", valueFrom = aws_secretsmanager_secret.session_secret.arn },
         { name = "MASTRA_DATABASE_URL", valueFrom = aws_secretsmanager_secret.mastra_database_url.arn },
         { name = "OPENAI_API_KEY", valueFrom = aws_secretsmanager_secret.openai_api_key.arn },
-        { name = "ANTHROPIC_API_KEY", valueFrom = aws_secretsmanager_secret.anthropic_api_key.arn }
+        { name = "ANTHROPIC_API_KEY", valueFrom = aws_secretsmanager_secret.anthropic_api_key.arn },
+        { name = "APP_DOMAIN", valueFrom = aws_secretsmanager_secret.app_domain.arn }
       ]
     }
   ])
@@ -71,6 +72,12 @@ resource "aws_secretsmanager_secret" "openai_api_key" {
 
 resource "aws_secretsmanager_secret" "anthropic_api_key" {
   name = "${var.app_name}/ANTHROPIC_API_KEY"
+}
+
+// Value will be set manually or via CI (outside Terraform)
+
+resource "aws_secretsmanager_secret" "app_domain" {
+  name = "${var.app_name}/APP_DOMAIN"
 }
 
 // Value will be set manually or via CI (outside Terraform)

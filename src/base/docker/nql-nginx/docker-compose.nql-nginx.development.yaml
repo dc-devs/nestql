@@ -1,0 +1,6 @@
+services:
+  nql-nginx-development:
+    # Override to include depends_on when running in a network with nql-app
+    depends_on:
+      nql-app:
+        condition: service_healthy

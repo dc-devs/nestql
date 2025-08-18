@@ -41,3 +41,4 @@ output "ecs_security_group_id" {
 output "rds_instance_id" {
   value = aws_db_instance.main.id
 }
+

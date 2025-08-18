@@ -8,6 +8,7 @@ import { initializeRedis } from '@base/session-store/initialize-redis';
 
 export const initializeSession = async () => {
 	const redisClient = await initializeRedis();
+	const appDomain = Bun.env.APP_DOMAIN ?? process.env.APP_DOMAIN;
 
 	const sessionConfig = {
 		store: new RedisStore({ client: redisClient }),
@@ -21,7 +22,7 @@ export const initializeSession = async () => {
 		cookie: {
 			secure: true,
 			httpOnly: true,
-			domain: Cookie.Domain,
+			domain: appDomain ?? Cookie.DomainDefault,
 			maxAge: sixtyDays,
 			sameSite: 'none',
 		},

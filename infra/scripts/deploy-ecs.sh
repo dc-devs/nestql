@@ -13,6 +13,7 @@ set -euo pipefail
 #   --skip-terraform    Skip Terraform apply step
 #   --skip-verification Skip post-deployment verification
 #   --timeout SECONDS   Deployment timeout in seconds (default: 600)
+#   --auto-approve-terraform  Auto-approve Terraform apply
 #
 # REQUIREMENTS:
 #   - AWS CLI configured with ECS permissions
@@ -41,6 +42,7 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
 SKIP_TERRAFORM=false
 SKIP_VERIFICATION=false
 TIMEOUT=600
+AUTO_APPROVE_TERRAFORM=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -56,6 +58,10 @@ while [[ $# -gt 0 ]]; do
 		--timeout)
 			TIMEOUT="$2"
 			shift 2
+			;;
+		--auto-approve-terraform)
+			AUTO_APPROVE_TERRAFORM=true
+			shift
 			;;
 		*)
 			log_error "Unknown option: $1"
@@ -132,8 +138,15 @@ apply_terraform() {
 	
 	log_info "Applying Terraform configuration..."
 	
+	# Build terraform apply command with conditional auto-approve
+	local terraform_args=()
+	if [[ "$AUTO_APPROVE_TERRAFORM" == true ]]; then
+		terraform_args+=("-auto-approve")
+		log_info "Using auto-approve for Terraform"
+	fi
+	
 	# First try to apply - if it fails due to dependency lock issues, auto-fix
-	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply -auto-approve 2>&1; then
+	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]}" 2>&1; then
 		log_warn "Terraform apply failed, checking for dependency lock issues..."
 		
 		# Try to detect if it's a lock file issue
@@ -146,7 +159,7 @@ apply_terraform() {
 			if terraform -chdir="${SCRIPT_DIR}/../terraform" init -upgrade; then
 				log_info "Dependencies updated, retrying terraform apply..."
 				
-				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply -auto-approve; then
+				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]}"; then
 					log_success "Terraform apply completed (after dependency update)"
 					return 0
 				else

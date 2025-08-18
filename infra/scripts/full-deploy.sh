@@ -18,6 +18,8 @@ set -euo pipefail
 #   --skip-terraform    Skip Terraform apply step
 #   --skip-verification Skip post-deployment verification
 #   --timeout SECONDS   Deployment timeout in seconds (default: 600)
+#   --auto-approve      Skip all confirmation prompts
+#   --auto-approve-terraform  Auto-approve Terraform apply (passed to terraform)
 #
 # REQUIREMENTS:
 #   - All prerequisites from build-and-push.sh and deploy-ecs.sh
@@ -49,6 +51,8 @@ SKIP_BUILD=false
 SKIP_TERRAFORM=false
 SKIP_VERIFICATION=false
 TIMEOUT=600
+AUTO_APPROVE=false
+AUTO_APPROVE_TERRAFORM=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -72,6 +76,14 @@ while [[ $# -gt 0 ]]; do
 		--timeout)
 			TIMEOUT="$2"
 			shift 2
+			;;
+		--auto-approve)
+			AUTO_APPROVE=true
+			shift
+			;;
+		--auto-approve-terraform)
+			AUTO_APPROVE_TERRAFORM=true
+			shift
 			;;
 		-h|--help)
 			show_help
@@ -98,6 +110,8 @@ OPTIONS:
   --skip-terraform     Skip Terraform apply step  
   --skip-verification  Skip post-deployment verification
   --timeout SECONDS    Deployment timeout in seconds (default: 600)
+  --auto-approve       Skip all confirmation prompts
+  --auto-approve-terraform  Auto-approve Terraform apply (passed to terraform)
   -h, --help          Show this help message
 
 EXAMPLES:
@@ -113,6 +127,15 @@ EXAMPLES:
   # Quick deployment (skip verification)
   ./infra/scripts/full-deploy.sh --skip-verification --timeout 300
 
+  # Fully automated deployment (no prompts)
+  ./infra/scripts/full-deploy.sh --auto-approve
+
+  # Auto-approve only Terraform (still prompt for other confirmations)
+  ./infra/scripts/full-deploy.sh --auto-approve-terraform
+
+  # Auto-approve everything (full automation)
+  ./infra/scripts/full-deploy.sh --auto-approve --auto-approve-terraform
+
 EOF
 }
 
@@ -126,11 +149,15 @@ validate_environment() {
 	# Check git status for production safety
 	if [[ -n "$(git status --porcelain 2>/dev/null || echo '')" ]]; then
 		log_warn "Working directory has uncommitted changes"
-		read -p "Continue with deployment? (y/N): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			log_info "Deployment cancelled by user"
-			exit 0
+		if [[ "$AUTO_APPROVE" == false ]]; then
+			read -p "Continue with deployment? (y/N): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+				log_info "Deployment cancelled by user"
+				exit 0
+			fi
+		else
+			log_warn "Auto-approve enabled, continuing with uncommitted changes"
 		fi
 	fi
 	
@@ -139,11 +166,15 @@ validate_environment() {
 	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
 	if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
 		log_warn "Deploying from branch: $current_branch (not main/master)"
-		read -p "Continue with deployment? (y/N): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			log_info "Deployment cancelled by user"
-			exit 0
+		if [[ "$AUTO_APPROVE" == false ]]; then
+			read -p "Continue with deployment? (y/N): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+				log_info "Deployment cancelled by user"
+				exit 0
+			fi
+		else
+			log_warn "Auto-approve enabled, continuing from branch: $current_branch"
 		fi
 	fi
 	
@@ -186,14 +217,20 @@ show_deployment_plan() {
 	log_info "Skip Terraform: $SKIP_TERRAFORM"
 	log_info "Skip verification: $SKIP_VERIFICATION"
 	log_info "Timeout: ${TIMEOUT}s"
+	log_info "Auto-approve: $AUTO_APPROVE"
+	log_info "Auto-approve Terraform: $AUTO_APPROVE_TERRAFORM"
 	log_info "======================="
 	log_info ""
 	
-	read -p "Continue with deployment? (y/N): " -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-		log_info "Deployment cancelled by user"
-		exit 0
+	if [[ "$AUTO_APPROVE" == false ]]; then
+		read -p "Continue with deployment? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			log_info "Deployment cancelled by user"
+			exit 0
+		fi
+	else
+		log_info "Auto-approve enabled, starting deployment immediately"
 	fi
 }
 
@@ -231,6 +268,9 @@ step_deploy_ecs() {
 	fi
 	if [[ "$SKIP_VERIFICATION" == true ]]; then
 		deploy_args+=("--skip-verification")
+	fi
+	if [[ "$AUTO_APPROVE_TERRAFORM" == true ]]; then
+		deploy_args+=("--auto-approve-terraform")
 	fi
 	deploy_args+=("--timeout" "$TIMEOUT")
 	

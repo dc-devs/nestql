@@ -132,23 +132,22 @@ resource "aws_route53_record" "api" {
 # Frontend DNS (Netlify)
 # ============================================================================
 
-# Root domain ALIAS record pointing to Netlify load balancer (future-proof)
-resource "aws_route53_record" "root_netlify" {
+# Root domain A record pointing to Netlify load balancer IP
+# Note: Using A record with Netlify's IP addresses since hosted zone ID is not publicly available
+resource "aws_route53_record" "frontend_root" {
   zone_id = data.aws_route53_zone.primary.zone_id
-  name    = var.domain_name
+  name    = var.domain_name  # dc-devs.com
   type    = "A"
-  alias {
-    name                   = var.netlify_load_balancer
-    zone_id                = "Z2FDTNDATAQYW2" # CloudFront zone ID (used by Netlify)
-    evaluate_target_health = false
-  }
+  ttl     = 300
+  records = ["75.2.60.5"]  # Netlify's load balancer IP from their documentation
 }
 
 # WWW subdomain CNAME pointing to Netlify app
-resource "aws_route53_record" "www_netlify" {
-  zone_id = data.aws_route53_zone.primary.zone_id
-  name    = "www.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = [var.netlify_app_domain]
+resource "aws_route53_record" "frontend_www" {
+  zone_id         = data.aws_route53_zone.primary.zone_id
+  name            = "www.${var.domain_name}"  # www.dc-devs.com
+  type            = "CNAME"
+  ttl             = 300
+  records         = [var.netlify_app_domain]  # resplendent-bubblegum-0142bc.netlify.app
+  allow_overwrite = true  # Allow Terraform to overwrite existing record
 }

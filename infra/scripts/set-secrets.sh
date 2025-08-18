@@ -13,6 +13,7 @@ set -euo pipefail
 #   export SESSION_SECRET="your-session-secret"
 #   export OPENAI_API_KEY="your-openai-api-key"
 #   export ANTHROPIC_API_KEY="your-anthropic-api-key"
+#   export APP_DOMAIN="dc-devs.com"
 #   ./infra/scripts/set-secrets-new.sh
 #
 # REQUIREMENTS:
@@ -118,13 +119,23 @@ validate_required_vars() {
 		((errors++))
 	fi
 	
+	# APP_DOMAIN validation (required like other secrets)
+	if [[ -z "${APP_DOMAIN:-}" ]]; then
+		log_error "APP_DOMAIN environment variable is required"
+		log_error "Please set it with: export APP_DOMAIN='dc-devs.com'"
+		((errors++))
+	elif [[ ${#APP_DOMAIN} -lt 3 ]]; then
+		log_error "APP_DOMAIN must be at least 3 characters long"
+		((errors++))
+	fi
+	
 	if [[ $errors -gt 0 ]]; then
 		log_error "Found $errors validation error(s). Please fix them and try again."
 		exit 1
 	fi
 	
 	log_success "All environment variables validated successfully"
-	log_info "Variable lengths: NESTQL_APP_PASSWORD=${#NESTQL_APP_PASSWORD}, MASTRA_APP_PASSWORD=${#MASTRA_APP_PASSWORD}, SESSION_SECRET=${#SESSION_SECRET}, OPENAI_API_KEY=${#OPENAI_API_KEY}, ANTHROPIC_API_KEY=${#ANTHROPIC_API_KEY}"
+	log_info "Variable lengths: NESTQL_APP_PASSWORD=${#NESTQL_APP_PASSWORD}, MASTRA_APP_PASSWORD=${#MASTRA_APP_PASSWORD}, SESSION_SECRET=${#SESSION_SECRET}, OPENAI_API_KEY=${#OPENAI_API_KEY}, ANTHROPIC_API_KEY=${#ANTHROPIC_API_KEY}, APP_DOMAIN=${#APP_DOMAIN}"
 }
 
 # =============================================================================
@@ -138,6 +149,9 @@ build_secrets() {
 	readonly DATABASE_URL="postgresql://nestql_app:${NESTQL_APP_PASSWORD}@${DB_ENDPOINT}:5432/nestql?schema=public&sslmode=require&ssl=true"
 	readonly MASTRA_DATABASE_URL="postgresql://mastra_app:${MASTRA_APP_PASSWORD}@${MASTRA_DB_ENDPOINT}:5432/mastra?schema=public&sslmode=require&ssl=true"
 	readonly REDIS_URL="redis://${REDIS_ENDPOINT}:6379/0"
+	
+	# APP_DOMAIN - directly from environment variable (like other secrets)
+	readonly FINAL_APP_DOMAIN="$APP_DOMAIN"
 	
 	log_success "Secret values constructed"
 }
@@ -202,6 +216,7 @@ update_all_secrets() {
 	update_secret "SESSION_SECRET" "$SESSION_SECRET" "SESSION_SECRET" || ((update_errors++))
 	update_secret "OPENAI_API_KEY" "$OPENAI_API_KEY" "OPENAI_API_KEY" || ((update_errors++))
 	update_secret "ANTHROPIC_API_KEY" "$ANTHROPIC_API_KEY" "ANTHROPIC_API_KEY" || ((update_errors++))
+	update_secret "APP_DOMAIN" "$FINAL_APP_DOMAIN" "APP_DOMAIN" || ((update_errors++))
 	
 	if [[ $update_errors -gt 0 ]]; then
 		log_error "$update_errors secret(s) failed to update"
@@ -224,6 +239,7 @@ verify_all_secrets() {
 	verify_secret "SESSION_SECRET" "$SESSION_SECRET" "SESSION_SECRET" || ((verify_errors++))
 	verify_secret "OPENAI_API_KEY" "$OPENAI_API_KEY" "OPENAI_API_KEY" || ((verify_errors++))
 	verify_secret "ANTHROPIC_API_KEY" "$ANTHROPIC_API_KEY" "ANTHROPIC_API_KEY" || ((verify_errors++))
+	verify_secret "APP_DOMAIN" "$FINAL_APP_DOMAIN" "APP_DOMAIN" || ((verify_errors++))
 	
 	if [[ $verify_errors -gt 0 ]]; then
 		log_error "$verify_errors secret(s) failed verification"
@@ -264,6 +280,12 @@ main() {
 	fi
 	
 	log_success "All secrets updated and verified successfully!"
+	log_info ""
+	log_info "Secret Summary:"
+	log_info "  APP_DOMAIN: $FINAL_APP_DOMAIN"
+	log_info "  DATABASE_URL: Connected to $DB_ENDPOINT"
+	log_info "  MASTRA_DATABASE_URL: Connected to $MASTRA_DB_ENDPOINT"
+	log_info "  REDIS_URL: Connected to $REDIS_ENDPOINT"
 	log_info ""
 	log_info "Next steps:"
 	log_info "1. Deploy your application to use the new secrets"
