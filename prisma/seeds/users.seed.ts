@@ -1,5 +1,15 @@
 import { UserRole } from '@prisma/client';
-import { hashPassword } from '../../src/app/models/users/common/utils/hash-password';
+
+// Copy of hashPassword from src/app/models/users/common/utils/hash-password.ts
+const hashPassword = async (password: string): Promise<string> => {
+	const argonHash = await Bun.password.hash(password, {
+		algorithm: 'argon2id', // Best choice for general password hashing
+		memoryCost: 65536, // 64MB - good balance of security vs performance
+		timeCost: 4, // Higher iteration count for better security
+	});
+
+	return argonHash;
+};
 
 const users = [];
 const password = 'n@st123!';

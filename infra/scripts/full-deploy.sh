@@ -150,12 +150,38 @@ validate_environment() {
 	log_success "Environment validation passed"
 }
 
+get_commit_info() {
+	# Get git commit hash and short description
+	local commit_hash
+	local commit_msg
+	
+	if command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1; then
+		commit_hash="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+		commit_msg="$(git log -1 --pretty=format:"%s" 2>/dev/null || echo "No commit message")"
+		echo "${commit_hash} - ${commit_msg}"
+	else
+		echo "unknown - Not a git repository"
+	fi
+}
+
+set_image_tag() {
+	if [[ -z "$IMAGE_TAG" ]]; then
+		if command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1; then
+			IMAGE_TAG="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+		else
+			IMAGE_TAG="unknown"
+		fi
+	fi
+}
+
 show_deployment_plan() {
+	set_image_tag
+	
 	log_info ""
 	log_info "=== DEPLOYMENT PLAN ==="
 	log_info "App: $APP_NAME"
 	log_info "Region: $REGION"
-	log_info "Image tag: ${IMAGE_TAG:-auto-generated}"
+	log_info "Image tag: $IMAGE_TAG"
 	log_info "Skip build: $SKIP_BUILD"
 	log_info "Skip Terraform: $SKIP_TERRAFORM"
 	log_info "Skip verification: $SKIP_VERIFICATION"
