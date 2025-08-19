@@ -1,5 +1,5 @@
 import { Host } from '@base/server/enums';
-import { getFrontendDomain } from '@base/common/utils/get-frontend-domain';
+import { getFrontendDomain } from '@base/common/utils';
 
 const frontendDomain = getFrontendDomain();
 
