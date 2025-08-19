@@ -5,11 +5,7 @@ import { logInitMessage } from '@base/common/utils';
 import { initializeSession } from '@base/session-store';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { port, corsOptions, validationPipe } from '@base/server/config';
-import {
-	getAppDomain,
-	getCookieDomain,
-	getFrontendDomain,
-} from '@base/common/utils';
+import { getAppDomain, getFrontendDomain } from '@base/common/utils';
 import {
 	environment,
 	isProductionEnv,
@@ -21,7 +17,6 @@ export async function bootstrap<AppModule>({
 	AppModule: Type<AppModule>;
 }) {
 	const appDomain = getAppDomain();
-	const cookieDomain = getCookieDomain();
 	const frontendDomain = getFrontendDomain();
 	const session = await initializeSession();
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -46,7 +41,6 @@ export async function bootstrap<AppModule>({
 		port,
 		environment,
 		appDomain,
-		cookieDomain,
 		frontendDomain,
 		redisUrl: (Bun.env.REDIS_URL ?? process.env.REDIS_URL)!,
 		databaseUrl: (Bun.env.DATABASE_URL ?? process.env.DATABASE_URL)!,

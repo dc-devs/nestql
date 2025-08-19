@@ -4,7 +4,6 @@ interface IOptions {
 	port: string | number;
 	environment: string;
 	appDomain: string;
-	cookieDomain: string;
 	frontendDomain: string;
 	redisUrl: string | undefined;
 	databaseUrl: string | undefined;
@@ -43,7 +42,6 @@ export const logInitMessage = ({
 	port,
 	redisUrl,
 	appDomain,
-	cookieDomain,
 	frontendDomain,
 	environment,
 	databaseUrl,
@@ -58,7 +56,6 @@ export const logInitMessage = ({
 	logger.log(`Environment: ${environment}`);
 	logger.log(`Port: ${port}`);
 	logger.log(`App Domain: ${appDomain}`);
-	logger.log(`Cookie Domain: ${cookieDomain}`);
 	logger.log(`Frontend Domain: ${frontendDomain}`);
 	logger.log('');
 
