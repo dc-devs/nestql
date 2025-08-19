@@ -1,7 +1,7 @@
 import { Host } from '@base/server/enums';
-import { getAppDomain } from '@base/common/utils';
+import { getFrontendDomain } from '@base/common/utils/get-frontend-domain';
 
-const appDomain = getAppDomain();
+const frontendDomain = getFrontendDomain();
 
 export const corsOptions = {
 	origin: [
@@ -9,10 +9,10 @@ export const corsOptions = {
 		Host.LocalhostServer,
 		Host.LocalhostTestServer,
 		Host.ApolloStudioSandbox,
-		`https://${appDomain}`,
-		`https://local.${appDomain}`,
-		`https://api.${appDomain}`,
-	],
+		`https://${frontendDomain}`,
+		`https://local.${frontendDomain}`,
+		`https://api.${frontendDomain}`,
+	].filter(Boolean),
 	credentials: true,
 	exposedHeaders: ['Set-Cookie'],
 };

@@ -1,8 +1,12 @@
-import { Cookie } from '@base/session-store/common/enums';
+import { Domain } from '@base/server/enums';
 import { getAppDomain } from '@base/common/utils/get-app-domain';
 
 export const getCookieDomain = () => {
-	const appDomain = getAppDomain();
+	let appDomain = getAppDomain();
 
-	return appDomain ?? Cookie.DomainDefault;
+	if (appDomain.includes(Domain.Default)) {
+		appDomain = `local${appDomain}`;
+	}
+
+	return appDomain;
 };

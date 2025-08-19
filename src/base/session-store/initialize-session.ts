@@ -5,11 +5,11 @@ import { Cookie } from '@base/session-store/common/enums';
 import { sixtyDays } from '@base/common/constants/time-in-ms';
 import { SessionSecret } from '@base/session-store/common/constants';
 import { initializeRedis } from '@base/session-store/initialize-redis';
-import { getAppDomain } from '@base/common/utils/get-app-domain';
+import { getCookieDomain } from '@base/common/utils/get-cookie-domain';
 
 export const initializeSession = async () => {
 	const redisClient = await initializeRedis();
-	const appDomain = getAppDomain();
+	const cookieDomain = getCookieDomain();
 
 	const sessionConfig = {
 		store: new RedisStore({ client: redisClient }),
@@ -23,7 +23,7 @@ export const initializeSession = async () => {
 		cookie: {
 			secure: true,
 			httpOnly: true,
-			domain: appDomain,
+			domain: cookieDomain,
 			maxAge: sixtyDays,
 			sameSite: 'none',
 		},

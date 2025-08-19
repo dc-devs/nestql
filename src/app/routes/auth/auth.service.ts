@@ -3,7 +3,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Cookie } from '@base/session-store/common/enums';
 import { UsersService } from '@models/users/users.service';
 import { UserCreateInput } from '@generated/user/user-create.input';
-import { getAppDomain } from '@base/common/utils/get-app-domain';
+import { getCookieDomain } from '@base/common/utils/get-cookie-domain';
 import { hashPassword } from '@src/app/models/users/common/utils/hash-password';
 import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 import type {
@@ -51,12 +51,12 @@ export class AuthService {
 
 	signOut({ request, response, userId }: ILogOutProps) {
 		request.session.userId = undefined;
-		const appDomain = getAppDomain();
+		const cookieDomain = getCookieDomain();
 
 		response.cookie(Cookie.Name, null, {
 			secure: true,
 			httpOnly: true,
-			domain: appDomain,
+			domain: cookieDomain,
 			expires: new Date(Cookie.ExpireDate),
 			sameSite: 'none',
 		});

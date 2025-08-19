@@ -146,7 +146,7 @@ apply_terraform() {
 	fi
 	
 	# First try to apply - if it fails due to dependency lock issues, auto-fix
-	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]}" 2>&1; then
+	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]+"${terraform_args[@]}"}" 2>&1; then
 		log_warn "Terraform apply failed, checking for dependency lock issues..."
 		
 		# Try to detect if it's a lock file issue
@@ -159,7 +159,7 @@ apply_terraform() {
 			if terraform -chdir="${SCRIPT_DIR}/../terraform" init -upgrade; then
 				log_info "Dependencies updated, retrying terraform apply..."
 				
-				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]}"; then
+				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]+"${terraform_args[@]}"}"; then
 					log_success "Terraform apply completed (after dependency update)"
 					return 0
 				else
