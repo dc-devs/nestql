@@ -32,6 +32,8 @@ const initializeRedis = async (): Promise<RedisClient> => {
 			resolve(redisClient);
 		});
 
+		logger.debug('Initializing Redis');
+
 		await redisClient.connect();
 	});
 };

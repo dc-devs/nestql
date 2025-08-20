@@ -6,10 +6,14 @@ import { sixtyDays } from '@base/common/constants/time-in-ms';
 import { SessionSecret } from '@base/session-store/common/constants';
 import { initializeRedis } from '@base/session-store/initialize-redis';
 import { getAppDomain } from '@base/common/utils/get-app-domain';
+import { Logger } from '@nestjs/common';
 
 export const initializeSession = async () => {
 	const redisClient = await initializeRedis();
 	const appDomain = getAppDomain();
+	const logger = new Logger('Session');
+
+	logger.debug('Initializing Session');
 
 	const sessionConfig = {
 		store: new RedisStore({ client: redisClient }),

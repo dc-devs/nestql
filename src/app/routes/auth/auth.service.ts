@@ -40,9 +40,13 @@ export class AuthService {
 	async signIn({ request }: { request: IAuthenticatedRequest }) {
 		const { user } = request;
 
-		if (user && request.session) {
-			request.session.userId = user.id;
-		} else {
+		try {
+			if (user) {
+				request.session.userId = user.id;
+			} else {
+				throw new UnauthorizedException();
+			}
+		} catch (e) {
 			throw new UnauthorizedException();
 		}
 
