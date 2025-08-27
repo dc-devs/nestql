@@ -6,7 +6,6 @@ import { sixtyDays } from '@base/common/constants/time-in-ms';
 import { SessionSecret } from '@base/session-store/common/constants';
 import { initializeRedis } from '@base/session-store/initialize-redis';
 import { getAppDomain } from '@base/common/utils/get-app-domain';
-import { Logger } from '@nestjs/common';
 
 export const initializeSession = async () => {
 	const redisClient = await initializeRedis();
@@ -15,6 +14,7 @@ export const initializeSession = async () => {
 	const sessionConfig = {
 		store: new RedisStore({
 			client: redisClient,
+			ttl: Math.floor(sixtyDays / 1000), // Convert to seconds, match cookie TTL
 		}),
 		name: Cookie.Name,
 		resave: false,
