@@ -11,18 +11,19 @@ import { Logger } from '@nestjs/common';
 export const initializeSession = async () => {
 	const redisClient = await initializeRedis();
 	const appDomain = getAppDomain();
-	const logger = new Logger('Session');
-
-	logger.debug('Initializing Session');
 
 	const sessionConfig = {
-		store: new RedisStore({ client: redisClient }),
+		store: new RedisStore({
+			client: redisClient,
+		}),
 		name: Cookie.Name,
 		resave: false,
 		saveUninitialized: false,
 		secret: SessionSecret,
 		genid: () => {
-			return uuidv4();
+			const id = uuidv4();
+
+			return id;
 		},
 		cookie: {
 			secure: true,

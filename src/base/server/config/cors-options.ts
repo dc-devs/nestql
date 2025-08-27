@@ -10,6 +10,7 @@ export const corsOptions = {
 		Host.LocalhostTestServer,
 		Host.ApolloStudioSandbox,
 		`https://${frontendDomain}`,
+		`https://www.${frontendDomain}`,
 		`https://local.${frontendDomain}`,
 		`https://api.${frontendDomain}`,
 	].filter(Boolean),

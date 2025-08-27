@@ -32,7 +32,13 @@ const initializeRedis = async (): Promise<RedisClient> => {
 			resolve(redisClient);
 		});
 
-		logger.debug('Initializing Redis');
+		redisClient.on('set', (sessionId) => {
+			logger.debug('Session SAVED to Redis:', sessionId);
+		});
+
+		redisClient.on('get', (sessionId) => {
+			logger.debug('Session READ from Redis:', sessionId);
+		});
 
 		await redisClient.connect();
 	});
