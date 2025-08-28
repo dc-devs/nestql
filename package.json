@@ -65,7 +65,7 @@
 		"nql:dev:app:docker:shell": "docker exec -it nql-app-development bash",
 		"nql:generate:model": "bunx prisma generate && bun src/base/generators/model-generator/start.ts",
 		"---------DEPLLOY---------": "-----------------------------------",
-		"deploy:prod:full": "bun infra/scripts/full-deploy.sh"
+		"deploy:prod:full": "infra/scripts/full-deploy.sh"
 	},
 	"dependencies": {
 		"@ai-sdk/amazon-bedrock": "2.2.12",
