@@ -50,8 +50,6 @@ const initializeRedis = async (): Promise<RedisClient> => {
 							logger.debug(
 								`Session event: ${operation} on ${sessionKey}`,
 							);
-						} else {
-							logger.debug(`Session event: ${operation}`);
 						}
 					},
 				);
@@ -63,8 +61,6 @@ const initializeRedis = async (): Promise<RedisClient> => {
 						if (message.startsWith('sess:')) {
 							if (isDevelopmentEnv) {
 								logger.debug(`Session expired: ${message}`);
-							} else {
-								logger.debug('Session expired');
 							}
 						}
 					},
