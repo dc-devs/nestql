@@ -63,7 +63,9 @@
 		"nql:dev:app:update-hosts": "sudo src/base/sh-scripts/update-hosts.sh",
 		"nql:dev:app:setup": "bun nql:dev:app:generate-certs && bun nql:dev:app:update-hosts",
 		"nql:dev:app:docker:shell": "docker exec -it nql-app-development bash",
-		"nql:generate:model": "bunx prisma generate && bun src/base/generators/model-generator/start.ts"
+		"nql:generate:model": "bunx prisma generate && bun src/base/generators/model-generator/start.ts",
+		"---------DEPLLOY---------": "-----------------------------------",
+		"deploy:prod:full": "bun infra/scripts/full-deploy.sh"
 	},
 	"dependencies": {
 		"@ai-sdk/amazon-bedrock": "2.2.12",

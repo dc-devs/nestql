@@ -26,7 +26,7 @@ rm -rf ./src/base/docker/nql-nginx/certs/*
 echo "Cleaned certs directory"
 
 # Generate certificates
-mkcert -key-file ./src/base/docker/nql-nginx/certs/key.pem -cert-file ./src/base/docker/nql-nginx/certs/cert.pem 'localhost' 'local.nestql.com'
+mkcert -key-file ./src/base/docker/nql-nginx/certs/key.pem -cert-file ./src/base/docker/nql-nginx/certs/cert.pem 'localhost' 'local.nestql.com' 'nestql.com'
 
 # Set permissions on certificate files
 echo "Setting certificate permissions..."

@@ -2,7 +2,7 @@ server {
 	listen					443 ssl;
 	ssl_certificate			/etc/nginx/certs/cert.pem;
 	ssl_certificate_key		/etc/nginx/certs/key.pem;
-	server_name				local.nestql.com;
+	server_name				local.nestql.com nestql.com;
 
 	location /graphql {
 		proxy_pass				http://host.docker.internal:${PORT};

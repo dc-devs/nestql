@@ -21,9 +21,11 @@ export class LoggerMiddleware implements NestMiddleware {
 				? `?${new URLSearchParams(request.query as Record<string, string>).toString()}`
 				: '';
 
-		logger.log(
-			`[Request] ${loggedUserAgent} ${method} ${requestUrl}${queryString}`,
-		);
+		if (!requestUrl.includes('/ping')) {
+			logger.log(
+				`[Request] ${loggedUserAgent} ${method} ${requestUrl}${queryString}`,
+			);
+		}
 
 		next();
 	}
