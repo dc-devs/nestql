@@ -4,7 +4,8 @@ server {
 	ssl_certificate_key		/etc/nginx/certs/key.pem;
 	server_name				local.nestql.com nestql.com;
 
-	location /graphql {
+	# API routes (REST endpoints and GraphQL)
+	location ~ ^/(users|ping|graphql)$ {
 		proxy_pass				http://host.docker.internal:${PORT};
 		proxy_read_timeout		90;
 

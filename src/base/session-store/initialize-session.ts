@@ -27,7 +27,7 @@ export const initializeSession = async () => {
 		secret: SessionSecret,
 		genid: () => {
 			const id = uuidv4();
-			console.log('[SessionStore] Generated session ID:', id);
+
 			return id;
 		},
 		cookie: {

@@ -11,6 +11,7 @@ import type { NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { MastraModule } from '@src/app/modules/mastra/mastra.module';
 import { LoggerMiddleware } from '@base/common/middleware/logger.middleware';
 import { ChatSessionsModule } from '@models/chat-sessions/chat-sessions.module';
+import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
 
 @Module({
 	imports: [
@@ -25,7 +26,7 @@ import { ChatSessionsModule } from '@models/chat-sessions/chat-sessions.module';
 		ChatSessionsModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, PrismaService],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
