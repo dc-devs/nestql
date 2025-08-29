@@ -6,10 +6,7 @@ import { initializeSession } from '@base/session-store';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { port, corsOptions, validationPipe } from '@base/server/config';
 import { getAppDomain, getFrontendDomain } from '@base/common/utils';
-import {
-	environment,
-	isProductionEnv,
-} from '@base/common/constants/environment';
+import { environment } from '@base/common/constants/environment';
 
 export async function bootstrap<AppModule>({
 	AppModule,
@@ -27,7 +24,7 @@ export async function bootstrap<AppModule>({
 	app.enableShutdownHooks();
 	app.enableCors(corsOptions);
 	app.useGlobalPipes(validationPipe);
-	app.set(App.TRUST_PROXY, !isProductionEnv);
+	app.set(App.TRUST_PROXY, true); // Always trust proxy in containerized environments
 
 	// Graceful shutdown on bun
 	process.on('SIGINT', async () => {
