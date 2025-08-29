@@ -8,8 +8,13 @@ import { initializeRedis } from '@base/session-store/initialize-redis';
 import { getAppDomain } from '@base/common/utils/get-app-domain';
 
 export const initializeSession = async () => {
+	console.log('[SessionStore] Initializing session store');
 	const redisClient = await initializeRedis();
 	const appDomain = getAppDomain();
+
+	console.log('[SessionStore] App domain:', appDomain);
+	console.log('[SessionStore] Cookie name:', Cookie.Name);
+	console.log('[SessionStore] Session secret exists:', !!SessionSecret);
 
 	const sessionConfig = {
 		store: new RedisStore({
@@ -22,7 +27,7 @@ export const initializeSession = async () => {
 		secret: SessionSecret,
 		genid: () => {
 			const id = uuidv4();
-
+			console.log('[SessionStore] Generated session ID:', id);
 			return id;
 		},
 		cookie: {
@@ -34,5 +39,17 @@ export const initializeSession = async () => {
 		},
 	};
 
-	return session(sessionConfig);
+	console.log('[SessionStore] Session config:', {
+		cookieName: sessionConfig.name,
+		domain: sessionConfig.cookie.domain,
+		secure: sessionConfig.cookie.secure,
+		httpOnly: sessionConfig.cookie.httpOnly,
+		maxAge: sessionConfig.cookie.maxAge,
+		sameSite: sessionConfig.cookie.sameSite,
+	});
+
+	const sessionMiddleware = session(sessionConfig);
+	console.log('[SessionStore] Session middleware created successfully');
+
+	return sessionMiddleware;
 };

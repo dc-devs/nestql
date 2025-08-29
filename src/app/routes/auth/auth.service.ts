@@ -38,18 +38,39 @@ export class AuthService {
 	}
 
 	async signIn({ request }: { request: IAuthenticatedRequest }) {
+		console.log('[AuthService] Starting sign in process');
 		const { user } = request;
+
+		console.log('[AuthService] User from request:', user);
+		console.log('[AuthService] User type:', typeof user);
+		console.log(
+			'[AuthService] Session before setting userId:',
+			request.session,
+		);
 
 		try {
 			if (user) {
+				console.log(
+					'[AuthService] Setting session userId to:',
+					user.id,
+				);
 				request.session.userId = user.id;
+				console.log(
+					'[AuthService] Session after setting userId:',
+					request.session,
+				);
 			} else {
+				console.log(
+					'[AuthService] No user found in request, throwing UnauthorizedException',
+				);
 				throw new UnauthorizedException();
 			}
 		} catch (e) {
+			console.error('[AuthService] Error during sign in:', e);
 			throw new UnauthorizedException();
 		}
 
+		console.log('[AuthService] Sign in successful, returning response');
 		return { isAuthenticated: true, user };
 	}
 
@@ -72,8 +93,16 @@ export class AuthService {
 	}
 
 	getAuthSession({ request }: { request: IAuthenticatedRequest }) {
+		console.log('[AuthService] Getting auth session');
 		const { user } = request;
 
-		return { isAuthenticated: true, user };
+		console.log('[AuthService] User from request:', user);
+		console.log('[AuthService] User type:', typeof user);
+		console.log('[AuthService] Session data:', request.session);
+
+		const result = { isAuthenticated: !!user, user };
+		console.log('[AuthService] Returning auth session:', result);
+
+		return result;
 	}
 }
