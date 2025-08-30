@@ -255,6 +255,17 @@ wait_for_deployment() {
 			break
 		fi
 		
+		# Check for deployment failures (running count drops to 0 or service becomes unstable)
+		if [[ "$running_count" -eq 0 && "$desired_count" -gt 0 ]]; then
+			echo ""
+			log_error "Deployment failed - no running tasks!"
+			log_error "This usually indicates the new task definition failed health checks"
+			log_info "Checking recent logs for errors..."
+			show_recent_logs
+			log_error "ECS may have automatically rolled back to the previous stable version"
+			exit 1
+		fi
+		
 		sleep 5
 	done
 }
