@@ -1,12 +1,9 @@
 # Base image for all stages
-FROM oven/bun:1.2.19 AS base
+FROM node:18-alpine AS base
 WORKDIR /usr/src/app
 
 # Install necessary tools and CA bundle for TLS to RDS
-RUN apt-get update \
-	&& apt-get install -y curl ca-certificates \
-	&& update-ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl ca-certificates
 
 # Default port for the app
 ARG PORT=3001 
@@ -16,15 +13,18 @@ ARG PORT=3001
 ###############################
 FROM base AS install
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # Install dependencies into temp directories
 RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+COPY package.json pnpm-lock.yaml /temp/dev/
+RUN cd /temp/dev && pnpm install --frozen-lockfile
 
 # Install production dependencies separately
 RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+COPY package.json pnpm-lock.yaml /temp/prod/
+RUN cd /temp/prod && pnpm install --frozen-lockfile --prod
 
 ###############################
 # DEVELOPMENT
@@ -34,15 +34,15 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
 # Set correct permissions before switching user
-RUN chown -R bun:bun /usr/src/app
-USER bun
+RUN chown -R node:node /usr/src/app
+USER node
 
 # Generate Prisma client before starting the app
-RUN bunx prisma generate
+RUN pnpm run prisma:generate
 
 EXPOSE ${PORT}
 
-CMD ["bun", "run", "start:dev:docker"]
+CMD ["pnpm", "run", "start:dev:docker"]
 
 ###############################
 # BUILD
@@ -52,14 +52,14 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
 # Set correct permissions before switching user
-RUN chown -R bun:bun /usr/src/app
-USER bun
+RUN chown -R node:node /usr/src/app
+USER node
 
 # Generate Prisma client before building
-RUN bunx prisma generate
+RUN pnpm run prisma:generate
 
 ENV NODE_ENV=production
-RUN bun run build
+RUN pnpm run build
 
 ###############################
 # PRODUCTION
@@ -69,14 +69,14 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=build /usr/src/app/dist dist
 COPY package.json .
 COPY prisma prisma
-COPY bunfig.toml .
+COPY pnpm-lock.yaml .
 
 # Add AWS RDS CA bundle so Node trusts RDS certificates
 RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /etc/ssl/certs/rds-ca-bundle.pem
 
 # Set correct permissions before switching user
-RUN chown -R bun:bun /usr/src/app
-USER bun
+RUN chown -R node:node /usr/src/app
+USER node
 
 # Copy generated Prisma client/binaries from build stage so we don't need to generate in prod
 COPY --from=build /usr/src/app/node_modules/.prisma node_modules/.prisma
@@ -84,4 +84,4 @@ COPY --from=build /usr/src/app/node_modules/@prisma node_modules/@prisma
 
 EXPOSE ${PORT}
 
-CMD ["bun", "run", "start:prod"]
+CMD ["pnpm", "run", "start:prod"]

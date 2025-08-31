@@ -55,7 +55,8 @@ export class ChatService {
 		 * Enqueue assistant-generation job (per-message deterministic jobId)
 		 */
 		const jobName = ChatJobs.AssistantGenerate;
-		const lastUserMessageId = chatSession.messages?.at(-1)?.id!;
+		const lastUserMessageId =
+			chatSession.messages?.[chatSession.messages.length - 1]?.id!;
 		const jobData = {
 			chatSessionId: chatSession.id,
 			lastUserMessageId,

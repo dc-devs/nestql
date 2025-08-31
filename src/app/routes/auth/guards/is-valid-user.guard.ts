@@ -1,10 +1,13 @@
-import { PrismaClient } from '@prisma/client';
-import { GqlExecutionContext } from '@nestjs/graphql';
-import { UnauthorizedException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PrismaService } from '@base/services/prisma/service/prisma.service';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 import type { SessionInput } from '@routes/auth/dto/inputs';
 import type { UserSafe } from '@models/users/common/entities/user-safe';
-import { PrismaService } from '@root/src/base/services/prisma/service/prisma.service';
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { UnauthorizedException } from '@nestjs/common';
 
 const validateUser = async ({ email, password }: SessionInput) => {
 	console.log('[validateUser] Starting user validation');
@@ -56,7 +59,7 @@ const validateUser = async ({ email, password }: SessionInput) => {
 
 		if (user) {
 			console.log('[validateUser] Verifying password');
-			const hasCorrectPassword = await Bun.password.verify(
+			const hasCorrectPassword = await bcrypt.compare(
 				password,
 				user.password,
 			);

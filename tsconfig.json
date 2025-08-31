@@ -1,28 +1,28 @@
 {
 	"compilerOptions": {
-		"module": "esnext", // Changed from commonjs
-		"declaration": true,
-		"removeComments": true,
+		"module": "commonjs",
+		"target": "ES2021",
+		"moduleResolution": "node",
+		"types": ["node"],
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": false,
+		"noImplicitAny": false,
+		"strictNullChecks": false,
+		"strictBindCallApply": false,
+		"forceConsistentCasingInFileNames": false,
+		"noFallthroughCasesInSwitch": false,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
-		"target": "esnext", // Changed from ES2021
+		"skipLibCheck": true,
+		"declaration": true,
+		"removeComments": true,
 		"sourceMap": true,
 		"outDir": "./dist",
 		"baseUrl": "./",
 		"incremental": true,
-		"skipLibCheck": true,
-		"strictNullChecks": false,
-		"noImplicitAny": false,
-		"strictBindCallApply": false,
-		"forceConsistentCasingInFileNames": false,
-		"noFallthroughCasesInSwitch": false,
-		"moduleResolution": "bundler", // Added for Bun
-		"resolveJsonModule": true, // Added for Bun
-		"types": ["bun-types"], // Added for Bun type definitions
-		"allowJs": true,  // Add this line
-		"moduleDetection": "force", // Add this line
-		"verbatimModuleSyntax": true, // Enforce explicit type imports
+		"resolveJsonModule": true,
+		"lib": ["es2021", "dom"],
 		"paths": {
 			"@root/*": ["./*"],
 			"@src/*": ["./src/*"],
@@ -32,7 +32,7 @@
 			"@routes/*": ["./src/app/routes/*"],
 			"@packages/*": ["./src/packages/*"],
 			"@services/*": ["./src/app/services/*"],
-			"@generated/*": ["./src/app/models/common/@generated/*"],
+			"@generated/*": ["./src/app/models/common/@generated/*"]
 		}
 	}
 }

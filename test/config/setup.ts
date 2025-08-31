@@ -1,9 +1,10 @@
-import { afterEach, beforeEach } from 'bun:test';
+import { beforeAll, afterAll } from '@jest/globals';
 
-beforeEach(async () => {
-	// Global setup before each test
+// Setup any global test configuration here
+beforeAll(async () => {
+	// Global setup before all tests
 });
 
-afterEach(async () => {
-	// Global cleanup after each test
+afterAll(async () => {
+	// Global cleanup after all tests
 });
