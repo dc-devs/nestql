@@ -3,5 +3,5 @@
 # Start development environment
 
 ```bash
-bun docker:prod:nql-app:up
+pnpm docker:prod:nql-app:up
 ```

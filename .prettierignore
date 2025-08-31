@@ -34,7 +34,6 @@ Thumbs.db
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-bun.lockb
 
 # Generated files
 *.min.js

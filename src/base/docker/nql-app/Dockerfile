@@ -30,6 +30,10 @@ RUN cd /temp/prod && pnpm install --frozen-lockfile --prod
 # DEVELOPMENT
 ###############################
 FROM base AS development
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
@@ -48,6 +52,10 @@ CMD ["pnpm", "run", "start:dev:docker"]
 # BUILD
 ###############################
 FROM base AS build
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 

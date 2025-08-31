@@ -4,6 +4,7 @@ import { kebabCase } from 'change-case';
 import { checkIfFileExists } from '../utils/check-if-file-exists.js';
 import { getFieldsWithRelationFromFields } from '../utils/get-fields-with-relation-from-fields.js';
 
+// TODO: remove this file
 export const updateModelFile = async ({ model, baseDirectory }) => {
 	// Setup variables
 	const modelName = model.name;

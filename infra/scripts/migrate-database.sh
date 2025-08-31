@@ -25,7 +25,7 @@ set -euo pipefail
 #   SKIP_BACKUP          Skip pre-migration backup (default: false)
 #
 # REQUIREMENTS:
-#   - Bun runtime
+#   - Node.js runtime
 #   - AWS CLI configured (if DATABASE_URL not provided)
 #   - Terraform applied (for getting RDS credentials)
 # =============================================================================
