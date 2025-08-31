@@ -25,7 +25,7 @@ export class ChatSession {
     userId!: number;
 
     @Field(() => User, {nullable:false})
-    user?: User & {};
+    user?: User;
 
     @Field(() => [Message], {nullable:true})
     messages?: Array<Message>;

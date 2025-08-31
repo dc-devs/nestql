@@ -36,5 +36,5 @@ export class Message {
     chatSessionId!: number;
 
     @Field(() => ChatSession, {nullable:false})
-    chatSession?: ChatSession & {};
+    chatSession?: ChatSession;
 }

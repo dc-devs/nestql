@@ -1,9 +1,11 @@
-import { users, chatSessions, messages } from './seeds/index';
+import { getUsers, chatSessions, messages } from './seeds/index';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 const main = async () => {
+	const { users } = await getUsers();
+
 	await prisma.user.createMany({
 		data: [...users],
 	});

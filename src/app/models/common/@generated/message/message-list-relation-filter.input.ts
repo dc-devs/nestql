@@ -6,11 +6,11 @@ import { MessageWhereInput } from './message-where.input';
 export class MessageListRelationFilter {
 
     @Field(() => MessageWhereInput, {nullable:true})
-    every?: MessageWhereInput & {};
+    every?: MessageWhereInput;
 
     @Field(() => MessageWhereInput, {nullable:true})
-    some?: MessageWhereInput & {};
+    some?: MessageWhereInput;
 
     @Field(() => MessageWhereInput, {nullable:true})
-    none?: MessageWhereInput & {};
+    none?: MessageWhereInput;
 }
