@@ -1,0 +1,6 @@
+---
+description: Base
+alwaysApply: true
+---
+
+NestQl is a backend api starter kit that is built with NestJS, Prisma, and GraphQL.It also comes pre-configured with MastraAI (a powerful agentic framework for building AI-powered applications).

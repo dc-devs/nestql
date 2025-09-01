@@ -5,20 +5,25 @@ set -euo pipefail
 # NestQL ECS Deployment Script
 # =============================================================================
 # This script deploys the application to ECS and verifies the deployment.
+# Infrastructure must be provisioned separately using Terraform.
 #
 # USAGE:
 #   ./infra/scripts/deploy-ecs.sh [OPTIONS]
 #
 # OPTIONS:
-#   --skip-terraform    Skip Terraform apply step
 #   --skip-verification Skip post-deployment verification
 #   --timeout SECONDS   Deployment timeout in seconds (default: 600)
-#   --auto-approve-terraform  Auto-approve Terraform apply
+#   -h, --help         Show help message
 #
 # REQUIREMENTS:
 #   - AWS CLI configured with ECS permissions
-#   - Terraform applied (for service details)
+#   - Terraform already applied (infrastructure must exist)
 #   - Application image already pushed to ECR
+#
+# WORKFLOW:
+#   1. Run: ./infra/scripts/terraform-apply.sh (if infrastructure changed)
+#   2. Run: ./infra/scripts/build-and-push.sh (to build new image)
+#   3. Run: ./infra/scripts/deploy-ecs.sh (this script)
 # =============================================================================
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -39,36 +44,63 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
 
 # Default options
-SKIP_TERRAFORM=false
 SKIP_VERIFICATION=false
 TIMEOUT=600
-AUTO_APPROVE_TERRAFORM=false
 
 # Parse command line arguments
-while [[ $# -gt 0 ]]; do
-	case $1 in
-		--skip-terraform)
-			SKIP_TERRAFORM=true
-			shift
-			;;
-		--skip-verification)
-			SKIP_VERIFICATION=true
-			shift
-			;;
-		--timeout)
-			TIMEOUT="$2"
-			shift 2
-			;;
-		--auto-approve-terraform)
-			AUTO_APPROVE_TERRAFORM=true
-			shift
-			;;
-		*)
-			log_error "Unknown option: $1"
-			exit 1
-			;;
-	esac
-done
+parse_arguments() {
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			--skip-verification)
+				SKIP_VERIFICATION=true
+				shift
+				;;
+			--timeout)
+				TIMEOUT="$2"
+				shift 2
+				;;
+			-h|--help)
+				show_help
+				exit 0
+				;;
+			*)
+				log_error "Unknown option: $1"
+				show_help
+				exit 1
+				;;
+		esac
+	done
+}
+
+show_help() {
+	cat << 'EOF'
+NestQL ECS Deployment Script
+
+USAGE:
+  ./infra/scripts/deploy-ecs.sh [OPTIONS]
+
+OPTIONS:
+  --skip-verification  Skip post-deployment verification
+  --timeout SECONDS    Deployment timeout in seconds (default: 600)
+  -h, --help          Show this help message
+
+EXAMPLES:
+  # Standard deployment
+  ./infra/scripts/deploy-ecs.sh
+
+  # Quick deployment without verification
+  ./infra/scripts/deploy-ecs.sh --skip-verification
+
+  # Deployment with custom timeout
+  ./infra/scripts/deploy-ecs.sh --timeout 300
+
+PREREQUISITES:
+  1. Infrastructure must be provisioned: ./infra/scripts/terraform-apply.sh
+  2. Application image must be built: ./infra/scripts/build-and-push.sh
+  3. Then run this script to deploy to ECS
+
+EOF
+}
 
 # =============================================================================
 # Validation and Setup
@@ -85,13 +117,20 @@ validate_prerequisites() {
 		((errors++))
 	fi
 	
-	if ! command -v terraform >/dev/null 2>&1 && [[ "$SKIP_TERRAFORM" == false ]]; then
+	if ! command -v terraform >/dev/null 2>&1; then
 		log_error "Terraform not found. Please install it first."
+		log_error "Terraform is required to read infrastructure configuration."
 		((errors++))
 	fi
 	
 	if ! command -v curl >/dev/null 2>&1; then
 		log_error "curl not found. Please install it first."
+		((errors++))
+	fi
+	
+	if ! command -v jq >/dev/null 2>&1; then
+		log_error "jq not found. Please install it first."
+		log_error "jq is required for parsing JSON responses."
 		((errors++))
 	fi
 	
@@ -127,57 +166,8 @@ setup_variables() {
 }
 
 # =============================================================================
-# Deployment Operations
+# ECS Deployment Operations
 # =============================================================================
-
-apply_terraform() {
-	if [[ "$SKIP_TERRAFORM" == true ]]; then
-		log_info "Skipping Terraform apply (--skip-terraform flag)"
-		return 0
-	fi
-	
-	log_info "Applying Terraform configuration..."
-	
-	# Build terraform apply command with conditional auto-approve
-	local terraform_args=()
-	if [[ "$AUTO_APPROVE_TERRAFORM" == true ]]; then
-		terraform_args+=("-auto-approve")
-		log_info "Using auto-approve for Terraform"
-	fi
-	
-	# First try to apply - if it fails due to dependency lock issues, auto-fix
-	if ! terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]+"${terraform_args[@]}"}" 2>&1; then
-		log_warn "Terraform apply failed, checking for dependency lock issues..."
-		
-		# Try to detect if it's a lock file issue
-		local plan_output
-		plan_output="$(terraform -chdir="${SCRIPT_DIR}/../terraform" plan 2>&1 || echo "")"
-		
-		if echo "$plan_output" | grep -q "Inconsistent dependency lock file"; then
-			log_info "Detected dependency lock file issue, running 'terraform init -upgrade'..."
-			
-			if terraform -chdir="${SCRIPT_DIR}/../terraform" init -upgrade; then
-				log_info "Dependencies updated, retrying terraform apply..."
-				
-				if terraform -chdir="${SCRIPT_DIR}/../terraform" apply "${terraform_args[@]+"${terraform_args[@]}"}"; then
-					log_success "Terraform apply completed (after dependency update)"
-					return 0
-				else
-					log_error "Terraform apply failed even after dependency update"
-					exit 1
-				fi
-			else
-				log_error "Failed to update Terraform dependencies"
-				exit 1
-			fi
-		else
-			log_error "Terraform apply failed for reasons other than dependency locks"
-			exit 1
-		fi
-	else
-		log_success "Terraform apply completed"
-	fi
-}
 
 get_service_status() {
 	aws ecs describe-services \
@@ -345,13 +335,15 @@ show_deployment_summary() {
 # =============================================================================
 
 main() {
+	# Parse command line arguments
+	parse_arguments "$@"
+	
 	log_info "Starting ECS deployment for $APP_NAME"
 	log_info "Region: $REGION"
 	log_info "Timeout: ${TIMEOUT}s"
 	
 	validate_prerequisites
 	setup_variables
-	apply_terraform
 	wait_for_deployment
 	verify_deployment
 	show_recent_logs

@@ -308,6 +308,40 @@ setup_variables() {
 	log_success "Build variables configured"
 }
 
+show_build_plan() {
+	log_info ""
+	log_info "=== BUILD PLAN ==="
+	log_info "App: $APP_NAME"
+	log_info "Region: $REGION"
+	log_info "Image tag: $IMAGE_TAG"
+	log_info "ECR Repository: $ECR_REPO"
+	log_info "Auto-approve: $AUTO_APPROVE"
+	
+	# Get current branch for context
+	local current_branch
+	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+	log_info "Current branch: $current_branch"
+	
+	# Get commit info
+	local commit_message
+	commit_message="$(git log -1 --pretty=format:'%s' 2>/dev/null || echo 'unknown')"
+	log_info "Commit message: $commit_message"
+	
+	log_info "=================="
+	log_info ""
+	
+	if [[ "$AUTO_APPROVE" == false ]]; then
+		read -p "Continue with build? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			log_info "Build cancelled by user"
+			exit 0
+		fi
+	else
+		log_info "Auto-approve enabled, starting build immediately"
+	fi
+}
+
 # =============================================================================
 # Docker Operations
 # =============================================================================
@@ -408,6 +442,7 @@ main() {
 	validate_environment_variables
 	validate_prerequisites
 	setup_variables "$image_tag"
+	show_build_plan
 	login_to_ecr
 	build_image
 	push_image
