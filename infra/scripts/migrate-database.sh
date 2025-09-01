@@ -25,7 +25,7 @@ set -euo pipefail
 #   SKIP_BACKUP          Skip pre-migration backup (default: false)
 #
 # REQUIREMENTS:
-#   - Node.js runtime
+#   - Node.js runtime with pnpm
 #   - AWS CLI configured (if DATABASE_URL not provided)
 #   - Terraform applied (for getting RDS credentials)
 # =============================================================================
@@ -106,8 +106,13 @@ validate_prerequisites() {
 	local errors=0
 	
 	# Check required commands
-	if ! command -v bun >/dev/null 2>&1; then
-		log_error "Bun runtime not found. Please install it first."
+	if ! command -v node >/dev/null 2>&1; then
+		log_error "Node.js runtime not found. Please install it first."
+		((errors++))
+	fi
+	
+	if ! command -v pnpm >/dev/null 2>&1; then
+		log_error "pnpm not found. Please install it first."
 		((errors++))
 	fi
 	
@@ -124,7 +129,7 @@ validate_prerequisites() {
 	
 	# Check if migrations directory exists
 	if [[ ! -d "$PROJECT_ROOT/prisma/migrations" ]]; then
-		log_error "Migrations directory not found. Run 'bunx prisma migrate dev' first."
+		log_error "Migrations directory not found. Run 'pnpm prisma:migrate:dev' first."
 		((errors++))
 	fi
 	
@@ -202,7 +207,7 @@ run_via_ecs_task() {
 	security_group_id="$(get_terraform_output ecs_security_group_id)"
 	
 	# Build the migration command
-	local migration_cmd="cd /usr/src/app && bunx prisma migrate"
+	local migration_cmd="cd /usr/src/app && pnpm exec prisma migrate"
 	
 	if [[ "$DEPLOY_MODE" == "true" ]]; then
 		migration_cmd="$migration_cmd deploy"
@@ -211,13 +216,13 @@ run_via_ecs_task() {
 	elif [[ "$DRY_RUN" == "true" ]]; then
 		migration_cmd="$migration_cmd status"
 	elif [[ "$VERIFY_MODE" == "true" ]]; then
-		migration_cmd="bunx prisma db pull --force --print"
+		migration_cmd="pnpm exec prisma db pull --force --print"
 	else
 		migration_cmd="$migration_cmd dev --skip-seed"
 	fi
 	
 	if [[ "$SEED_MODE" == "true" ]]; then
-		migration_cmd="$migration_cmd && bun prisma/seed.ts"
+		migration_cmd="$migration_cmd && pnpm exec tsx prisma/seed.ts"
 	fi
 	
 	log_info "Command to run: $migration_cmd"
@@ -324,12 +329,16 @@ check_database_connection() {
 	cd "$PROJECT_ROOT"
 	
 	# Test connection using Prisma
-	if timeout "$TIMEOUT" bun -e "
-		import { PrismaClient } from '@prisma/client';
+	if timeout "$TIMEOUT" node -e "
+		const { PrismaClient } = require('@prisma/client');
 		const prisma = new PrismaClient();
-		await prisma.\$connect();
-		console.log('Database connection successful');
-		await prisma.\$disconnect();
+		prisma.\$connect().then(() => {
+			console.log('Database connection successful');
+			return prisma.\$disconnect();
+		}).catch((err) => {
+			console.error('Database connection failed:', err);
+			process.exit(1);
+		});
 	" >/dev/null 2>&1; then
 		log_success "Database connection verified"
 	else
@@ -380,23 +389,23 @@ run_migrations() {
 		fi
 		
 		log_info "Resetting database..."
-		bunx prisma migrate reset --force --skip-seed
+		pnpm exec prisma migrate reset --force --skip-seed
 		log_success "Database reset completed"
 		return 0
 	fi
 	
 	if [[ "$DRY_RUN" == "true" ]]; then
 		log_info "DRY RUN: Showing pending migrations..."
-		bunx prisma migrate status
+		pnpm exec prisma migrate status
 		return 0
 	fi
 	
 	if [[ "$DEPLOY_MODE" == "true" ]]; then
 		log_info "Running migrations in deploy mode..."
-		bunx prisma migrate deploy
+		pnpm exec prisma migrate deploy
 	else
 		log_info "Running migrations in development mode..."
-		bunx prisma migrate dev --skip-seed
+		pnpm exec prisma migrate dev --skip-seed
 	fi
 	
 	log_success "Database migrations completed"
@@ -412,7 +421,7 @@ verify_schema() {
 	cd "$PROJECT_ROOT"
 	
 	# Check if database schema matches Prisma schema
-	if bunx prisma db pull --force --print 2>/dev/null | diff - prisma/schema.prisma >/dev/null 2>&1; then
+	if pnpm exec prisma db pull --force --print 2>/dev/null | diff - prisma/schema.prisma >/dev/null 2>&1; then
 		log_success "Database schema matches Prisma schema"
 	else
 		log_warn "Database schema differs from Prisma schema"
@@ -430,7 +439,7 @@ run_seed() {
 	cd "$PROJECT_ROOT"
 	
 	if [[ -f "prisma/seed.ts" ]]; then
-		bun prisma/seed.ts
+		pnpm exec tsx prisma/seed.ts
 		log_success "Database seeding completed"
 	else
 		log_warn "No seed file found at prisma/seed.ts"
@@ -442,7 +451,7 @@ generate_prisma_client() {
 	
 	cd "$PROJECT_ROOT"
 	
-	bunx prisma generate
+	pnpm exec prisma generate
 	log_success "Prisma client generated"
 }
 
@@ -451,7 +460,7 @@ show_migration_status() {
 	
 	cd "$PROJECT_ROOT"
 	
-	bunx prisma migrate status || log_warn "Could not get migration status"
+	pnpm exec prisma migrate status || log_warn "Could not get migration status"
 }
 
 show_summary() {
@@ -473,8 +482,8 @@ show_summary() {
 	
 	log_info ""
 	log_info "Useful commands:"
-	log_info "  Check status: bunx prisma migrate status"
-	log_info "  View data: bunx prisma studio"
+	log_info "  Check status: pnpm exec prisma migrate status"
+	log_info "  View data: pnpm exec prisma studio"
 	log_info "  Reset DB: $0 --reset"
 	log_info ""
 }
