@@ -20,9 +20,13 @@ set -euo pipefail
 #   --timeout SECONDS     Migration timeout in seconds (default: 300)
 #
 # ENVIRONMENT VARIABLES:
-#   DATABASE_URL          Direct database URL (optional, will fetch from AWS if not set)
-#   AWS_REGION           AWS region (default: us-east-1)
-#   SKIP_BACKUP          Skip pre-migration backup (default: false)
+#   REQUIRED:
+#     DATABASE_URL            Direct database URL (mandatory)
+#     AWS_ACCESS_KEY_ID       AWS access key for API calls
+#     AWS_SECRET_ACCESS_KEY   AWS secret key for API calls
+#
+#   OPTIONAL:
+#     SKIP_BACKUP             Skip pre-migration backup (default: false)
 #
 # REQUIREMENTS:
 #   - Node.js runtime with pnpm
@@ -32,7 +36,7 @@ set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-readonly REGION="${AWS_REGION:-us-east-1}"
+readonly REGION="us-east-1"
 readonly TIMEOUT="${TIMEOUT:-300}"
 
 # Colors for output
@@ -116,8 +120,8 @@ validate_prerequisites() {
 		((errors++))
 	fi
 	
-	if ! command -v aws >/dev/null 2>&1 && [[ -z "${DATABASE_URL:-}" ]]; then
-		log_error "AWS CLI not found and DATABASE_URL not provided."
+	if ! command -v aws >/dev/null 2>&1 && [[ "$LOCAL_MODE" == "true" ]]; then
+		log_error "AWS CLI not found but required for local mode (ECS operations)."
 		((errors++))
 	fi
 	
@@ -141,6 +145,75 @@ validate_prerequisites() {
 	log_success "All prerequisites validated"
 }
 
+validate_environment_variables() {
+	log_info "Validating environment variables..."
+	
+	local errors=0
+	local required_vars=()
+	
+	# DATABASE_URL is now mandatory
+	required_vars+=(
+		"DATABASE_URL:Direct database connection string"
+	)
+	
+	# For local mode, we need AWS credentials for ECS operations
+	if [[ "$LOCAL_MODE" == "true" ]]; then
+		required_vars+=(
+			"AWS_ACCESS_KEY_ID:AWS access key for ECS operations"
+			"AWS_SECRET_ACCESS_KEY:AWS secret key for ECS operations"
+		)
+	fi
+	
+	# Check each required variable
+	for var_info in "${required_vars[@]}"; do
+		local var_name="${var_info%%:*}"
+		local var_description="${var_info#*:}"
+		
+		if [[ -z "${!var_name:-}" ]]; then
+			log_error "Missing required environment variable: $var_name"
+			log_error "  Description: $var_description"
+			((errors++))
+		fi
+	done
+	
+
+	
+	# Validate DATABASE_URL format if provided
+	if [[ -n "${DATABASE_URL:-}" ]]; then
+		if [[ ! "${DATABASE_URL}" =~ ^postgresql:// ]]; then
+			log_error "Invalid DATABASE_URL format: must start with 'postgresql://'"
+			((errors++))
+		fi
+	fi
+	
+	if [[ $errors -gt 0 ]]; then
+		log_error ""
+		log_error "Environment variable validation failed with $errors error(s)."
+		log_error ""
+		log_error "Required environment variables:"
+		log_error "  DATABASE_URL         - Direct database connection string"
+		if [[ "$LOCAL_MODE" == "true" ]]; then
+			log_error "  AWS_ACCESS_KEY_ID    - AWS access key for ECS operations"
+			log_error "  AWS_SECRET_ACCESS_KEY - AWS secret key for ECS operations"
+		fi
+		log_error ""
+		log_error "Optional environment variables:"
+		log_error "  SKIP_BACKUP          - Skip pre-migration backup (true/false)"
+		log_error ""
+		log_error "Example usage:"
+		log_error "  export DATABASE_URL=postgresql://user:pass@host:5432/db"
+		if [[ "$LOCAL_MODE" == "true" ]]; then
+			log_error "  export AWS_ACCESS_KEY_ID=your-access-key"
+			log_error "  export AWS_SECRET_ACCESS_KEY=your-secret-key"
+		fi
+		log_error "  $0 --deploy --seed"
+		log_error ""
+		exit 1
+	fi
+	
+	log_success "Environment variables validated"
+}
+
 get_terraform_output() {
 	local output_name="$1"
 	if [[ -f "$SCRIPT_DIR/../terraform/terraform.tfstate" ]]; then
@@ -156,26 +229,8 @@ get_terraform_output() {
 }
 
 setup_database_url() {
-	if [[ -n "${DATABASE_URL:-}" ]]; then
-		log_info "Using provided DATABASE_URL"
-		return 0
-	fi
-	
-	log_info "Fetching database credentials from AWS Secrets Manager..."
-	
-	local secret_value
-	secret_value="$(aws secretsmanager get-secret-value \
-		--region "$REGION" \
-		--secret-id "nestql/DATABASE_URL" \
-		--query 'SecretString' \
-		--output text 2>/dev/null)" || {
-		log_error "Failed to fetch DATABASE_URL from AWS Secrets Manager"
-		log_error "Make sure the secret 'nestql/DATABASE_URL' exists and you have permission to read it"
-		exit 1
-	}
-	
-	export DATABASE_URL="$secret_value"
-	log_success "Database URL loaded from AWS Secrets Manager"
+	log_info "Using provided DATABASE_URL"
+	# DATABASE_URL is now mandatory and validated in validate_environment_variables
 }
 
 # =============================================================================
@@ -207,22 +262,31 @@ run_via_ecs_task() {
 	security_group_id="$(get_terraform_output ecs_security_group_id)"
 	
 	# Build the migration command
-	local migration_cmd="cd /usr/src/app && pnpm exec prisma migrate"
+	local migration_cmd="cd /usr/src/app"
 	
-	if [[ "$DEPLOY_MODE" == "true" ]]; then
-		migration_cmd="$migration_cmd deploy"
-	elif [[ "$RESET_MODE" == "true" ]]; then
-		migration_cmd="$migration_cmd reset --force --skip-seed"
-	elif [[ "$DRY_RUN" == "true" ]]; then
-		migration_cmd="$migration_cmd status"
-	elif [[ "$VERIFY_MODE" == "true" ]]; then
-		migration_cmd="pnpm exec prisma db pull --force --print"
+	# If only seeding is requested, skip migration commands entirely
+	if [[ "$SEED_MODE" == "true" && "$DEPLOY_MODE" != "true" && "$RESET_MODE" != "true" && "$DRY_RUN" != "true" && "$VERIFY_MODE" != "true" ]]; then
+		migration_cmd="$migration_cmd && pnpm run prisma:seed"
 	else
-		migration_cmd="$migration_cmd dev --skip-seed"
-	fi
-	
-	if [[ "$SEED_MODE" == "true" ]]; then
-		migration_cmd="$migration_cmd && pnpm exec tsx prisma/seed.ts"
+		# Build migration command
+		migration_cmd="$migration_cmd && pnpm exec prisma migrate"
+		
+		if [[ "$DEPLOY_MODE" == "true" ]]; then
+			migration_cmd="$migration_cmd deploy"
+		elif [[ "$RESET_MODE" == "true" ]]; then
+			migration_cmd="$migration_cmd reset --force --skip-seed"
+		elif [[ "$DRY_RUN" == "true" ]]; then
+			migration_cmd="$migration_cmd status"
+		elif [[ "$VERIFY_MODE" == "true" ]]; then
+			migration_cmd="cd /usr/src/app && pnpm exec prisma db pull --force --print"
+		else
+			migration_cmd="$migration_cmd dev --skip-seed"
+		fi
+		
+		# Add seeding if requested
+		if [[ "$SEED_MODE" == "true" ]]; then
+			migration_cmd="$migration_cmd && pnpm run prisma:seed"
+		fi
 	fi
 	
 	log_info "Command to run: $migration_cmd"
@@ -498,6 +562,7 @@ main() {
 	log_info "Region: $REGION"
 	
 	validate_prerequisites
+	validate_environment_variables
 	
 	# Handle local mode (ECS task execution)
 	if [[ "$LOCAL_MODE" == "true" ]]; then

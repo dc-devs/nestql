@@ -23,7 +23,8 @@ data "aws_iam_policy_document" "ecs_task_secrets_least_priv" {
       aws_secretsmanager_secret.session_secret.arn,
       aws_secretsmanager_secret.mastra_database_url.arn,
       aws_secretsmanager_secret.openai_api_key.arn,
-      aws_secretsmanager_secret.anthropic_api_key.arn
+      aws_secretsmanager_secret.anthropic_api_key.arn,
+      aws_secretsmanager_secret.app_domain.arn
     ]
   }
 }

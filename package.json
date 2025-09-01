@@ -45,7 +45,7 @@
 		"---------PRISMA---------": "----------------------------------",
 		"prisma:generate": "prisma generate",
 		"prisma:generate:watch": "prisma generate --watch",
-		"prisma:seed": "pnpm exec tsx prisma/seed.ts",
+		"prisma:seed": "node dist/prisma/seed.js",
 		"prisma:migrate:reset": "prisma migrate reset --force",
 		"prisma:migrate:dev": "prisma migrate dev",
 		"prisma:migrate:dev:name": "prisma migrate dev --name",
