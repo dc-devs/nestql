@@ -73,6 +73,10 @@ RUN pnpm run build
 # PRODUCTION
 ###############################
 FROM base AS production
+
+# Install pnpm globally first
+RUN npm install -g pnpm
+
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=build /usr/src/app/dist dist
 COPY package.json .
@@ -86,9 +90,8 @@ RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 RUN chown -R node:node /usr/src/app
 USER node
 
-# Copy generated Prisma client/binaries from build stage so we don't need to generate in prod
-COPY --from=build /usr/src/app/node_modules/.prisma node_modules/.prisma
-COPY --from=build /usr/src/app/node_modules/@prisma node_modules/@prisma
+# Generate Prisma client in production stage to ensure it exists
+RUN pnpm run prisma:generate
 
 EXPOSE ${PORT}
 

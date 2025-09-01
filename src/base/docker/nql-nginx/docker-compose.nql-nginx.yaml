@@ -1,7 +1,7 @@
 services:
-  nql-nginx-development:
-    image: nginx-development:${NGINX_VERSION}
-    container_name: nginx-development
+  nql-nginx:
+    image: nql-nginx:${NGINX_VERSION}
+    container_name: nql-nginx
     restart: always
     stop_grace_period: 30s
     healthcheck:

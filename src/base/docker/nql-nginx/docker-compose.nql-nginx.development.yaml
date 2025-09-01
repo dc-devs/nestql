@@ -1,5 +1,5 @@
 services:
-  nql-nginx-development:
+  nql-nginx:
     # Override to include depends_on when running in a network with nql-app
     depends_on:
       nql-app:

@@ -8,11 +8,14 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${PORT}/ping"]
       interval: 10s
-      timeout: 60s
-      retries: 5
+      timeout: 120s
+      retries: 10
       start_period: 30s
     environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=${DATABASE_URL}
+      - MASTRA_DATABASE_URL=${MASTRA_DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
       - APP_DOMAIN=${APP_DOMAIN}
