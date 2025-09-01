@@ -34,7 +34,7 @@
 		"---------NQL-DOCKER---------": "----------------------------------",
 		"docker:dev:nql-external-services:up": "docker compose --env-file .env -f src/base/docker/nql-external-services/docker-compose.nql-external-services.dev.yaml up",
 		"docker:dev:nql-external-services:down": "docker compose --env-file .env -f src/base/docker/nql-external-services/docker-compose.nql-external-services.dev.yaml down --remove-orphans",
-		"docker:dev:nql-external-services:rm:volumes": "docker volume rm nql-external-services_database-development && docker volume rm nql-external-services_redis-development",
+		"docker:dev:nql-external-services:rm:volumes": "docker volume rm nql-external-services_database && docker volume rm nql-external-services_mastra-database && docker volume rm nql-external-services_redis",
 		"docker:dev:nql-external-services:clean": "pnpm run docker:dev:nql-external-services:down && pnpm run docker:dev:nql-external-services:rm:volumes",
 		"docker:dev:nql-nginx:up": "docker compose --env-file .env -f src/base/docker/nql-nginx/docker-compose.nql-nginx.yaml up",
 		"docker:dev:nql-nginx:down": "docker compose --env-file .env -f src/base/docker/nql-nginx/docker-compose.nql-nginx.yaml down --remove-orphans",
