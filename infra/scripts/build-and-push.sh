@@ -7,7 +7,11 @@ set -euo pipefail
 # This script builds the application Docker image and pushes it to ECR.
 #
 # USAGE:
-#   ./infra/scripts/build-and-push.sh [IMAGE_TAG]
+#   ./infra/scripts/build-and-push.sh [OPTIONS] [IMAGE_TAG]
+#
+# OPTIONS:
+#   --auto-approve     Skip all confirmation prompts
+#   -h, --help        Show help message
 #
 # ARGUMENTS:
 #   IMAGE_TAG (optional): Custom tag for the image (defaults to git commit hash)
@@ -17,11 +21,20 @@ set -euo pipefail
 #   - Docker with buildx support
 #   - Terraform applied (for ECR repository URL)
 #   - Git repository (for default tag generation)
+#
+# ENVIRONMENT VARIABLES:
+#   AWS_ACCESS_KEY_ID       AWS access key (required)
+#   AWS_SECRET_ACCESS_KEY   AWS secret access key (required)
+#   AWS_REGION              AWS region (optional, defaults to us-east-1)
+#   AWS_SESSION_TOKEN       AWS session token (optional, for temporary credentials)
 # =============================================================================
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REGION="${AWS_REGION:-us-east-1}"
 readonly APP_NAME="nestql"
+
+# Default options
+AUTO_APPROVE=false
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -36,6 +49,71 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
 
+# Parse command line arguments
+parse_arguments() {
+	local image_tag=""
+	
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			--auto-approve)
+				AUTO_APPROVE=true
+				shift
+				;;
+			-h|--help)
+				show_help
+				exit 0
+				;;
+			-*)
+				log_error "Unknown option: $1"
+				show_help
+				exit 1
+				;;
+			*)
+				if [[ -z "$image_tag" ]]; then
+					image_tag="$1"
+				else
+					log_error "Too many arguments. Only one image tag is allowed."
+					show_help
+					exit 1
+				fi
+				shift
+				;;
+		esac
+	done
+	
+	echo "$image_tag"
+}
+
+show_help() {
+	cat << 'EOF'
+NestQL Docker Build and Push Script
+
+USAGE:
+  ./infra/scripts/build-and-push.sh [OPTIONS] [IMAGE_TAG]
+
+OPTIONS:
+  --auto-approve     Skip all confirmation prompts
+  -h, --help        Show this help message
+
+ARGUMENTS:
+  IMAGE_TAG         Custom tag for the image (optional, defaults to git commit hash)
+
+EXAMPLES:
+  # Build with auto-generated tag
+  ./infra/scripts/build-and-push.sh
+
+  # Build with custom tag
+  ./infra/scripts/build-and-push.sh v1.2.3
+
+  # Build without prompts (for automation)
+  ./infra/scripts/build-and-push.sh --auto-approve
+
+  # Build with custom tag and no prompts
+  ./infra/scripts/build-and-push.sh --auto-approve v1.2.3
+
+EOF
+}
+
 # Error handling
 cleanup() {
 	local exit_code=$?
@@ -45,6 +123,102 @@ cleanup() {
 	exit $exit_code
 }
 trap cleanup EXIT
+
+# =============================================================================
+# Environment Validation
+# =============================================================================
+
+validate_deployment_environment() {
+	log_info "Validating deployment environment..."
+	
+	# Check git status for production safety
+	if [[ -n "$(git status --porcelain 2>/dev/null || echo '')" ]]; then
+		log_warn "Working directory has uncommitted changes"
+		if [[ "$AUTO_APPROVE" == false ]]; then
+			read -p "Continue with build? (y/N): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+				log_info "Build cancelled by user"
+				exit 0
+			fi
+		else
+			log_warn "Auto-approve enabled, continuing with uncommitted changes"
+		fi
+	fi
+	
+	# Check current branch
+	local current_branch
+	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+	if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
+		log_warn "Building from branch: $current_branch (not main/master)"
+		if [[ "$AUTO_APPROVE" == false ]]; then
+			read -p "Continue with build? (y/N): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+				log_info "Build cancelled by user"
+				exit 0
+			fi
+		else
+			log_warn "Auto-approve enabled, continuing from branch: $current_branch"
+		fi
+	fi
+	
+	log_success "Environment validation passed"
+}
+
+validate_environment_variables() {
+	log_info "Validating required environment variables..."
+	
+	local errors=0
+	local required_vars=(
+		"AWS_ACCESS_KEY_ID:AWS access key for API operations"
+		"AWS_SECRET_ACCESS_KEY:AWS secret access key for API operations"
+	)
+	
+	# Check required variables
+	for var_info in "${required_vars[@]}"; do
+		local var_name="${var_info%%:*}"
+		local var_desc="${var_info##*:}"
+		
+		if [[ -z "${!var_name:-}" ]]; then
+			log_error "Missing required environment variable: $var_name"
+			log_error "  Description: $var_desc"
+			((errors++))
+		fi
+	done
+	
+	# Optional variables (just log their status)
+	local optional_vars=(
+		"AWS_REGION:AWS region (defaults to us-east-1)"
+		"AWS_SESSION_TOKEN:AWS session token for temporary credentials"
+	)
+	
+	for var_info in "${optional_vars[@]}"; do
+		local var_name="${var_info%%:*}"
+		local var_desc="${var_info##*:}"
+		
+		if [[ -n "${!var_name:-}" ]]; then
+			log_info "Using $var_name: ${!var_name}"
+		else
+			log_info "Optional variable $var_name not set - $var_desc"
+		fi
+	done
+	
+	if [[ $errors -gt 0 ]]; then
+		log_error ""
+		log_error "Found $errors missing environment variable(s)."
+		log_error ""
+		log_error "To fix this, set the required environment variables:"
+		log_error "  export AWS_ACCESS_KEY_ID=your-access-key"
+		log_error "  export AWS_SECRET_ACCESS_KEY=your-secret-key"
+		log_error ""
+		log_error "Or configure AWS CLI with: aws configure"
+		log_error ""
+		exit 1
+	fi
+	
+	log_success "All required environment variables are set"
+}
 
 # =============================================================================
 # Validation and Setup
@@ -86,12 +260,6 @@ validate_prerequisites() {
 	if ! git rev-parse --git-dir >/dev/null 2>&1; then
 		log_error "Not in a git repository."
 		((errors++))
-	fi
-	
-	# Check for uncommitted changes
-	if [[ -n "$(git status --porcelain)" ]]; then
-		log_warn "Working directory has uncommitted changes"
-		log_warn "Consider committing changes before building production image"
 	fi
 	
 	if [[ $errors -gt 0 ]]; then
@@ -229,11 +397,15 @@ get_image_info() {
 # =============================================================================
 
 main() {
-	local image_tag="${1:-}"
+	# Parse command line arguments
+	local image_tag
+	image_tag="$(parse_arguments "$@")"
 	
 	log_info "Starting Docker build and push for $APP_NAME"
 	log_info "Region: $REGION"
 	
+	validate_deployment_environment
+	validate_environment_variables
 	validate_prerequisites
 	setup_variables "$image_tag"
 	login_to_ecr
