@@ -19,5 +19,7 @@ services:
       - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
       - APP_DOMAIN=${APP_DOMAIN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     ports:
       - '${PORT}:${PORT}'
