@@ -36,6 +36,7 @@ RUN npm install -g pnpm
 
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
+COPY .pnpmrc .
 
 # Set correct permissions before switching user
 RUN chown -R node:node /usr/src/app
@@ -58,6 +59,7 @@ RUN npm install -g pnpm
 
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
+COPY .pnpmrc .
 
 # Set correct permissions before switching user
 RUN chown -R node:node /usr/src/app
@@ -82,6 +84,7 @@ COPY --from=build /usr/src/app/dist dist
 COPY package.json .
 COPY prisma prisma
 COPY pnpm-lock.yaml .
+COPY .pnpmrc .
 
 # Add AWS RDS CA bundle so Node trusts RDS certificates
 RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /etc/ssl/certs/rds-ca-bundle.pem

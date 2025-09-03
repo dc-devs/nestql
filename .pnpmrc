@@ -1,3 +1,5 @@
-# Enable build scripts globally (safest approach for Docker builds)
-enable-pre-post-scripts=true
+# Selective script execution - more secure approach
 ignore-scripts=false
+
+# Only enable for Docker builds (safer than global)
+enable-pre-post-scripts=true
