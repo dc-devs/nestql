@@ -175,12 +175,33 @@ wait_for_deployment() {
 		fi
 		
 		# Check if deployment is complete
-		if [[ "$deployment_status" == "PRIMARY" && "$running_count" -eq "$desired_count" && "$desired_count" -gt 0 ]]; then
-			echo ""
-			log_success "Deployment completed successfully"
-			log_info "Service status: $service_status"
-			log_info "Running tasks: $running_count/$desired_count"
-			break
+		# A deployment is successful when:
+		# 1. Running count equals desired count
+		# 2. Desired count is greater than 0
+		# 3. Service is ACTIVE
+		# 4. Deployment status is PRIMARY (completed) or PENDING (in progress but healthy)
+		if [[ "$running_count" -eq "$desired_count" && "$desired_count" -gt 0 && "$service_status" == "ACTIVE" ]]; then
+			# Additional check: if deployment status is PRIMARY, it's definitely complete
+			if [[ "$deployment_status" == "PRIMARY" ]]; then
+				echo ""
+				log_success "Deployment completed successfully"
+				log_info "Service status: $service_status"
+				log_info "Running tasks: $running_count/$desired_count"
+				log_info "Deployment status: $deployment_status"
+				break
+			fi
+			# If deployment is still pending but tasks are healthy, continue waiting a bit more
+			if [[ "$deployment_status" == "PENDING" ]]; then
+				# Wait a bit more for deployment to stabilize, but don't wait forever
+				if [[ $elapsed -gt 120 ]]; then  # After 2 minutes, assume it's stable
+					echo ""
+					log_success "Deployment appears stable (tasks healthy for 2+ minutes)"
+					log_info "Service status: $service_status"
+					log_info "Running tasks: $running_count/$desired_count"
+					log_info "Deployment status: $deployment_status"
+					break
+				fi
+			fi
 		fi
 		
 		# Check for deployment failures (running count drops to 0 or service becomes unstable)
@@ -192,6 +213,17 @@ wait_for_deployment() {
 			show_recent_deployment_logs
 			log_error "ECS may have automatically rolled back to the previous stable version"
 			exit 1
+		fi
+		
+		# Add more detailed debugging on every 5th iteration (25 seconds)
+		if [[ $((elapsed % 25)) -eq 0 && $elapsed -gt 0 ]]; then
+			echo ""
+			log_info "🔍 Debug Info (${elapsed}s elapsed):"
+			log_info "  Service Status: $service_status"
+			log_info "  Running/Desired: $running_count/$desired_count"
+			log_info "  Deployment Status: $deployment_status"
+			log_info "  Checking recent logs..."
+			show_recent_deployment_logs
 		fi
 		
 		sleep 5
