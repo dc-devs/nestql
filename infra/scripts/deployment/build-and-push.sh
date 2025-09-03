@@ -186,6 +186,7 @@ build_image() {
 	
 	if docker buildx build \
 		--platform linux/amd64 \
+		--load \
 		-f "$dockerfile_path" \
 		-t "${ECR_REPO}:${IMAGE_TAG}" \
 		-t "${ECR_REPO}:latest" \
