@@ -8,6 +8,10 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         if: true # Toggle this to enable/disable the workflow
+        # Prevent multiple deployments from running simultaneously
+        concurrency:
+            group: deploy-ecs
+            cancel-in-progress: false
         env:
             AWS_REGION: us-east-1
         steps:

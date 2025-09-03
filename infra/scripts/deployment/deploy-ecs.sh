@@ -119,6 +119,37 @@ get_service_status() {
 wait_for_deployment() {
 	log_info "Starting ECS deployment..."
 	
+	# Check if there's already a deployment in progress
+	local current_status
+	current_status="$(get_service_status)"
+	local active_deployments
+	active_deployments="$(echo "$current_status" | jq -r '.activeDeployments // 0')"
+	
+	if [[ "$active_deployments" -gt 1 ]]; then
+		log_warn "Multiple deployments detected ($active_deployments active)"
+		log_info "Waiting for previous deployments to complete before starting new one..."
+		
+		# Wait for cleanup (max 5 minutes)
+		local cleanup_start
+		cleanup_start="$(date +%s)"
+		while [[ "$active_deployments" -gt 1 ]]; do
+			local cleanup_elapsed
+			cleanup_elapsed=$(( $(date +%s) - cleanup_start ))
+			if [[ $cleanup_elapsed -gt 300 ]]; then
+				log_error "Previous deployments still not cleaned up after 5 minutes"
+				log_error "You may need to manually check ECS console or wait longer"
+				exit 1
+			fi
+			
+			printf "."
+			sleep 10
+			current_status="$(get_service_status)"
+			active_deployments="$(echo "$current_status" | jq -r '.activeDeployments // 0')"
+		done
+		echo ""
+		log_success "Previous deployments cleaned up, proceeding with new deployment"
+	fi
+	
 	# Trigger deployment
 	local deployment_result
 	deployment_result="$(aws ecs update-service \
@@ -162,45 +193,48 @@ wait_for_deployment() {
 		running_count="$(echo "$status" | jq -r '.running // 0')"
 		local desired_count
 		desired_count="$(echo "$status" | jq -r '.desired // 0')"
-		local deployment_status
-		deployment_status="$(echo "$status" | jq -r '.deployments // "unknown"')"
+		local primary_deployment
+		primary_deployment="$(echo "$status" | jq -r '.primaryDeployment // "none"')"
+		local active_deployments
+		active_deployments="$(echo "$status" | jq -r '.activeDeployments // 0')"
 		
 		# Print progress dots
 		printf "."
 		((dots++))
 		if [[ $dots -ge 60 ]]; then
 			echo ""
-			log_info "Status: $service_status, Running: $running_count/$desired_count, Deployment: $deployment_status"
+			log_info "Status: $service_status, Running: $running_count/$desired_count, Primary: $primary_deployment, Active Deployments: $active_deployments"
 			dots=0
 		fi
 		
 		# Check if deployment is complete
 		# A deployment is successful when:
-		# 1. Running count equals desired count
-		# 2. Desired count is greater than 0
-		# 3. Service is ACTIVE
-		# 4. Deployment status is PRIMARY (completed) or PENDING (in progress but healthy)
-		if [[ "$running_count" -eq "$desired_count" && "$desired_count" -gt 0 && "$service_status" == "ACTIVE" ]]; then
-			# Additional check: if deployment status is PRIMARY, it's definitely complete
-			if [[ "$deployment_status" == "PRIMARY" ]]; then
+d		# 1. Service is ACTIVE
+		# 2. There's a PRIMARY deployment (meaning the new deployment completed successfully)
+		# 3. Only 1 active deployment remains (old deployments cleaned up)
+		# 4. Running count equals desired count (but allow brief periods during transition)
+		
+		if [[ "$service_status" == "ACTIVE" && "$primary_deployment" == "PRIMARY" ]]; then
+			# If we have exactly 1 active deployment and running count matches desired, we're done
+			if [[ "$active_deployments" -eq 1 && "$running_count" -eq "$desired_count" && "$desired_count" -gt 0 ]]; then
 				echo ""
 				log_success "Deployment completed successfully"
 				log_info "Service status: $service_status"
 				log_info "Running tasks: $running_count/$desired_count"
-				log_info "Deployment status: $deployment_status"
+				log_info "Primary deployment: $primary_deployment"
+				log_info "Active deployments: $active_deployments"
 				break
 			fi
-			# If deployment is still pending but tasks are healthy, continue waiting a bit more
-			if [[ "$deployment_status" == "PENDING" ]]; then
-				# Wait a bit more for deployment to stabilize, but don't wait forever
-				if [[ $elapsed -gt 120 ]]; then  # After 2 minutes, assume it's stable
-					echo ""
-					log_success "Deployment appears stable (tasks healthy for 2+ minutes)"
-					log_info "Service status: $service_status"
-					log_info "Running tasks: $running_count/$desired_count"
-					log_info "Deployment status: $deployment_status"
-					break
-				fi
+			
+			# If we have multiple deployments but primary is ready, wait for cleanup (max 2 minutes)
+			if [[ "$active_deployments" -gt 1 && $elapsed -gt 120 ]]; then
+				echo ""
+				log_success "Deployment completed (cleanup may still be in progress)"
+				log_info "Service status: $service_status"
+				log_info "Running tasks: $running_count/$desired_count"
+				log_info "Primary deployment: $primary_deployment"
+				log_info "Active deployments: $active_deployments (cleanup in progress)"
+				break
 			fi
 		fi
 		
@@ -221,7 +255,8 @@ wait_for_deployment() {
 			log_info "🔍 Debug Info (${elapsed}s elapsed):"
 			log_info "  Service Status: $service_status"
 			log_info "  Running/Desired: $running_count/$desired_count"
-			log_info "  Deployment Status: $deployment_status"
+			log_info "  Primary Deployment: $primary_deployment"
+			log_info "  Active Deployments: $active_deployments"
 			log_info "  Checking recent logs..."
 			show_recent_deployment_logs
 		fi

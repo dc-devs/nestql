@@ -84,7 +84,7 @@ get_ecs_service_status() {
 		--region "$REGION" \
 		--cluster "$cluster_name" \
 		--services "$service_name" \
-		--query 'services[0].{status:status,running:runningCount,pending:pendingCount,desired:desiredCount,deployments:deployments[0].status}' \
+		--query 'services[0].{status:status,running:runningCount,pending:pendingCount,desired:desiredCount,primaryDeployment:deployments[?status==`PRIMARY`]|[0].status,activeDeployments:length(deployments[?status==`ACTIVE`||status==`PRIMARY`])}' \
 		--output json 2>/dev/null || echo '{}'
 }
 
