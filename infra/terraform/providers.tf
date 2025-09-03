@@ -1,4 +1,13 @@
 terraform {
+  # S3 Remote State Backend
+  backend "s3" {
+    bucket         = "nestql-terraform-state-1756909891"  # Update this with your actual bucket name
+    key            = "infrastructure/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "nestql-terraform-locks"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
