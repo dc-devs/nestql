@@ -34,40 +34,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../common/init.sh"
 # Default options
 AUTO_APPROVE=false
 
-# Parse command line arguments
-parse_arguments() {
-	local image_tag=""
-	
-	while [[ $# -gt 0 ]]; do
-		case $1 in
-			--auto-approve)
-				AUTO_APPROVE=true
-				shift
-				;;
-			-h|--help)
-				show_help
-				exit 0
-				;;
-			-*)
-				log_error "Unknown option: $1"
-				show_help
-				exit 1
-				;;
-			*)
-				if [[ -z "$image_tag" ]]; then
-					image_tag="$1"
-				else
-					log_error "Too many arguments. Only one image tag is allowed."
-					show_help
-					exit 1
-				fi
-				shift
-				;;
-		esac
-	done
-	
-	echo "$image_tag"
-}
+# Argument parsing is now done inline in main() to avoid subshell issues
 
 show_help() {
 	show_standard_help "Docker Build and Push Script" \
@@ -277,8 +244,35 @@ get_image_info() {
 
 main() {
 	# Parse command line arguments
-	local image_tag
-	image_tag="$(parse_arguments "$@")"
+	local image_tag=""
+	
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			--auto-approve)
+				AUTO_APPROVE=true
+				shift
+				;;
+			-h|--help)
+				show_help
+				exit 0
+				;;
+			-*)
+				log_error "Unknown option: $1"
+				show_help
+				exit 1
+				;;
+			*)
+				if [[ -z "$image_tag" ]]; then
+					image_tag="$1"
+				else
+					log_error "Too many arguments. Only one image tag is allowed."
+					show_help
+					exit 1
+				fi
+				shift
+				;;
+		esac
+	done
 	
 	log_info "Starting Docker build and push for $APP_NAME"
 	log_info "Region: $REGION"
