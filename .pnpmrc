@@ -1,5 +1,3 @@
-# Enable build scripts for essential packages
+# Enable build scripts globally (safest approach for Docker builds)
 enable-pre-post-scripts=true
-
-# Approved packages that can run build scripts
-scripts-prepend-node-path=true
+ignore-scripts=false
