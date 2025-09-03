@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # =============================================================================
 # NestQL ECS Deployment Script
@@ -8,7 +7,7 @@ set -euo pipefail
 # Infrastructure must be provisioned separately using Terraform.
 #
 # USAGE:
-#   ./infra/scripts/deploy-ecs.sh [OPTIONS]
+#   ./infra/scripts/deployment/deploy-ecs.sh [OPTIONS]
 #
 # OPTIONS:
 #   --skip-verification Skip post-deployment verification
@@ -22,26 +21,12 @@ set -euo pipefail
 #
 # WORKFLOW:
 #   1. Run: ./infra/scripts/terraform-apply.sh (if infrastructure changed)
-#   2. Run: ./infra/scripts/build-and-push.sh (to build new image)
-#   3. Run: ./infra/scripts/deploy-ecs.sh (this script)
+#   2. Run: ./infra/scripts/deployment/build-and-push.sh (to build new image)
+#   3. Run: ./infra/scripts/deployment/deploy-ecs.sh (this script)
 # =============================================================================
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REGION="${AWS_REGION:-us-east-1}"
-readonly APP_NAME="nestql"
-
-# Colors for output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
-
-# Logging functions
-log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
+# Initialize common utilities
+source "$(dirname "${BASH_SOURCE[0]}")/../common/init.sh"
 
 # Default options
 SKIP_VERIFICATION=false
@@ -73,33 +58,25 @@ parse_arguments() {
 }
 
 show_help() {
-	cat << 'EOF'
-NestQL ECS Deployment Script
-
-USAGE:
-  ./infra/scripts/deploy-ecs.sh [OPTIONS]
-
-OPTIONS:
-  --skip-verification  Skip post-deployment verification
+	show_standard_help "ECS Deployment Script" \
+		"This script deploys the application to ECS and verifies the deployment." \
+		"./infra/scripts/deployment/deploy-ecs.sh [OPTIONS]" \
+		"  --skip-verification  Skip post-deployment verification
   --timeout SECONDS    Deployment timeout in seconds (default: 600)
-  -h, --help          Show this help message
-
-EXAMPLES:
-  # Standard deployment
-  ./infra/scripts/deploy-ecs.sh
+  -h, --help          Show this help message" \
+		"  # Standard deployment
+  ./infra/scripts/deployment/deploy-ecs.sh
 
   # Quick deployment without verification
-  ./infra/scripts/deploy-ecs.sh --skip-verification
+  ./infra/scripts/deployment/deploy-ecs.sh --skip-verification
 
   # Deployment with custom timeout
-  ./infra/scripts/deploy-ecs.sh --timeout 300
+  ./infra/scripts/deployment/deploy-ecs.sh --timeout 300
 
 PREREQUISITES:
   1. Infrastructure must be provisioned: ./infra/scripts/terraform-apply.sh
-  2. Application image must be built: ./infra/scripts/build-and-push.sh
-  3. Then run this script to deploy to ECS
-
-EOF
+  2. Application image must be built: ./infra/scripts/deployment/build-and-push.sh
+  3. Then run this script to deploy to ECS"
 }
 
 # =============================================================================
@@ -107,48 +84,14 @@ EOF
 # =============================================================================
 
 validate_prerequisites() {
-	log_info "Validating prerequisites..."
-	
-	local errors=0
-	
-	# Check required commands
-	if ! command -v aws >/dev/null 2>&1; then
-		log_error "AWS CLI not found. Please install it first."
-		((errors++))
-	fi
-	
-	if ! command -v terraform >/dev/null 2>&1; then
-		log_error "Terraform not found. Please install it first."
-		log_error "Terraform is required to read infrastructure configuration."
-		((errors++))
-	fi
-	
-	if ! command -v curl >/dev/null 2>&1; then
-		log_error "curl not found. Please install it first."
-		((errors++))
-	fi
-	
-	if ! command -v jq >/dev/null 2>&1; then
-		log_error "jq not found. Please install it first."
-		log_error "jq is required for parsing JSON responses."
-		((errors++))
-	fi
-	
-	if [[ $errors -gt 0 ]]; then
-		log_error "Found $errors prerequisite error(s). Please fix them and try again."
-		exit 1
-	fi
-	
-	log_success "All prerequisites validated"
-}
-
-get_terraform_output() {
-	local output_name="$1"
-	terraform -chdir="${SCRIPT_DIR}/../terraform" output -raw "$output_name" 2>/dev/null || {
-		log_error "Failed to get Terraform output: $output_name"
-		log_error "Make sure you've run 'terraform apply' first"
-		exit 1
-	}
+	local commands=(
+		"aws:AWS CLI"
+		"terraform:Terraform"
+		"curl:curl"
+		"jq:jq"
+	)
+	validate_commands "${commands[@]}"
+	validate_terraform_state
 }
 
 setup_variables() {
@@ -170,12 +113,7 @@ setup_variables() {
 # =============================================================================
 
 get_service_status() {
-	aws ecs describe-services \
-		--region "$REGION" \
-		--cluster "$CLUSTER_NAME" \
-		--services "$SERVICE_NAME" \
-		--query 'services[0].{status:status,running:runningCount,pending:pendingCount,desired:desiredCount,deployments:deployments[0].status}' \
-		--output json 2>/dev/null || echo '{}'
+	get_ecs_service_status "$CLUSTER_NAME" "$SERVICE_NAME"
 }
 
 wait_for_deployment() {
@@ -251,7 +189,7 @@ wait_for_deployment() {
 			log_error "Deployment failed - no running tasks!"
 			log_error "This usually indicates the new task definition failed health checks"
 			log_info "Checking recent logs for errors..."
-			show_recent_logs
+			show_recent_deployment_logs
 			log_error "ECS may have automatically rolled back to the previous stable version"
 			exit 1
 		fi
@@ -287,7 +225,7 @@ verify_deployment() {
 	else
 		log_error "Health check failed (HTTP $response_code)"
 		log_info "Checking recent logs for errors..."
-		show_recent_logs
+		show_recent_deployment_logs
 		exit 1
 	fi
 	
@@ -304,15 +242,8 @@ verify_deployment() {
 	fi
 }
 
-show_recent_logs() {
-	log_info "Showing recent application logs..."
-	
-	aws logs tail "/ecs/${APP_NAME}" \
-		--region "$REGION" \
-		--since 5m \
-		--format short 2>/dev/null | tail -20 || {
-		log_warn "Could not retrieve recent logs"
-	}
+show_recent_deployment_logs() {
+	show_recent_logs 5
 }
 
 show_deployment_summary() {
@@ -346,7 +277,7 @@ main() {
 	setup_variables
 	wait_for_deployment
 	verify_deployment
-	show_recent_logs
+	show_recent_deployment_logs
 	show_deployment_summary
 	
 	log_success "ECS deployment completed successfully!"

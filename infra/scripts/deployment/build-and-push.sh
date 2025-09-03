@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # =============================================================================
 # NestQL Docker Build and Push Script
@@ -7,7 +6,7 @@ set -euo pipefail
 # This script builds the application Docker image and pushes it to ECR.
 #
 # USAGE:
-#   ./infra/scripts/build-and-push.sh [OPTIONS] [IMAGE_TAG]
+#   ./infra/scripts/deployment/build-and-push.sh [OPTIONS] [IMAGE_TAG]
 #
 # OPTIONS:
 #   --auto-approve     Skip all confirmation prompts
@@ -29,25 +28,11 @@ set -euo pipefail
 #   AWS_SESSION_TOKEN       AWS session token (optional, for temporary credentials)
 # =============================================================================
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REGION="${AWS_REGION:-us-east-1}"
-readonly APP_NAME="nestql"
+# Initialize common utilities
+source "$(dirname "${BASH_SOURCE[0]}")/../common/init.sh"
 
 # Default options
 AUTO_APPROVE=false
-
-# Colors for output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
-
-# Logging functions
-log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
 
 # Parse command line arguments
 parse_arguments() {
@@ -85,33 +70,25 @@ parse_arguments() {
 }
 
 show_help() {
-	cat << 'EOF'
-NestQL Docker Build and Push Script
-
-USAGE:
-  ./infra/scripts/build-and-push.sh [OPTIONS] [IMAGE_TAG]
-
-OPTIONS:
-  --auto-approve     Skip all confirmation prompts
+	show_standard_help "Docker Build and Push Script" \
+		"This script builds the application Docker image and pushes it to ECR." \
+		"./infra/scripts/deployment/build-and-push.sh [OPTIONS] [IMAGE_TAG]" \
+		"  --auto-approve     Skip all confirmation prompts
   -h, --help        Show this help message
 
 ARGUMENTS:
-  IMAGE_TAG         Custom tag for the image (optional, defaults to git commit hash)
-
-EXAMPLES:
-  # Build with auto-generated tag
-  ./infra/scripts/build-and-push.sh
+  IMAGE_TAG         Custom tag for the image (optional, defaults to git commit hash)" \
+		"  # Build with auto-generated tag
+  ./infra/scripts/deployment/build-and-push.sh
 
   # Build with custom tag
-  ./infra/scripts/build-and-push.sh v1.2.3
+  ./infra/scripts/deployment/build-and-push.sh v1.2.3
 
   # Build without prompts (for automation)
-  ./infra/scripts/build-and-push.sh --auto-approve
+  ./infra/scripts/deployment/build-and-push.sh --auto-approve
 
   # Build with custom tag and no prompts
-  ./infra/scripts/build-and-push.sh --auto-approve v1.2.3
-
-EOF
+  ./infra/scripts/deployment/build-and-push.sh --auto-approve v1.2.3"
 }
 
 # Error handling
@@ -129,95 +106,7 @@ trap cleanup EXIT
 # =============================================================================
 
 validate_deployment_environment() {
-	log_info "Validating deployment environment..."
-	
-	# Check git status for production safety
-	if [[ -n "$(git status --porcelain 2>/dev/null || echo '')" ]]; then
-		log_warn "Working directory has uncommitted changes"
-		if [[ "$AUTO_APPROVE" == false ]]; then
-			read -p "Continue with build? (y/N): " -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-				log_info "Build cancelled by user"
-				exit 0
-			fi
-		else
-			log_warn "Auto-approve enabled, continuing with uncommitted changes"
-		fi
-	fi
-	
-	# Check current branch
-	local current_branch
-	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
-	if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
-		log_warn "Building from branch: $current_branch (not main/master)"
-		if [[ "$AUTO_APPROVE" == false ]]; then
-			read -p "Continue with build? (y/N): " -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-				log_info "Build cancelled by user"
-				exit 0
-			fi
-		else
-			log_warn "Auto-approve enabled, continuing from branch: $current_branch"
-		fi
-	fi
-	
-	log_success "Environment validation passed"
-}
-
-validate_environment_variables() {
-	log_info "Validating required environment variables..."
-	
-	local errors=0
-	local required_vars=(
-		"AWS_ACCESS_KEY_ID:AWS access key for API operations"
-		"AWS_SECRET_ACCESS_KEY:AWS secret access key for API operations"
-	)
-	
-	# Check required variables
-	for var_info in "${required_vars[@]}"; do
-		local var_name="${var_info%%:*}"
-		local var_desc="${var_info##*:}"
-		
-		if [[ -z "${!var_name:-}" ]]; then
-			log_error "Missing required environment variable: $var_name"
-			log_error "  Description: $var_desc"
-			((errors++))
-		fi
-	done
-	
-	# Optional variables (just log their status)
-	local optional_vars=(
-		"AWS_REGION:AWS region (defaults to us-east-1)"
-		"AWS_SESSION_TOKEN:AWS session token for temporary credentials"
-	)
-	
-	for var_info in "${optional_vars[@]}"; do
-		local var_name="${var_info%%:*}"
-		local var_desc="${var_info##*:}"
-		
-		if [[ -n "${!var_name:-}" ]]; then
-			log_info "Using $var_name: ${!var_name}"
-		else
-			log_info "Optional variable $var_name not set - $var_desc"
-		fi
-	done
-	
-	if [[ $errors -gt 0 ]]; then
-		log_error ""
-		log_error "Found $errors missing environment variable(s)."
-		log_error ""
-		log_error "To fix this, set the required environment variables:"
-		log_error "  export AWS_ACCESS_KEY_ID=your-access-key"
-		log_error "  export AWS_SECRET_ACCESS_KEY=your-secret-key"
-		log_error ""
-		log_error "Or configure AWS CLI with: aws configure"
-		log_error ""
-		exit 1
-	fi
-	
-	log_success "All required environment variables are set"
+	validate_git_status "$AUTO_APPROVE"
 }
 
 # =============================================================================
@@ -225,58 +114,14 @@ validate_environment_variables() {
 # =============================================================================
 
 validate_prerequisites() {
-	log_info "Validating prerequisites..."
-	
-	local errors=0
-	
-	# Check required commands
-	if ! command -v aws >/dev/null 2>&1; then
-		log_error "AWS CLI not found. Please install it first."
-		((errors++))
-	fi
-	
-	if ! command -v docker >/dev/null 2>&1; then
-		log_error "Docker not found. Please install it first."
-		((errors++))
-	fi
-	
-	if ! command -v terraform >/dev/null 2>&1; then
-		log_error "Terraform not found. Please install it first."
-		((errors++))
-	fi
-	
-	if ! command -v git >/dev/null 2>&1; then
-		log_error "Git not found. Please install it first."
-		((errors++))
-	fi
-	
-	# Check Docker buildx
-	if ! docker buildx version >/dev/null 2>&1; then
-		log_error "Docker buildx not available. Please update Docker."
-		((errors++))
-	fi
-	
-	# Check if we're in a git repository
-	if ! git rev-parse --git-dir >/dev/null 2>&1; then
-		log_error "Not in a git repository."
-		((errors++))
-	fi
-	
-	if [[ $errors -gt 0 ]]; then
-		log_error "Found $errors prerequisite error(s). Please fix them and try again."
-		exit 1
-	fi
-	
-	log_success "All prerequisites validated"
-}
-
-get_terraform_output() {
-	local output_name="$1"
-	terraform -chdir="${SCRIPT_DIR}/../terraform" output -raw "$output_name" 2>/dev/null || {
-		log_error "Failed to get Terraform output: $output_name"
-		log_error "Make sure you've run 'terraform apply' first"
-		exit 1
-	}
+	local commands=(
+		"aws:AWS CLI"
+		"docker:Docker"
+		"terraform:Terraform"
+		"git:Git"
+	)
+	validate_commands "${commands[@]}"
+	validate_terraform_state
 }
 
 setup_variables() {
@@ -291,18 +136,18 @@ setup_variables() {
 		readonly IMAGE_TAG="$1"
 		log_info "Using provided image tag: $IMAGE_TAG"
 	else
-		readonly IMAGE_TAG="$(git rev-parse --short HEAD)"
+		readonly IMAGE_TAG="$(get_git_commit_hash short)"
 		log_info "Using git commit tag: $IMAGE_TAG"
 	fi
 	
 	# Get current branch for context
 	local current_branch
-	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+	current_branch="$(get_current_branch)"
 	log_info "Current branch: $current_branch"
 	
 	# Get commit info
 	local commit_message
-	commit_message="$(git log -1 --pretty=format:'%s' 2>/dev/null || echo 'unknown')"
+	commit_message="$(get_commit_message)"
 	log_info "Commit message: $commit_message"
 	
 	log_success "Build variables configured"
@@ -319,12 +164,12 @@ show_build_plan() {
 	
 	# Get current branch for context
 	local current_branch
-	current_branch="$(git branch --show-current 2>/dev/null || echo 'unknown')"
+	current_branch="$(get_current_branch)"
 	log_info "Current branch: $current_branch"
 	
 	# Get commit info
 	local commit_message
-	commit_message="$(git log -1 --pretty=format:'%s' 2>/dev/null || echo 'unknown')"
+	commit_message="$(get_commit_message)"
 	log_info "Commit message: $commit_message"
 	
 	log_info "=================="
@@ -439,7 +284,7 @@ main() {
 	log_info "Region: $REGION"
 	
 	validate_deployment_environment
-	validate_environment_variables
+	validate_aws_credentials
 	validate_prerequisites
 	setup_variables "$image_tag"
 	show_build_plan
@@ -456,7 +301,7 @@ main() {
 	log_info "  Available tags: ${IMAGE_TAG}, latest"
 	log_info ""
 	log_info "Next steps:"
-	log_info "  Run: ./infra/scripts/deploy-ecs.sh"
+	log_info "  Run: ./infra/scripts/deployment/deploy-ecs.sh"
 	log_info "  Or:  ./infra/scripts/full-deploy.sh"
 }
 

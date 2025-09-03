@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # =============================================================================
-# NestQL Secrets Management Script (Rewritten)
+# NestQL Secrets Management Script
 # =============================================================================
 # This script updates application secrets in AWS Secrets Manager.
 # All secrets must be provided via environment variables for security.
@@ -14,7 +13,7 @@ set -euo pipefail
 #   export OPENAI_API_KEY="your-openai-api-key"
 #   export ANTHROPIC_API_KEY="your-anthropic-api-key"
 #   export APP_DOMAIN="dc-devs.com"
-#   ./infra/scripts/set-secrets-new.sh
+#   ./infra/scripts/deployment/set-secrets.sh
 #
 # REQUIREMENTS:
 #   - AWS CLI configured with appropriate permissions
@@ -24,36 +23,12 @@ set -euo pipefail
 #   - API keys must be at least 20 characters long
 # =============================================================================
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REGION="${AWS_REGION:-us-east-1}"
-readonly APP_NAME="nestql"
-
-# Colors for output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
-
-# Logging functions
-log_info() { echo -e "${BLUE}[INFO]${NC} $*"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $*"; }
+# Initialize common utilities
+source "$(dirname "${BASH_SOURCE[0]}")/../common/init.sh"
 
 # =============================================================================
 # Configuration and Validation
 # =============================================================================
-
-# Get infrastructure details from Terraform
-get_terraform_output() {
-	local output_name="$1"
-	terraform -chdir="${SCRIPT_DIR}/../terraform" output -raw "$output_name" 2>/dev/null || {
-		log_error "Failed to get Terraform output: $output_name"
-		log_error "Make sure you've run 'terraform apply' first"
-		exit 1
-	}
-}
 
 log_info "Getting infrastructure details from Terraform..."
 readonly DB_ENDPOINT="$(get_terraform_output db_endpoint)"
@@ -71,66 +46,26 @@ validate_required_vars() {
 	
 	local errors=0
 	
-	# Database passwords
-	if [[ -z "${NESTQL_APP_PASSWORD:-}" ]]; then
-		log_error "NESTQL_APP_PASSWORD environment variable is required"
-		log_error "Please set it with: export NESTQL_APP_PASSWORD='your-secure-password'"
-		((errors++))
-	elif [[ ${#NESTQL_APP_PASSWORD} -lt 12 ]]; then
-		log_error "NESTQL_APP_PASSWORD must be at least 12 characters long"
-		((errors++))
-	fi
-	
-	if [[ -z "${MASTRA_APP_PASSWORD:-}" ]]; then
-		log_error "MASTRA_APP_PASSWORD environment variable is required"
-		log_error "Please set it with: export MASTRA_APP_PASSWORD='your-secure-password'"
-		((errors++))
-	elif [[ ${#MASTRA_APP_PASSWORD} -lt 12 ]]; then
-		log_error "MASTRA_APP_PASSWORD must be at least 12 characters long"
-		((errors++))
-	fi
-	
-	# Session secret
-	if [[ -z "${SESSION_SECRET:-}" ]]; then
-		log_error "SESSION_SECRET environment variable is required"
-		log_error "Please set it with: export SESSION_SECRET='your-session-secret'"
-		((errors++))
-	elif [[ ${#SESSION_SECRET} -lt 32 ]]; then
-		log_error "SESSION_SECRET must be at least 32 characters long"
-		((errors++))
-	fi
-	
-	# API keys
-	if [[ -z "${OPENAI_API_KEY:-}" ]]; then
-		log_error "OPENAI_API_KEY environment variable is required"
-		log_error "Please set it with: export OPENAI_API_KEY='your-openai-api-key'"
-		((errors++))
-	elif [[ ${#OPENAI_API_KEY} -lt 20 ]]; then
-		log_error "OPENAI_API_KEY must be at least 20 characters long"
-		((errors++))
-	fi
-	
-	if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
-		log_error "ANTHROPIC_API_KEY environment variable is required"
-		log_error "Please set it with: export ANTHROPIC_API_KEY='your-anthropic-api-key'"
-		((errors++))
-	elif [[ ${#ANTHROPIC_API_KEY} -lt 20 ]]; then
-		log_error "ANTHROPIC_API_KEY must be at least 20 characters long"
-		((errors++))
-	fi
-	
-	# APP_DOMAIN validation (required like other secrets)
-	if [[ -z "${APP_DOMAIN:-}" ]]; then
-		log_error "APP_DOMAIN environment variable is required"
-		log_error "Please set it with: export APP_DOMAIN='dc-devs.com'"
-		((errors++))
-	elif [[ ${#APP_DOMAIN} -lt 3 ]]; then
-		log_error "APP_DOMAIN must be at least 3 characters long"
-		((errors++))
-	fi
+	# Validate all required environment variables
+	validate_environment_var "NESTQL_APP_PASSWORD" 12 "NestQL database password" || ((errors++))
+	validate_environment_var "MASTRA_APP_PASSWORD" 12 "Mastra database password" || ((errors++))
+	validate_environment_var "SESSION_SECRET" 32 "Session secret for authentication" || ((errors++))
+	validate_environment_var "OPENAI_API_KEY" 20 "OpenAI API key" || ((errors++))
+	validate_environment_var "ANTHROPIC_API_KEY" 20 "Anthropic API key" || ((errors++))
+	validate_environment_var "APP_DOMAIN" 3 "Application domain" || ((errors++))
 	
 	if [[ $errors -gt 0 ]]; then
+		log_error ""
 		log_error "Found $errors validation error(s). Please fix them and try again."
+		log_error ""
+		log_error "Example usage:"
+		log_error "  export NESTQL_APP_PASSWORD='your-secure-password'"
+		log_error "  export MASTRA_APP_PASSWORD='your-secure-password'"
+		log_error "  export SESSION_SECRET='your-session-secret'"
+		log_error "  export OPENAI_API_KEY='your-openai-api-key'"
+		log_error "  export ANTHROPIC_API_KEY='your-anthropic-api-key'"
+		log_error "  export APP_DOMAIN='dc-devs.com'"
+		log_error ""
 		exit 1
 	fi
 	
@@ -306,15 +241,7 @@ main() {
 # =============================================================================
 
 # Validate prerequisites
-if ! command -v aws >/dev/null 2>&1; then
-	log_error "AWS CLI not found. Please install it first."
-	exit 1
-fi
-
-if ! command -v terraform >/dev/null 2>&1; then
-	log_error "Terraform not found. Please install it first."
-	exit 1
-fi
+validate_commands ("aws:AWS CLI" "terraform:Terraform")
 
 # Run main function
 main "$@"
