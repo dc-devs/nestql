@@ -7,7 +7,7 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        if: false # Temporarily disable this workflow
+        if: true # Toggle this to enable/disable the workflow
         env:
             AWS_REGION: us-east-1
         steps:
