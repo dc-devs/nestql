@@ -18,12 +18,12 @@ RUN npm install -g pnpm
 
 # Install dependencies into temp directories
 RUN mkdir -p /temp/dev
-COPY package.json pnpm-lock.yaml /temp/dev/
+COPY package.json pnpm-lock.yaml .pnpmrc /temp/dev/
 RUN cd /temp/dev && pnpm install --frozen-lockfile
 
 # Install production dependencies separately
 RUN mkdir -p /temp/prod
-COPY package.json pnpm-lock.yaml /temp/prod/
+COPY package.json pnpm-lock.yaml .pnpmrc /temp/prod/
 RUN cd /temp/prod && pnpm install --frozen-lockfile --prod
 
 ###############################
