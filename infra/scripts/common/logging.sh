@@ -15,6 +15,12 @@
 #   log_success MESSAGE - Log success message in green
 # =============================================================================
 
+# Prevent double-sourcing
+if [[ -n "${NESTQL_LOGGING_LOADED:-}" ]]; then
+	return 0
+fi
+readonly NESTQL_LOGGING_LOADED=1
+
 # Colors for output
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'

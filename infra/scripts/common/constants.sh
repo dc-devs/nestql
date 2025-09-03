@@ -13,6 +13,12 @@
 #   APP_NAME  - Application name
 # =============================================================================
 
+# Prevent double-sourcing
+if [[ -n "${NESTQL_CONSTANTS_LOADED:-}" ]]; then
+	return 0
+fi
+readonly NESTQL_CONSTANTS_LOADED=1
+
 # AWS region (can be overridden by AWS_REGION environment variable)
 readonly REGION="${AWS_REGION:-us-east-1}"
 

@@ -67,6 +67,7 @@ src/base/docker/nql-nginx/certs/*
 # Terraform
 # Local .terraform directories
 **/.terraform/*
+.terraform-backup
 
 # .tfstate files
 *.tfstate

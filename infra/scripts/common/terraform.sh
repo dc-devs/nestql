@@ -24,18 +24,28 @@ get_terraform_output() {
 	local terraform_dir
 	
 	# Determine terraform directory based on script location
-	if [[ -f "$COMMON_DIR/../terraform/terraform.tfstate" ]]; then
+	if [[ -f "$COMMON_DIR/../terraform/providers.tf" ]]; then
 		terraform_dir="$COMMON_DIR/../terraform"
-	elif [[ -f "$COMMON_DIR/../../terraform/terraform.tfstate" ]]; then
+	elif [[ -f "$COMMON_DIR/../../terraform/providers.tf" ]]; then
 		terraform_dir="$COMMON_DIR/../../terraform"
 	else
-		log_error "Terraform state file not found. Run 'terraform apply' first."
+		log_error "Terraform directory not found. Please check your project structure."
 		exit 1
+	fi
+	
+	# Initialize Terraform if .terraform directory doesn't exist
+	if [[ ! -d "$terraform_dir/.terraform" ]]; then
+		log_info "Initializing Terraform..."
+		terraform -chdir="$terraform_dir" init >/dev/null 2>&1 || {
+			log_error "Failed to initialize Terraform"
+			exit 1
+		}
 	fi
 	
 	terraform -chdir="$terraform_dir" output -raw "$output_name" 2>/dev/null || {
 		log_error "Failed to get Terraform output: $output_name"
 		log_error "Make sure you've run 'terraform apply' first"
+		log_error "If using remote state, ensure proper authentication is configured"
 		exit 1
 	}
 }
@@ -45,59 +55,58 @@ validate_terraform_state() {
 	log_info "Validating Terraform state..."
 	
 	local terraform_dir=""
-	local state_file=""
 	
-	# Determine terraform directory and check for state
-	if [[ -f "$COMMON_DIR/../terraform/terraform.tfstate" ]]; then
+	# Find terraform directory
+	if [[ -f "$COMMON_DIR/../terraform/providers.tf" ]]; then
 		terraform_dir="$COMMON_DIR/../terraform"
-		state_file="$terraform_dir/terraform.tfstate"
-	elif [[ -f "$COMMON_DIR/../../terraform/terraform.tfstate" ]]; then
+	elif [[ -f "$COMMON_DIR/../../terraform/providers.tf" ]]; then
 		terraform_dir="$COMMON_DIR/../../terraform"
-		state_file="$terraform_dir/terraform.tfstate"
 	else
-		log_error "Terraform state file not found."
-		log_error "Searched locations:"
-		log_error "  - $COMMON_DIR/../terraform/terraform.tfstate"
-		log_error "  - $COMMON_DIR/../../terraform/terraform.tfstate"
-		log_error ""
-		log_error "Please ensure:"
-		log_error "  1. Infrastructure has been provisioned with 'terraform apply'"
-		log_error "  2. Terraform state file is accessible"
-		log_error "  3. Working directory is correct"
-		log_error ""
-		log_error "If using remote state backend, ensure:"
-		log_error "  1. Backend is configured in providers.tf"
-		log_error "  2. Authentication is set up for the backend"
-		log_error "  3. 'terraform init' has been run"
+		log_error "Terraform directory not found. Please check your project structure."
 		exit 1
 	fi
 	
-	# Validate state file is not empty and contains resources
-	if [[ ! -s "$state_file" ]]; then
-		log_error "Terraform state file exists but is empty: $state_file"
-		log_error "This usually means infrastructure hasn't been provisioned yet."
-		log_error "Please run 'terraform apply' to create infrastructure."
+	log_success "Terraform directory found: $terraform_dir"
+	
+	# Always initialize in CI/CD environments (idempotent operation)
+	if [[ ! -d "$terraform_dir/.terraform" ]] || [[ -n "${CI:-}" ]] || [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+		log_info "Initializing Terraform (required for remote state)..."
+		terraform -chdir="$terraform_dir" init >/dev/null 2>&1 || {
+			log_error "Failed to initialize Terraform"
+			log_error "Please ensure:"
+			log_error "  1. Backend configuration is correct in providers.tf"
+			log_error "  2. AWS credentials are configured"
+			log_error "  3. S3 bucket and DynamoDB table exist"
+			log_error "  4. Network connectivity is available"
+			exit 1
+		}
+		log_success "Terraform initialized successfully"
+	fi
+	
+	# Validate we can read terraform state (works for both local and remote)
+	log_info "Checking Terraform state accessibility..."
+	if ! terraform -chdir="$terraform_dir" show >/dev/null 2>&1; then
+		log_error "Cannot read Terraform state."
+		log_error "This usually means:"
+		log_error "  1. Infrastructure hasn't been provisioned yet (run 'terraform apply')"
+		log_error "  2. Remote state backend is not accessible"
+		log_error "  3. AWS credentials don't have access to the state backend"
 		exit 1
 	fi
 	
-	# Check if state contains any resources
-	local resource_count
-	resource_count="$(jq -r '.resources | length' "$state_file" 2>/dev/null || echo "0")"
+	# Try to get outputs to verify state has resources
+	log_info "Verifying Terraform outputs..."
+	local state_check
+	state_check="$(terraform -chdir="$terraform_dir" output -json 2>/dev/null || echo '{}')"
 	
-	if [[ "$resource_count" -eq 0 ]]; then
-		log_warn "Terraform state file contains no resources."
+	if [[ "$state_check" == "{}" ]]; then
+		log_warn "No Terraform outputs found."
 		log_warn "This may indicate infrastructure hasn't been fully provisioned."
 	else
-		log_success "Terraform state found with $resource_count resource(s)"
+		local output_count
+		output_count="$(echo "$state_check" | jq 'keys | length' 2>/dev/null || echo "unknown")"
+		log_success "Terraform state validated successfully ($output_count outputs found)"
 	fi
 	
-	# Validate we can actually read terraform outputs
-	if ! terraform -chdir="$terraform_dir" version >/dev/null 2>&1; then
-		log_error "Terraform binary not found or not working."
-		log_error "Please ensure Terraform is installed and accessible."
-		exit 1
-	fi
-	
-	log_success "Terraform state validation completed"
 	return 0
 }
