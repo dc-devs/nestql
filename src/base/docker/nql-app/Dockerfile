@@ -18,12 +18,12 @@ RUN npm install -g pnpm
 
 # Install dependencies into temp directories
 RUN mkdir -p /temp/dev
-COPY package.json pnpm-lock.yaml .pnpmrc /temp/dev/
+COPY package.json pnpm-lock.yaml .npmrc /temp/dev/
 RUN cd /temp/dev && pnpm install --frozen-lockfile
 
 # Install production dependencies separately
 RUN mkdir -p /temp/prod
-COPY package.json pnpm-lock.yaml .pnpmrc /temp/prod/
+COPY package.json pnpm-lock.yaml .npmrc /temp/prod/
 RUN cd /temp/prod && pnpm install --frozen-lockfile --prod
 
 ###############################
@@ -36,7 +36,7 @@ RUN npm install -g pnpm
 
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-COPY .pnpmrc .
+COPY .npmrc .
 
 # Set correct permissions before switching user
 RUN chown -R node:node /usr/src/app
@@ -59,7 +59,7 @@ RUN npm install -g pnpm
 
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-COPY .pnpmrc .
+COPY .npmrc .
 
 # Set correct permissions before switching user
 RUN chown -R node:node /usr/src/app
@@ -84,7 +84,7 @@ COPY --from=build /usr/src/app/dist dist
 COPY package.json .
 COPY prisma prisma
 COPY pnpm-lock.yaml .
-COPY .pnpmrc .
+COPY .npmrc .
 
 # Add AWS RDS CA bundle so Node trusts RDS certificates
 RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /etc/ssl/certs/rds-ca-bundle.pem

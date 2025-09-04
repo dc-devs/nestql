@@ -1,5 +1,0 @@
-# Selective script execution - more secure approach
-ignore-scripts=false
-
-# Only enable for Docker builds (safer than global)
-enable-pre-post-scripts=true
