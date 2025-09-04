@@ -175,6 +175,12 @@ wait_for_deployment() {
 	start_time="$(date +%s)"
 	local dots=0
 	
+	# Temporarily disable exit on error for the monitoring loop (Ubuntu compatibility)
+	set +e
+	
+	# Ensure we're using bash-compatible arithmetic
+	local monitoring_loop_active=1
+	
 	while true; do
 		local current_time
 		current_time="$(date +%s)"
@@ -206,14 +212,29 @@ wait_for_deployment() {
 		# Parse status with error checking
 		local service_status
 		service_status="$(echo "$status" | jq -r '.status // "unknown"' 2>/dev/null)"
+		local parse_exit_1=$?
 		local running_count
 		running_count="$(echo "$status" | jq -r '.running // 0' 2>/dev/null)"
+		local parse_exit_2=$?
 		local desired_count
 		desired_count="$(echo "$status" | jq -r '.desired // 0' 2>/dev/null)"
+		local parse_exit_3=$?
 		local primary_deployment
 		primary_deployment="$(echo "$status" | jq -r '.primaryDeployment // "none"' 2>/dev/null)"
+		local parse_exit_4=$?
 		local active_deployments
 		active_deployments="$(echo "$status" | jq -r '.activeDeployments // 0' 2>/dev/null)"
+		local parse_exit_5=$?
+		
+		# Debug parsing results on first iteration
+		if [[ $elapsed -eq 0 ]]; then
+			log_info "🔍 Parsing results:"
+			log_info "  service_status: '$service_status' (exit: $parse_exit_1)"
+			log_info "  running_count: '$running_count' (exit: $parse_exit_2)"
+			log_info "  desired_count: '$desired_count' (exit: $parse_exit_3)"
+			log_info "  primary_deployment: '$primary_deployment' (exit: $parse_exit_4)"
+			log_info "  active_deployments: '$active_deployments' (exit: $parse_exit_5)"
+		fi
 		
 		# Validate parsed values
 		if [[ -z "$service_status" || -z "$running_count" || -z "$desired_count" ]]; then
@@ -277,7 +298,9 @@ wait_for_deployment() {
 			log_error "Deployment failed - no running tasks!"
 			log_error "This usually indicates the new task definition failed health checks"
 			log_info "Checking recent logs for errors..."
-			show_recent_deployment_logs
+			if ! show_recent_deployment_logs; then
+				log_warn "Could not retrieve deployment logs"
+			fi
 			log_error "ECS may have automatically rolled back to the previous stable version"
 			exit 1
 		fi
@@ -291,11 +314,21 @@ wait_for_deployment() {
 			log_info "  Primary Deployment: $primary_deployment"
 			log_info "  Active Deployments: $active_deployments"
 			log_info "  Checking recent logs..."
-			show_recent_deployment_logs
+			if ! show_recent_deployment_logs; then
+				log_warn "Failed to retrieve recent logs (continuing deployment monitoring)"
+			fi
+		fi
+		
+		# Debug: show we're continuing the loop
+		if [[ $elapsed -eq 0 ]]; then
+			log_info "🔍 End of loop iteration - continuing..."
 		fi
 		
 		sleep 5
 	done
+	
+	# Re-enable exit on error
+	set -e
 }
 
 # =============================================================================
@@ -372,6 +405,14 @@ main() {
 	log_info "Starting ECS deployment for $APP_NAME"
 	log_info "Region: $REGION"
 	log_info "Timeout: ${TIMEOUT}s"
+	
+	# Debug environment differences
+	log_info "🔍 Environment Info:"
+	log_info "  Shell: $0"
+	log_info "  Bash version: ${BASH_VERSION:-unknown}"
+	log_info "  OS: $(uname -s)"
+	log_info "  jq version: $(jq --version 2>/dev/null || echo 'not found')"
+	log_info "  AWS CLI version: $(aws --version 2>/dev/null | head -n1 || echo 'not found')"
 	
 	validate_prerequisites
 	setup_variables

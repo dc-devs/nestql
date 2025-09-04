@@ -49,4 +49,5 @@ jobs:
               run: |
                   # Deploy the new image to ECS
                   chmod +x infra/scripts/deployment/deploy-ecs.sh
-                  ./infra/scripts/deployment/deploy-ecs.sh
+                  # Run with explicit bash to avoid GitHub Actions default -e flag issues
+                  bash ./infra/scripts/deployment/deploy-ecs.sh
