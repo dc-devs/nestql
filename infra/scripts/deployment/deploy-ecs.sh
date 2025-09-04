@@ -185,18 +185,46 @@ wait_for_deployment() {
 			exit 1
 		fi
 		
+		# Get status with detailed error logging
 		local status
 		status="$(get_service_status)"
+		local get_status_exit_code=$?
+		
+		# Debug: show raw status response
+		if [[ $elapsed -eq 0 || $((elapsed % 30)) -eq 0 ]]; then
+			log_info "🔍 Raw AWS response: $status"
+			log_info "🔍 get_service_status exit code: $get_status_exit_code"
+		fi
+		
+		# Check if we got valid JSON
+		if ! echo "$status" | jq . >/dev/null 2>&1; then
+			log_error "Invalid JSON response from AWS API"
+			log_error "Raw response: $status"
+			exit 1
+		fi
+		
+		# Parse status with error checking
 		local service_status
-		service_status="$(echo "$status" | jq -r '.status // "unknown"')"
+		service_status="$(echo "$status" | jq -r '.status // "unknown"' 2>/dev/null)"
 		local running_count
-		running_count="$(echo "$status" | jq -r '.running // 0')"
+		running_count="$(echo "$status" | jq -r '.running // 0' 2>/dev/null)"
 		local desired_count
-		desired_count="$(echo "$status" | jq -r '.desired // 0')"
+		desired_count="$(echo "$status" | jq -r '.desired // 0' 2>/dev/null)"
 		local primary_deployment
-		primary_deployment="$(echo "$status" | jq -r '.primaryDeployment // "none"')"
+		primary_deployment="$(echo "$status" | jq -r '.primaryDeployment // "none"' 2>/dev/null)"
 		local active_deployments
-		active_deployments="$(echo "$status" | jq -r '.activeDeployments // 0')"
+		active_deployments="$(echo "$status" | jq -r '.activeDeployments // 0' 2>/dev/null)"
+		
+		# Validate parsed values
+		if [[ -z "$service_status" || -z "$running_count" || -z "$desired_count" ]]; then
+			log_error "Failed to parse status values"
+			log_error "service_status: '$service_status'"
+			log_error "running_count: '$running_count'"
+			log_error "desired_count: '$desired_count'"
+			log_error "primary_deployment: '$primary_deployment'"
+			log_error "active_deployments: '$active_deployments'"
+			exit 1
+		fi
 		
 		# Print progress dots
 		printf "."
@@ -209,7 +237,7 @@ wait_for_deployment() {
 		
 		# Check if deployment is complete
 		# A deployment is successful when:
-d		# 1. Service is ACTIVE
+		# 1. Service is ACTIVE
 		# 2. There's a PRIMARY deployment (meaning the new deployment completed successfully)
 		# 3. Only 1 active deployment remains (old deployments cleaned up)
 		# 4. Running count equals desired count (but allow brief periods during transition)

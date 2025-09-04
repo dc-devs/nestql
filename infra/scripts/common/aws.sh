@@ -80,12 +80,34 @@ get_ecs_service_status() {
 	local cluster_name="$1"
 	local service_name="$2"
 	
-	aws ecs describe-services \
+	# Add detailed error logging for AWS API calls
+	local aws_output
+	local aws_exit_code
+	
+	aws_output="$(aws ecs describe-services \
 		--region "$REGION" \
 		--cluster "$cluster_name" \
 		--services "$service_name" \
 		--query 'services[0].{status:status,running:runningCount,pending:pendingCount,desired:desiredCount,primaryDeployment:deployments[?status==`PRIMARY`]|[0].status,activeDeployments:length(deployments[?status==`ACTIVE`||status==`PRIMARY`])}' \
-		--output json 2>/dev/null || echo '{}'
+		--output json 2>&1)"
+	aws_exit_code=$?
+	
+	if [[ $aws_exit_code -ne 0 ]]; then
+		log_error "AWS ECS describe-services failed with exit code $aws_exit_code"
+		log_error "AWS error output: $aws_output"
+		echo '{}'
+		return $aws_exit_code
+	fi
+	
+	# Validate we got valid JSON
+	if ! echo "$aws_output" | jq . >/dev/null 2>&1; then
+		log_error "AWS returned invalid JSON"
+		log_error "Raw AWS output: $aws_output"
+		echo '{}'
+		return 1
+	fi
+	
+	echo "$aws_output"
 }
 
 # Show recent application logs

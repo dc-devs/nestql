@@ -297,7 +297,6 @@ main() {
 	log_info ""
 	log_info "Next steps:"
 	log_info "  Run: ./infra/scripts/deployment/deploy-ecs.sh"
-	log_info "  Or:  ./infra/scripts/full-deploy.sh"
 }
 
 # =============================================================================
