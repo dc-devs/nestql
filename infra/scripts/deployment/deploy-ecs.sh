@@ -254,15 +254,20 @@ wait_for_deployment() {
 				break
 			fi
 			
-			# If we have multiple deployments but primary is ready, wait for cleanup (max 2 minutes)
-			if [[ "$active_deployments" -gt 1 && $elapsed -gt 120 ]]; then
-				echo ""
-				log_success "Deployment completed (cleanup may still be in progress)"
-				log_info "Service status: $service_status"
-				log_info "Running tasks: $running_count/$desired_count"
-				log_info "Primary deployment: $primary_deployment"
-				log_info "Active deployments: $active_deployments (cleanup in progress)"
-				break
+			# If we have multiple deployments but primary is ready and running count matches desired
+			# This is acceptable - ECS cleanup can take time but the new deployment is working
+			if [[ "$active_deployments" -gt 1 && "$running_count" -eq "$desired_count" && "$desired_count" -gt 0 ]]; then
+				# Wait at least 30 seconds for basic stability, then accept it
+				if [[ $elapsed -gt 30 ]]; then
+					echo ""
+					log_success "Deployment completed (cleanup in progress)"
+					log_info "Service status: $service_status"
+					log_info "Running tasks: $running_count/$desired_count"
+					log_info "Primary deployment: $primary_deployment"
+					log_info "Active deployments: $active_deployments (ECS cleanup in progress)"
+					log_info "The new deployment is healthy and serving traffic"
+					break
+				fi
 			fi
 		fi
 		
