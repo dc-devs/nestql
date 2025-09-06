@@ -8,6 +8,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 export const GraphQLModule = GraphqlModule.forRoot<ApolloDriverConfig>({
 	sortSchema: true,
 	playground: false,
+	introspection: isDevelopmentEnv, // Enable introspection only in development
 	driver: ApolloDriver,
 	autoSchemaFile: join(process.cwd(), 'src/app/schema.gql'),
 	context: ({ req, res }) => ({ req, res }),

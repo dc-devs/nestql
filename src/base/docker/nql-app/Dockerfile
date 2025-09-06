@@ -96,6 +96,9 @@ USER node
 # Generate Prisma client in production stage to ensure it exists
 RUN pnpm run prisma:generate
 
+# Set production environment
+ENV NODE_ENV=production
+
 EXPOSE ${PORT}
 
 CMD ["pnpm", "run", "start:prod"]
